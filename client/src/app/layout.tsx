@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-white dark:bg-black">
         <StoreProvider>
           <ThemeProvider
             attribute="class"
@@ -25,7 +25,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <nav className="flex justify-between items-center p-4 bg-white text-white dark:bg-black">
+              <img src={"/logo.png"} alt="logo_" width={100} height={100} />
+            </nav>
+            <main>{children}</main>
             <ToastContainer />
           </ThemeProvider>
         </StoreProvider>

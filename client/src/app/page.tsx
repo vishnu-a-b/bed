@@ -1,8 +1,14 @@
+import About from "@/components/bedbooking/about";
+import BookingStat from "@/components/bedbooking/bookingStat";
+import SwiperWrapper from "@/components/bedbooking/swipper";
+import React from "react";
+
 export default function Home() {
   return (
-    <div className="flex flex-col items-center p-4">
-      
-     Home page
+    <div>
+      <SwiperWrapper />
+      <BookingStat />
+      <About />
     </div>
   );
 }
