@@ -3,7 +3,7 @@ import React from "react";
 
 export default function BookingStat() {
   return (
-    <section className="mt-10 text-center md:px-60 md:mt-16 p-2">
+    <section className="mt-10 text-center md:px-60 md:mt-32 p-2">
       <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
         Providing Care Where It's Needed Mosts
       </h2>

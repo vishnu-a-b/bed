@@ -2,25 +2,25 @@ import React from "react";
 
 export default function About() {
   return (
-    <section className="py-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-white to-gray-50 mt-4">
+    <section className="py-16 px-4 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             About Us
           </h2>
-          <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+          {/* <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div> */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 flex justify-center items-center">
             <div className="relative">
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-blue-100 rounded-full opacity-70"></div>
               <img
                 src="/cms.webp"
                 alt="Shanthibhavan Palliative Hospital"
-                className="w-full h-auto rounded-2xl shadow-xl relative z-10 object-cover aspect-square"
+                className="w-96 h-auto rounded-2xl shadow-xl relative z-10 object-cover aspect-square"
               />
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-200 rounded-full opacity-50"></div>
+              <div className="absolute -bottom-6 -right-10 w-20 h-20 bg-blue-200 rounded-full opacity-50"></div>
             </div>
           </div>
 
