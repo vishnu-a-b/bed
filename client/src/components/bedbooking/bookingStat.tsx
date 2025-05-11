@@ -1,4 +1,5 @@
 import { Bed, Users } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 export default function BookingStat() {
@@ -55,9 +56,12 @@ export default function BookingStat() {
               <button className="bg-blue-600 py-1 text-xs rounded-lg text-white md:py-2">
                 View More
               </button>
-              <button className="bg-blue-600 py-1 text-xs rounded-lg text-white md:py-2">
+              <Link
+                className="bg-blue-600 py-1 text-xs rounded-lg text-white md:py-2"
+                href={"/bed-booking?country=ind&b_booked=50&b_rem=30"}
+              >
                 Donate Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>
