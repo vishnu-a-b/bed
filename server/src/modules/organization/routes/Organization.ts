@@ -18,6 +18,7 @@ import { organizationUpdateDoc } from "../docs/organizationUpdateDoc";
 import { organizationDeleteDoc } from "../docs/organizationDeleteDoc";
 import { organizationListofAdminDoc } from "../docs/organizationListofAdminDoc";
 import RolesEnum from "../../base/enums/roles";
+import { body } from "express-validator";
 
 const router = express.Router();
 const controller = new OrganizationController();
@@ -34,6 +35,7 @@ const uploadMethod = (req: Request, res: Response, next: NextFunction) => {
     if (err) {
       return next(new BadRequestError({ error: "invalid file type" }));
     }
+    
     next();
   });
 };

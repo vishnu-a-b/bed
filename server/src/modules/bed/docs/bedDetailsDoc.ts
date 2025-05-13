@@ -13,15 +13,25 @@ export const bedDetailsDoc = async (
         success: true,
         data: {
               _id: "65cd9d8d5cae5ffc348ed638",
-              name: "string",
-              user: "65cd9d8d5cae5ffc348ed638",
-              country: "65cd9d8d5cae5ffc348ed638",
-              organization: "65cd9d8d5cae5ffc348ed638",
-              roles: "string",
-              joinDate: "string",
-              createdBy: "65cd9d8d5cae4ffc348ed682",
+              bedNo: 101,
+              patientName: "John Doe",
+              maxNoContributer: 15,
+              amount: 100,
+              vcLink: "https://meet.example.com/room123",
+              organization: {
+                _id: "65cd9d8d5cae5ffc348ed638",
+                name: "General Hospital"
+              },
+              country: {
+                _id: "65cd9d8d5cae5ffc348ed639",
+                name: "United States"
+              },
+              head: {
+                _id: "65cd9d8d5cae5ffc348ed640",
+                name: "Dr. Smith"
+              },
               createdAt: "2024-02-17T07:50:12.025Z",
-              updatedAt: "2024-02-17T07:50:12.025Z",
+              updatedAt: "2024-02-17T07:50:12.025Z"
             }
       }
     }

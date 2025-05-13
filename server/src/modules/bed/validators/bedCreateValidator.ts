@@ -7,7 +7,7 @@ import { Organization } from "../../organization/models/Organization";
 
 
 export const bedCreateValidator = [
-  body("user").custom(async (userId: any) => {
+  body("head").custom(async (userId: any) => {
     try {
       const user = await User.findById(userId);
       if (!user) {
@@ -45,6 +45,5 @@ export const bedCreateValidator = [
       return Promise.reject();
     }
   }),
-  body("joinDate").isISO8601(),
 
 ];

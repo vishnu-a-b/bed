@@ -3,10 +3,13 @@ import { Genders } from "../../base/enums/genders";
 import { MaritalStatuses } from "../../base/enums/maritalStatuses";
 import ModelFilterInterface from "../../../interfaces/ModelFilterInterface";
 
-
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: false, maxLength: 100 },
+    countryCode: {
+      type: String,
+      maxLength: 10,
+    },
     mobileNo: { type: String, required: true, unique: true, maxLength: 20 },
     password: { type: String, required: true, maxLength: 150, select: false },
     email: {
@@ -15,8 +18,6 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
-    photos: [{ type: String, maxLength: 200 }],
-    profilePicture: { type: String },
     dateOfBirth: {
       type: Date,
       validate: {
@@ -28,7 +29,6 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      required: true,
       maxLength: 20,
       enum: Object.values(Genders),
     },
@@ -50,18 +50,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("findOneAndUpdate", async function (next) {
-  const update = this.getUpdate();
-  const filter = this.getFilter();
-  if (!update) return next();
-  if ("photos" in update) {
-    console.log(
-      "there is photos field in update body. deleting all descriptors available"
-    );
-   
-  }
-  next();
-});
 
 export const userFilterFields: ModelFilterInterface = {
   filterFields: [

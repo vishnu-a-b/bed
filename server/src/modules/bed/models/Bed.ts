@@ -9,7 +9,8 @@ const bedSchema = new mongoose.Schema(
     country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
     bedNo: { type: Number },
     maxNoContributer: { type: Number,default:15 },
-    minAmount: { type: Number },
+    amount: { type: Number },
+    patientName: { type: String },
     head: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     vcLink: {
       type: String,
@@ -19,9 +20,9 @@ const bedSchema = new mongoose.Schema(
 );
 
 export const bedFilterFields: ModelFilterInterface = {
-  filterFields: ["staff", "status"],
-  searchFields: [],
-  sortFields: ["createdAt", "updatedAt"],
+  filterFields: [],
+  searchFields: ["bedNo"],
+  sortFields: ["bedNo","createdAt", "updatedAt"],
 };
 
 export const Bed = mongoose.model("Bed", bedSchema);

@@ -28,4 +28,4 @@ export const organizationFilterFields: ModelFilterInterface = {
   sortFields: ["createdAt", "updatedAt"],
 };
 
-export const Organization = mongoose.model("organization", organizationSchema);
+export const Organization = mongoose.model("Organization", organizationSchema);

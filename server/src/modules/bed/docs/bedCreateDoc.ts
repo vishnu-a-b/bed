@@ -6,26 +6,55 @@ export const bedCreateDoc = async (
   next: NextFunction
 ) => {
   /*  
-          #swagger.tags = ['bed']
-          #swagger.parameters['parameter_name'] = {
-            in: 'body',
-            description: 'Endpoint to create a bed',
-            schema: {
-              name: "string",
-              user: "65cd9d8d5cae5ffc348ed638",
-              country: "65cd9d8d5cae5ffc348ed638",
-              organization: "65cd9d8d5cae5ffc348ed638",
-              role: "string",
-              type: "string",
-              joinDate: "string",
-            }
-          } 
-          
-          #swagger.security = [
-            {
-              JWT: []
-            }
-          ] 
-      */
+    #swagger.tags = ['Bed']
+    #swagger.summary = 'Create or update a bed'
+    #swagger.parameters['organization'] = {
+      in: 'formData',
+      required: true,
+      type: 'string',
+      description: 'Organization ID'
+    }
+    #swagger.parameters['country'] = {
+      in: 'formData',
+      required: true,
+      type: 'string',
+      description: 'Country ID'
+    }
+    #swagger.parameters['bedNo'] = {
+      in: 'formData',
+      required: true,
+      type: 'number',
+      description: 'Bed number'
+    }
+    #swagger.parameters['maxNoContributer'] = {
+      in: 'formData',
+      type: 'number',
+      default: 15,
+      description: 'Maximum number of contributors'
+    }
+    #swagger.parameters['amount'] = {
+      in: 'formData',
+      type: 'number',
+      description: 'Minimum contribution amount'
+    }
+    #swagger.parameters['patientName'] = {
+      in: 'formData',
+      type: 'string',
+      description: 'Patient name (optional)'
+    }
+    #swagger.parameters['head'] = {
+      in: 'formData',
+      type: 'string',
+      description: 'Head user ID'
+    }
+    #swagger.parameters['vcLink'] = {
+      in: 'formData',
+      type: 'string',
+      description: 'Video conference link (optional)'
+    }
+    #swagger.security = [{
+      "JWT": []
+    }]
+  */
   next();
 };

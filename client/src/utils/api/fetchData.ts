@@ -31,10 +31,25 @@ export const fetchData = async (apiUrl: string) => {
     }
   };
 
-  export const fetchBusiness = async (searchTerm: any) => {
+  export const fetchOrganization = async (searchTerm: any) => {
     const search = searchTerm ? `&search=${searchTerm}` : "";
     const response = await Axios.get(
-      `${API_URL}/business?limit=Infinity&sortBy=updatedAt${search}`
+      `${API_URL}/organization?limit=Infinity&sortBy=updatedAt${search}`
+    );
+    return response.data.data;
+  };
+
+  export const fetchBed = async (searchTerm: any) => {
+    const search = searchTerm ? `&search=${searchTerm}` : "";
+    const response = await Axios.get(
+      `${API_URL}/bed?limit=Infinity&sortBy=updatedAt${search}`
+    );
+    return response.data.data;
+  };
+  export const fetchCountry = async (searchTerm: any) => {
+    const search = searchTerm ? `&search=${searchTerm}` : "";
+    const response = await Axios.get(
+      `${API_URL}/country?limit=Infinity&sortBy=updatedAt${search}`
     );
     return response.data.data;
   };
@@ -47,9 +62,9 @@ export const fetchData = async (apiUrl: string) => {
     return response.data.data;
   };
 
-  export const fetchDepartment = async (searchTerm: any, businessId:string) => {
+  export const fetchDepartment = async (searchTerm: any, organizationId:string) => {
     const search = searchTerm ? `&search=${searchTerm}` : "";
-    const filter=businessId?`business__eq=${businessId}&`:'';
+    const filter=organizationId?`organization__eq=${organizationId}&`:'';
     const response = await Axios.get(
       `${API_URL}/department?${filter}limit=Infinity&sortBy=updatedAt${search}`
     );
@@ -57,9 +72,9 @@ export const fetchData = async (apiUrl: string) => {
   };
 
 
-  export const fetchStaff = async (searchTerm: any, businessId:string) => {
+  export const fetchStaff = async (searchTerm: any, organizationId:string) => {
     const search = searchTerm ? `&search=${searchTerm}` : "";
-    const filter=businessId?`business__eq=${businessId}&`:'';
+    const filter=organizationId?`organization__eq=${organizationId}&`:'';
     const response = await Axios.get(
       `${API_URL}/staff?${filter}limit=Infinity&sortBy=updatedAt${search}`
     );
