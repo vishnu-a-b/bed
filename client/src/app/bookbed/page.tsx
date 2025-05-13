@@ -1,6 +1,7 @@
 "use client";
 import { BedDouble, Check } from "lucide-react";
 import React, { useState } from "react";
+import CheckoutButton from "./checkout";
 
 export default function Page() {
   const [selectedBeds, setSelectedBeds] = useState<any>([]);
@@ -31,7 +32,7 @@ export default function Page() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
-              {new Array(12).fill(0).map((_, index) => {
+              {new Array(15).fill(0).map((_, index) => {
                 const isSelected = selectedBeds.includes(index);
                 return (
                   <div
@@ -112,23 +113,7 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="space-y-4 mt-10">
-                <button
-                  className={`w-full py-4 rounded-xl font-medium transition-all duration-300
-                    ${
-                      selectedBeds.length > 0
-                        ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200"
-                        : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    }`}
-                  disabled={selectedBeds.length === 0}
-                >
-                  Continue to Checkout
-                </button>
-
-                <p className="text-xs text-center text-slate-500 mt-4">
-                  By continuing, you agree to our terms and conditions
-                </p>
-              </div>
+              <CheckoutButton selectedBeds={selectedBeds} />
             </div>
           </div>
         </div>

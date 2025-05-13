@@ -58,7 +58,7 @@ export default function BookingStat() {
               </button>
               <Link
                 className="bg-blue-600 py-1 text-xs rounded-lg text-white md:py-2"
-                href={"/bed-booking?country=ind&b_booked=50&b_rem=30"}
+                href={"/bookbed?country=ind&b_booked=50&b_rem=30"}
               >
                 Donate Now
               </Link>
