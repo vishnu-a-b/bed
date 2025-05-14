@@ -2,6 +2,7 @@
 import { BedDouble, Check } from "lucide-react";
 import React, { useState } from "react";
 import CheckoutButton from "./checkout";
+import Link from "next/link";
 
 export default function Page() {
   const [selectedBeds, setSelectedBeds] = useState<any>([]);
@@ -52,11 +53,19 @@ export default function Page() {
                       }`}
                     />
                     <p
-                      className={`mt-2 font-medium text-sm ${
+                      className={`mt-2 font-medium text-sm flex flex-col items-center justify-center ${
                         isSelected ? "text-blue-700" : "text-slate-600"
                       }`}
                     >
                       Bed #{index + 1}
+                      {isSelected && (
+                        <Link
+                          className="border rounded-2xl px-2 py-1 border-blue-900 text-xs border-dashed mt-1"
+                          href={`/bookbed/bed-details?bed_id=${index + 1}`}
+                        >
+                          Show Donations
+                        </Link>
+                      )}
                     </p>
 
                     {isSelected && (
