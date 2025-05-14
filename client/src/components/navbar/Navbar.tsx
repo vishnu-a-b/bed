@@ -1,5 +1,6 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { Input } from "../ui/input";
 import DarkLightToggle from "../theme/DarkLightToggle";
 import AsyncSelect from "react-select/async";
 import { SidebarTrigger } from "../ui/sidebar";
@@ -16,7 +17,9 @@ import {
 
 export default function Navbar() {
   const [staff, setStaff] = useState<any>();
-  const organizationId: any = useSelector((state: RootState) => state.organization.id);
+  const organizationId: any = useSelector(
+    (state: RootState) => state.organization.id
+  );
   const staffId: any = useSelector((state: RootState) => state.staff.id);
   const staffName: any = useSelector((state: RootState) => state.staff.name);
   const dispatch = useDispatch();
@@ -41,7 +44,7 @@ export default function Navbar() {
   // };
 
   useEffect(() => {
-    console.log(staffName)
+    console.log(staffName);
     if (staffId && staffName) {
       setStaff({ value: staffId, label: staffName });
     } else {
@@ -50,7 +53,6 @@ export default function Navbar() {
   }, [staffId, staffName]);
 
   const handleStaffChange = (selectedOption: any) => {
-    
     if (selectedOption) {
       dispatch(setStaffId(selectedOption.value));
       dispatch(setName(selectedOption.label));
