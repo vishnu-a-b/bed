@@ -42,25 +42,25 @@ export default function Page() {
                     className={`relative cursor-pointer transition-all duration-300 ease-in-out
                       ${
                         isSelected
-                          ? "bg-blue-50 border-blue-500 shadow-md transform scale-105"
-                          : "bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                          ? "bg-blue-50 border-green-500 shadow-md transform scale-105"
+                          : "bg-slate-50 border-slate-200 hover:border-green-300 hover:bg-green-50"
                       } 
                       border-2 h-36 rounded-xl flex flex-col items-center justify-center`}
                   >
                     <BedDouble
                       className={`w-12 h-12 transition-colors duration-300 ${
-                        isSelected ? "text-blue-500" : "text-slate-500"
+                        isSelected ? "text-green-500" : "text-slate-500"
                       }`}
                     />
                     <p
                       className={`mt-2 font-medium text-sm flex flex-col items-center justify-center ${
-                        isSelected ? "text-blue-700" : "text-slate-600"
+                        isSelected ? "text-green-700" : "text-slate-600"
                       }`}
                     >
                       Bed #{index + 1}
                       {isSelected && (
                         <Link
-                          className="border rounded-2xl px-2 py-1 border-blue-900 text-xs border-dashed mt-1"
+                          className="border rounded-2xl px-2 py-1 border-green-900 text-xs border-dashed mt-1"
                           href={`/bookbed/bed-details?bed_id=${index + 1}`}
                         >
                           Show Donations
@@ -69,7 +69,7 @@ export default function Page() {
                     </p>
 
                     {isSelected && (
-                      <div className="absolute top-2 right-2 bg-blue-500 rounded-full p-1">
+                      <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
@@ -100,7 +100,7 @@ export default function Page() {
 
                 {selectedBeds.length > 0 && (
                   <div className="py-3 px-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-700 font-medium">
+                    <p className="text-sm text-green-700 font-medium">
                       Selected:{" "}
                       {selectedBeds.map((bed: any) => `#${bed + 1}`).join(", ")}
                     </p>
@@ -116,7 +116,7 @@ export default function Page() {
                   <p className="text-lg font-medium text-slate-700">
                     Total Amount:
                   </p>
-                  <div className="text-xl font-bold text-blue-600">
+                  <div className="text-xl font-bold text-green-600">
                     ${totalAmount}
                   </div>
                 </div>

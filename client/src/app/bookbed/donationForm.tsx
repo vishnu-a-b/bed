@@ -27,7 +27,7 @@ export default function DonationForm() {
             Donor Type
           </Label>
           <Select onValueChange={setDonorType} value={donorType}>
-            <SelectTrigger className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            <SelectTrigger className="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
               <SelectValue placeholder="Select Type" />
             </SelectTrigger>
             <SelectContent>
@@ -51,7 +51,7 @@ export default function DonationForm() {
             </Label>
             <Input
               id="first-name"
-              className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
               placeholder="John"
             />
           </div>
@@ -64,7 +64,7 @@ export default function DonationForm() {
             </Label>
             <Input
               id="middle-name"
-              className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
               placeholder="A."
             />
           </div>
@@ -77,7 +77,7 @@ export default function DonationForm() {
             </Label>
             <Input
               id="last-name"
-              className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
               placeholder="Doe"
             />
           </div>
@@ -93,7 +93,7 @@ export default function DonationForm() {
             </Label>
             <div className="flex gap-2">
               <Select>
-                <SelectTrigger className="w-1/3 rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <SelectTrigger className="w-1/3 rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                   <SelectValue placeholder="Code" />
                 </SelectTrigger>
                 <SelectContent>
@@ -104,7 +104,7 @@ export default function DonationForm() {
               </Select>
               <Input
                 id="phone"
-                className="flex-1 rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                className="flex-1 rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                 placeholder="Phone number"
               />
             </div>
@@ -120,7 +120,7 @@ export default function DonationForm() {
             <Input
               id="email"
               type="email"
-              className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
               placeholder="example@email.com"
             />
           </div>
@@ -142,7 +142,7 @@ export default function DonationForm() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="pl-6 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="pl-6 w-full rounded-md border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
               placeholder="0.00"
             />
           </div>
@@ -154,7 +154,7 @@ export default function DonationForm() {
                 onClick={() => setAmount(preset)}
                 className={`px-3 py-1 text-sm rounded-full transition-colors ${
                   amount === preset
-                    ? "bg-blue-500 text-white"
+                    ? "bg-green-500 text-white"
                     : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                 }`}
               >
@@ -165,7 +165,7 @@ export default function DonationForm() {
         </div>
 
         <div className="pt-4">
-          <Button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200 shadow-md hover:shadow-lg">
+          <Button className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition duration-200 shadow-md hover:shadow-lg">
             Complete Donation
           </Button>
           <p className="text-xs text-center mt-3 text-gray-500">

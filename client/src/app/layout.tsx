@@ -4,6 +4,8 @@ import StoreProvider from "./StoreProvider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "@/components/ui/footer";
+import Header from "@/components/ui/header";
 
 export const metadata: Metadata = {
   title: "Staff Managmenyt App By ShanthiBhavan",
@@ -25,7 +27,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <nav className="flex justify-between items-center p-4 bg-white text-white dark:bg-black">
+            {/* <nav className="flex justify-between items-center p-4 bg-white text-white dark:bg-black">
               <div>
                 <img src={"/logo.png"} alt="logo_" width={100} height={100} />
               </div>
@@ -49,8 +51,10 @@ export default function RootLayout({
                   Login
                 </button>
               </div>
-            </nav>
+            </nav> */}
+            <Header />
             <main>{children}</main>
+            <Footer />
             <ToastContainer />
           </ThemeProvider>
         </StoreProvider>

@@ -17,7 +17,7 @@ export default function CheckoutButton({ selectedBeds }: any) {
           className={`w-full py-4 rounded-xl font-medium transition-all duration-300
                     ${
                       selectedBeds.length > 0
-                        ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200"
+                        ? "bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200"
                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
                     }`}
           disabled={selectedBeds.length === 0}
