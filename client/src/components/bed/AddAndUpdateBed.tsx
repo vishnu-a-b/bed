@@ -68,13 +68,12 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
           setValue("vcLink", data.vcLink || "");
 
           if (data.organization) {
-            const orgItems: any = await fetchSingleData(data.organization, "organization");
-            setOrganization({ value: data.organization, label: orgItems.items.name });
+            setOrganization({ value: data.organization._id, label: data.organization.name });
           }
 
           if (data.country) {
             const countryItems: any = await fetchSingleData(data.country, "country");
-            setCountry({ value: data.country, label: countryItems.items.name });
+            setCountry({ value: data.country._id, label: data.country.name });
           }
 
           if (data.head) {
@@ -127,7 +126,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       };
       console.log("Submitting form data:", bedData);
       if (bedId) {
-        const response = await update("bed", bedId, bedData);
+        const response = await update(bedData,"bed", bedId );
         if (response._id) {
           toastService.success("Bed updated successfully");
           clear();
@@ -233,7 +232,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
 
       <div>
         <Label htmlFor="amount" className="required">
-          Minimum Amount ($)
+          Cost
         </Label>
         <Input
           id="amount"

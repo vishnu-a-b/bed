@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ManagementTypes } from "../../base/enums/managementTypes";
 import ModelFilterInterface from "../../../interfaces/ModelFilterInterface";
 
 const organizationSchema = new mongoose.Schema(
@@ -7,10 +6,10 @@ const organizationSchema = new mongoose.Schema(
     name: { type: String, maxLength: 200, required: true },
     address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
     photos: [{ type: String, maxLength: 200 }],
-    managementType: {
+    management: {
       type: String,
-      maxLength: 20,
-      enum: Object.values(ManagementTypes),
+      maxLength: 200,
+      
     },
     contactMobileNumbers: [{ type: String, maxLength: 20, required: false }],
     contactLandlines: [{ type: String, maxLength: 20, required: false }],
@@ -23,7 +22,7 @@ const organizationSchema = new mongoose.Schema(
 );
 
 export const organizationFilterFields: ModelFilterInterface = {
-  filterFields: ["admin", "managementType"],
+  filterFields: ["admin", "management"],
   searchFields: ["name"],
   sortFields: ["createdAt", "updatedAt"],
 };

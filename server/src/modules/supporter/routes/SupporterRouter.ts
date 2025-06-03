@@ -17,6 +17,14 @@ import RolesEnum from "../../base/enums/roles";
 const router = express.Router();
 const controller = new SupporterController();
 router.get("/get-all-data", supporterListDoc, controller.getAllData);
+router.get("/get-country-data/:id", supporterListDoc, controller.getCountryDetails);
+router.get("/get-bed-data/:id", supporterListDoc, controller.getBedDetails);
+router.post(
+  "/",
+  supporterCreateDoc,
+  supporterCreateValidator,
+  controller.create
+);
 router.use(authenticateUser);
 
 const authorization = authorizeUser({ allowedRoles: [] });
@@ -35,13 +43,7 @@ router.get(
 
 router.get("/user/:id", supporterDetailsDoc, controller.getWithUserId);
 router.get("/:id", supporterDetailsDoc, controller.getOne);
-router.post(
-  "/",
-  supporterCreateDoc,
-  authorization,
-  supporterCreateValidator,
-  controller.create
-);
+
 router.put(
   "/:id",
   supporterUpdateDoc,

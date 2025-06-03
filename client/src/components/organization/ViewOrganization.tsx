@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Axios } from "@/utils/api/apiAuth";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { columns, Country } from "./ColumnsCountry";
+import { columns, Organization } from "./ColumnsOrganization";
 
-export default function ViewCountry() {
-  const [data, setData] = useState<Country[]>([]);
+export default function ViewOrganization() {
+  const [data, setData] = useState<Organization[]>([]);
   const [totalRows, setTotalRows] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -17,7 +17,6 @@ export default function ViewCountry() {
   const refresh: boolean = useSelector(
     (state: RootState) => state.update.refresh
   );
-  const countryId: any = useSelector((state: RootState) => state.country.id);
   const organizationId: any = useSelector(
     (state: RootState) => state.organization.id
   );
@@ -51,8 +50,8 @@ export default function ViewCountry() {
   async function getData() {
     try {
       let isActiveFilter = "";
-      if (countryId) {
-        const response = await Axios.get(`/country/${countryId}`);
+      if (organizationId) {
+        const response = await Axios.get(`/organization/${organizationId}`);
         let items = [];
         items[0] = response.data.data;
         setTotalRows(1);
@@ -63,20 +62,15 @@ export default function ViewCountry() {
       } else if (statusFilter === "InActive") {
         isActiveFilter = "isActive__eq=false&";
       }
-      
-      let orgFilter = "";
-      if (organizationId) {
-        orgFilter = `organization__eq=${organizationId}&`;
-      }
 
       const searchParam = debouncedSearch ? `search=${debouncedSearch}&` : "";
       const response = await Axios.get(
-        `/country?limit=${pageSize}&skip=${
+        `/organization?limit=${pageSize}&skip=${
           pageIndex * pageSize
-        }&${orgFilter}${isActiveFilter}${searchParam}`
+        }&${isActiveFilter}${searchParam}`
       );
       const items = response.data.data;
-      console.log("Fetched items:", items);
+
       setTotalRows(items.total);
       return items.items;
     } catch (error) {
@@ -91,7 +85,7 @@ export default function ViewCountry() {
       setData(result);
     }
     fetchData();
-  }, [pageIndex, pageSize, debouncedSearch, statusFilter, refresh, countryId, organizationId]);
+  }, [pageIndex, pageSize, debouncedSearch, statusFilter, refresh, organizationId]);
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -102,7 +96,7 @@ export default function ViewCountry() {
             type="text"
             value={searchTerm}
             onChange={handleInputChange}
-            placeholder="Search countries..."
+            placeholder="Search organizations..."
             className="mb-4 p-2 border rounded"
           />
           <select
@@ -119,7 +113,7 @@ export default function ViewCountry() {
           </select>
         </div>
         <DataTable
-          url="country"
+          url="organization"
           columns={columns}
           data={data}
           totalRows={totalRows}

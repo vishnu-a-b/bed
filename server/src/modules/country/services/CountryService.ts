@@ -11,6 +11,7 @@ export default class CountryService {
     skip = skip ? skip : 0;
 
     const countrys = await Country.find(filterQuery)
+      .populate(["organization","head"])
       .sort(sort)
       .limit(limit)
       .skip(skip);

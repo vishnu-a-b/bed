@@ -1,7 +1,6 @@
 import { body } from "express-validator";
 import CustomValidators from "../../base/customValidators/customValidators";
 import { Address } from "../../address/models/Address";
-import { ManagementTypes } from "../../base/enums/managementTypes";
 import { User } from "../../user/models/User";
 
 export const organizationCreateValidator = [
@@ -21,7 +20,6 @@ export const organizationCreateValidator = [
         return Promise.reject();
       }
     }),
-  body("managementType").optional().isIn(Object.values(ManagementTypes)),
   body("contactMobileNumbers")
     .optional()
     .isArray()

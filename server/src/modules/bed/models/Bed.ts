@@ -11,6 +11,7 @@ const bedSchema = new mongoose.Schema(
     maxNoContributer: { type: Number,default:15 },
     amount: { type: Number },
     patientName: { type: String },
+    address: { type: String },
     head: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     vcLink: {
       type: String,

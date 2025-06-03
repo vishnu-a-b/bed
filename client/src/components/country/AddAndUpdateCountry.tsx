@@ -209,7 +209,7 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           )}
         </div>
 
-        <div>
+        {/* <div>
           <Label htmlFor="flag">Flag</Label>
           <MultiImageDropzone
             value={fileStates}
@@ -228,7 +228,7 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           {errors.flag && (
             <p className="text-red-500 text-sm">{errors.flag.message}</p>
           )}
-        </div>
+        </div> */}
 
         <div>
           <Label htmlFor="organization">Organization</Label>

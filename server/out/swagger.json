@@ -1355,7 +1355,7 @@
                               "type": "string"
                             }
                           },
-                          "managementType": {
+                          "management": {
                             "type": "string",
                             "example": "string"
                           },
@@ -1442,7 +1442,7 @@
             }
           },
           {
-            "name": "managementType",
+            "name": "management",
             "in": "formData",
             "required": false,
             "type": "string",
@@ -1565,7 +1565,7 @@
                         "type": "string"
                       }
                     },
-                    "managementType": {
+                    "management": {
                       "type": "string",
                       "example": "string"
                     },
@@ -1655,7 +1655,7 @@
             }
           },
           {
-            "name": "managementType",
+            "name": "management",
             "in": "formData",
             "required": false,
             "type": "string",
@@ -1841,7 +1841,7 @@
                               "type": "string"
                             }
                           },
-                          "managementType": {
+                          "management": {
                             "type": "string",
                             "example": "string"
                           },
@@ -2832,18 +2832,6 @@
           "supporter"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "type": "string"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Endpoint to get supporter list",
@@ -2933,7 +2921,275 @@
         ]
       }
     },
+    "/v1/supporter/get-country-data/{id}": {
+      "get": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoint to get supporter list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "user": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "country": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "organization": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "roles": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "joinDate": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae4ffc348ed682"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/supporter/get-bed-data/{id}": {
+      "get": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoint to get supporter list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "user": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "country": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "organization": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "roles": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "joinDate": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae4ffc348ed682"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/v1/supporter/": {
+      "post": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "parameter_name",
+            "in": "body",
+            "description": "Endpoint to create a supporter",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "user": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "country": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "organization": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "role": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "joinDate": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
       "get": {
         "tags": [
           "supporter"
@@ -3031,62 +3287,6 @@
                 "name": "main"
               }
             }
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "supporter"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "parameter_name",
-            "in": "body",
-            "description": "Endpoint to create a supporter",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "user": {
-                  "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
-                },
-                "country": {
-                  "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
-                },
-                "organization": {
-                  "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
-                },
-                "role": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "type": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "joinDate": {
-                  "type": "string",
-                  "example": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
           }
         },
         "security": [

@@ -94,6 +94,7 @@ export const fetchData = async (apiUrl: string) => {
     const response = await Axios.get(
       `${API_URL}/user?limit=Infinity&sortBy=updatedAt${search}`
     );
+    console.log(response);
     return response.data.data;
   };
 

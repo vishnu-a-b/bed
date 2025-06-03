@@ -29,7 +29,7 @@ export const organizationCreateDoc = async (
             }
           }
 
-          #swagger.parameters["managementType"] = {
+          #swagger.parameters["management"] = {
             "in": "formData",
             "required": false,
             "type": "string",

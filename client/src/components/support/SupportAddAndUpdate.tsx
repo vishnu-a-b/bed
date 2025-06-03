@@ -16,14 +16,12 @@ import { update } from "@/utils/api/updateData";
 import { create } from "@/utils/api/create";
 import AsyncSelect from "react-select/async";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/lib/store";
 import { genderOptions } from "@/constants/selectOptions";
 import { clearUpdate } from "@/lib/slice/updateSlice";
 import { deleteData } from "@/utils/api/delete";
 import { RoleOption } from "@/types/api.interface";
-import { FileState, MultiImageDropzone } from "../ui/Multi-Image";
-import { set } from "lodash";
-import { start } from "repl";
+import { add } from "lodash";
+
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }).max(100),
@@ -35,6 +33,7 @@ const supporterSchema = z.object({
     .refine((value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
       message: "Invalid email format",
     }),
+  address: z.string().optional(),
   role: z.string().optional(),
   userId: z.string().optional(),
   dateOfBirth: z.string().optional(),
@@ -129,6 +128,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           const data = items.items;
           console.log(data.user?.isActive);
           setValue("name", data.name);
+          setValue("address", data.address || "");
           setValue("mobileNo", data.user?.mobileNo);
           setValue("email", data.user?.email);
           setValue("amount", data.amount);
@@ -205,6 +205,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         ...(data.dateOfBirth && { dateOfBirth: data.dateOfBirth }),
         ...(gender && { gender: gender.value }),
         ...(maritalStatus && { maritalStatus: maritalStatus.value }),
+        
         isActive: data.isActive,
         ...(supporterId ? {} : { password }), // Include password only if creating a new user
       };
@@ -238,6 +239,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           ...(data.startDate && { startDate: data.startDate }),
           ...(data.endDate && { endDate: data.endDate }),
           ...(data.amount && { amount: data.amount }),
+          ...(data.address && { address: data.address }),
           ...(type.value && { type: type.value }),
           isActive: data.isActive,
           role: "regular-supporter",
@@ -267,6 +269,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
             ...(data.amount && { amount: data.amount }),
             ...(data.supporterRole && { role: data.supporterRole }),
             ...(type.value && { type: type.value }),
+            ...(data.address && { address: data.address }),
             isActive: data.isActive,
             user: response1._id,
             role: "regular-supporter",
@@ -378,6 +381,20 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         />
         {errors.email && (
           <p className="text-red-500 text-sm">{errors.email.message}</p>
+        )}
+      </div>
+      <div className="col-span-1 lg:col-span-2">
+        <Label htmlFor="address" className="required">
+          Address
+        </Label>
+        <Input
+          id="address"
+          {...register("address")}
+          placeholder="Enter address"
+          className={`w-full ${errors.address ? "border-red-500" : ""}`}
+        />
+        {errors.address && (
+          <p className="text-red-500 text-sm">{errors.address.message}</p>
         )}
       </div>
       <div>

@@ -8,19 +8,24 @@ const bcrypt = require("bcryptjs");
 
 export default class UserService {
   list = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
-    limit = limit ? limit : 10;
-    skip = skip ? skip : 0;
-    const users = await User.find(filterQuery)
-      .sort(sort)
-      .limit(limit)
-      .skip(skip);
-    const total = await User.countDocuments(filterQuery);
-    return {
-      total,
-      limit,
-      skip,
-      items: users,
-    };
+    try {
+      limit = limit ? limit : 10;
+      skip = skip ? skip : 0;
+      const users = await User.find(filterQuery)
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+      const total = await User.countDocuments(filterQuery);
+      return {
+        total,
+        limit,
+        skip,
+        items: users,
+      };
+    } catch (e: any) {
+      console.log(e);
+      throw new ValidationFailedError({ error: "error in user list" });
+    }
   };
 
   filterByRole = async (

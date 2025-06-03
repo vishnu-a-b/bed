@@ -10,7 +10,7 @@ import SupporterService from "../services/SupporterService";
 export default class SupporterController extends BaseController {
   service = new SupporterService();
   create = async (req: Request, res: Response, next: NextFunction) => {
-    console.log("create supporter",req.body);
+    console.log("create supporter", req.body);
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -41,13 +41,8 @@ export default class SupporterController extends BaseController {
     }
   };
 
-  getAllData = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getAllData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      
       const data = await this.service.findAllData();
 
       this.sendSuccessResponseList(res, 200, { data });
@@ -56,6 +51,34 @@ export default class SupporterController extends BaseController {
     }
   };
 
+  // In your controller
+  getCountryDetails = async (req: Request, res: Response) => {
+    try {
+      const countryId = req.params.id; // Get from URL parameter
+      const result = await this.service.findOneCountryData(countryId);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "An unknown error occurred" });
+      }
+    }
+  };
+
+  getBedDetails = async (req: Request, res: Response) => {
+    try {
+      const bedId = req.params.id; // Get from URL parameter
+      const result = await this.service.findOneBedData(bedId);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "An unknown error occurred" });
+      }
+    }
+  };
   countTotalDocuments = async (
     req: Request,
     res: Response,

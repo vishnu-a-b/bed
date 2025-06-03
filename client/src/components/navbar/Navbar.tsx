@@ -64,21 +64,11 @@ export default function Navbar() {
 
   return (
     <div className=" bg-sidebar">
-      <nav className="flex justify-between p-2 w-full items-center">
+      <nav className="flex justify-end p-2 w-full items-center">
         <div className=" md:hidden sm:flex flex-nowrap">
           <SidebarTrigger />
         </div>
-        <AsyncSelect
-          className="min-w-60 z-50"
-          cacheOptions
-          loadOptions={loadStaffOptions}
-          defaultOptions
-          value={staff}
-          placeholder="Select Staff"
-          onChange={handleStaffChange}
-          classNamePrefix="select"
-          isClearable
-        />
+        
         <DarkLightToggle />
       </nav>
       <hr></hr>

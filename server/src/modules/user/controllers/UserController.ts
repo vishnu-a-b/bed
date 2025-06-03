@@ -27,6 +27,7 @@ export default class UserController extends BaseController {
       });
       this.sendSuccessResponseList(res, 200, { data });
     } catch (e) {
+      console.log("error in user list", e);
       next(e);
     }
   };

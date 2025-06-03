@@ -22,7 +22,7 @@ const router = express.Router();
 
 const controller = new UserController();
 
-router.use(authenticateUser);
+
 
 const multiUpload = multer({
   storage: multerFileStorageForUserData,
@@ -42,7 +42,6 @@ const uploadMethod = (req: Request, res: Response, next: NextFunction) => {
 router.get(
   "/",
   setFilterParams(userFilterFields),
-  authorizeUser({ allowedRoles: [] }),
   userListDoc,
   controller.getList
 );
@@ -50,18 +49,19 @@ router.get(
 router.get(
   "/filter-by-role/:slug",
   setFilterParams(userFilterFields),
-  authorizeUser({ allowedRoles: [] }),
   userListDoc,
   controller.filterByRole
 );
 router.post(
   "/",
   uploadMethod,
-  authorizeUser({ allowedRoles: [] }),
   userCreateValidator,
   userCreateDoc,
   controller.create
 );
+
+router.use(authenticateUser);
+
 router.get(
   "/:id",
   authorizeUser({ allowedRoles: [] }),
@@ -72,7 +72,6 @@ router.put(
   "/:id",
   authorizeUser({ allowedRoles: [] }),
   userUpdateDoc,
-  uploadMethod,
   userUpdateValidator,
   controller.update
 );

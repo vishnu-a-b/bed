@@ -29,6 +29,7 @@ export const userCreateValidator = [
     }),
   body("email").optional().isEmail().isLength({ max: 100 }),
   body("password")
+    .optional()
     .custom(CustomValidators.isNotEmptyAndString)
     .bail()
     .custom((password: any) => {
@@ -41,7 +42,7 @@ export const userCreateValidator = [
     }),
 
   body("dateOfBirth").optional().isISO8601(),
-  body("gender").isIn(Object.values(Genders)),
+  body("gender").optional().isIn(Object.values(Genders)),
   body("maritalStatus").optional().isIn(Object.values(MaritalStatuses)),
   body("roles")
     .optional()

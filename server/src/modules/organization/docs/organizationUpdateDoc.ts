@@ -26,7 +26,7 @@ export const organizationUpdateDoc = async (
               "type": "file",
             }
           }
-          #swagger.parameters["managementType"] = {
+          #swagger.parameters["management"] = {
             "in": "formData",
             "required": false,
             "type": "string",

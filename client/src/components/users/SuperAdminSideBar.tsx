@@ -14,6 +14,11 @@ import { fetchData } from "@/utils/api/fetchData";
 const rol = "super-admin";
 const items = [
   {
+    title: "Organization",
+    url: "organization",
+    icon: SquareUserRound,
+  },
+  {
     title: "Country",
     url: "country",
     icon: SquareUserRound,

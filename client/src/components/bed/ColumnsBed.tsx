@@ -5,6 +5,7 @@ import { setBedId, setBedData } from "@/lib/slice/bedSlice";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
+import toastService from "@/utils/toastService";
 
 export interface Bed {
   _id: string;
@@ -15,9 +16,11 @@ export interface Bed {
   vcLink?: string;
   organization: {
     name: string;
+    vcLink?: string;
   };
   country: {
     name: string;
+    currency: string;
   };
   head: {
     name: string;
@@ -29,28 +32,94 @@ export const columns: ColumnDef<Bed>[] = [
     accessorKey: "bedNo",
     header: "Bed Number",
   },
-  {
-    accessorKey: "patientName",
-    header: "Patient Name",
-    cell: ({ row }) => row.original.patientName || "Available",
-  },
-  {
-    accessorKey: "organization.name",
-    header: "Organization",
-  },
+  // {
+  //   accessorKey: "patientName",
+  //   header: "Patient Name",
+  //   cell: ({ row }) => row.original.patientName || "",
+  // },
+  // {
+  //   accessorKey: "organization.name",
+  //   header: "Organization",
+  // },
   {
     accessorKey: "country.name",
     header: "Country",
   },
-  {
-    accessorKey: "maxNoContributer",
-    header: "Max Contributors",
-  },
+  // {
+  //   accessorKey: "maxNoContributer",
+  //   header: "Max Contributors",
+  // },
   {
     accessorKey: "amount",
     header: "Amount",
-    cell: ({ row }) => `$${row.original.amount.toLocaleString()}`,
+    cell: ({ row }) =>
+      `${
+        row.original.country.currency
+      } ${row.original.amount.toLocaleString()}`,
   },
+  {
+    accessorKey: "link",
+    header: "Link",
+    cell: ({ row }) => {
+      const org = row.original.organization;
+      const id = row.original._id;
+      const link = org?.vcLink && id ? `${org.vcLink}bed/bed=${id}` : "";
+
+      const handleCopy = async () => {
+        if (!link) {
+          toastService.error("Link not available.");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(link);
+          toastService.success("Link copied to clipboard!");
+        } catch (err) {
+          toastService.error("Failed to copy link.");
+        }
+      };
+
+      const handleShare = async () => {
+        if (!link) {
+          toastService.error("Link not available.");
+          return;
+        }
+
+        const shareData = {
+          title: document.title,
+          text: "Check this out!",
+          url: link,
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+          } catch (err) {
+            toastService.error("Sharing failed.");
+            console.error("Sharing failed:", err);
+          }
+        } else {
+          const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
+            `${shareData.text} ${shareData.url}`
+          )}`;
+          window.open(whatsappURL, "_blank");
+        }
+      };
+
+      return (
+        <div className="flex flex-col gap-1 max-w-[180px]">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              Copy
+            </Button>
+            {/* <Button variant="outline" size="sm" onClick={handleShare}>
+              Share
+            </Button> */}
+          </div>
+        </div>
+      );
+    },
+  },
+
   {
     accessorKey: "viewDetails",
     header: "Actions",
@@ -90,7 +159,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
           <p>Country: {data.country?.name || "N/A"}</p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-2">
         <div>
           <p className="font-medium">Contributors</p>
@@ -101,13 +170,17 @@ const ViewDetails = ({ data }: { data: Bed }) => {
           <p className="font-medium">Management</p>
           <p>Head: {data.head?.name || "N/A"}</p>
           {data.vcLink && (
-            <a href={data.vcLink} target="_blank" className="text-blue-500 hover:underline">
+            <a
+              href={data.vcLink}
+              target="_blank"
+              className="text-blue-500 hover:underline"
+            >
               Video Conference Link
             </a>
           )}
         </div>
       </div>
-      
+
       <div className="flex gap-2 flex-wrap pt-4">
         <Button
           className="text-sm"
@@ -119,7 +192,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
         >
           View Details
         </Button>
-        
+
         <Button
           className="text-sm"
           onClick={(e) => {
@@ -129,7 +202,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
         >
           Edit
         </Button>
-        
+
         {/* <Button
           className="text-sm"
           onClick={(e) => {
@@ -144,11 +217,11 @@ const ViewDetails = ({ data }: { data: Bed }) => {
         >
           {data.patientName ? "Change Patient" : "Assign Patient"}
         </Button> */}
-        
+
         {data.vcLink && (
           <Button
             className="text-sm"
-            onClick={() => window.open(data.vcLink, '_blank')}
+            onClick={() => window.open(data.vcLink, "_blank")}
           >
             Join Meeting
           </Button>
