@@ -5,6 +5,8 @@ export const organizationCreateDoc = async (
   res: Response,
   next: NextFunction
 ) => {
+  
+
   /*  
           #swagger.tags = ['organization']
           #swagger.consumes = ['multipart/form-data']
@@ -27,7 +29,7 @@ export const organizationCreateDoc = async (
             }
           }
 
-          #swagger.parameters["managementType"] = {
+          #swagger.parameters["management"] = {
             "in": "formData",
             "required": false,
             "type": "string",

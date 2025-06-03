@@ -45,7 +45,5 @@ export const staffCreateValidator = [
       return Promise.reject();
     }
   }),
-  body("joinDate").isISO8601(),
   body("role").isIn(Object.values(StaffRoles)),
-  body("type").isIn(Object.values(StaffTypes)),
 ];

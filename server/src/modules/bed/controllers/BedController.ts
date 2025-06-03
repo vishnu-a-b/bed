@@ -41,26 +41,7 @@ export default class BedController extends BaseController {
     }
   };
 
-  getWithAttendance = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const { limit, skip } = req.query;
-      const { filterQuery, sort } = req;
-      const data = await this.service.findAndGetAttendance({
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      });
 
-      this.sendSuccessResponseList(res, 200, { data });
-    } catch (e: any) {
-      next(e);
-    }
-  };
 
   countTotalDocuments = async (
     req: Request,

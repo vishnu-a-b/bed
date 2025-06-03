@@ -1,7 +1,16 @@
-import { fetchBusiness, fetchDepartment, fetchDesignation, fetchUsers } from "./fetchData";
+import { fetchOrganization, fetchDepartment, fetchDesignation, fetchUsers, fetchCountry } from "./fetchData";
 
-export const loadBusinessOptions = async (inputValue: string) => {
-  const response = await fetchBusiness(inputValue);
+export const loadOrganizationOptions = async (inputValue: string) => {
+  const response = await fetchOrganization(inputValue);
+  const data: any[] = response.items;
+
+  return data.map((busines: any) => ({
+    id: busines._id,
+    label: busines.name,
+  }));
+};
+export const loadCountryOptions = async (inputValue: string) => {
+  const response = await fetchCountry(inputValue);
   const data: any[] = response.items;
 
   return data.map((busines: any) => ({

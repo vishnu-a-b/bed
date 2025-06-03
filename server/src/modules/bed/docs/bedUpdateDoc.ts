@@ -11,13 +11,16 @@ export const bedUpdateDoc = async (
             in: 'body',
             description: 'Endpoint to update a bed',
             schema: {
-              schema: {
-              name: "string",
-              country: "65cd9d8d5cae5ffc348ed638",
+              _id: "65cd9d8d5cae5ffc348ed638",
+              bedNo: 101,
+              patientName: "John Doe",
+              maxNoContributer: 15,
+              amount: 100,
+              vcLink: "https://meet.example.com/room123",
               organization: "65cd9d8d5cae5ffc348ed638",
-              role: "string",
-              joinDate: "string",
-            }
+              country: "65cd9d8d5cae5ffc348ed639",
+              head:  "65cd9d8d5cae5ffc348ed640",
+              
             }
           } 
           

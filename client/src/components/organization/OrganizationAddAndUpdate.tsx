@@ -22,6 +22,7 @@ import { FileState, MultiImageDropzone } from "../ui/Multi-Image";
 // Zod schema for validation
 const combinedSchema = z.object({
   address: z.string().min(1, { message: "Address is required" }).max(200),
+  management: z.string().optional(),
   pinCode: z.string().min(1, { message: "Pin Code is required" }).max(10),
   latitude: z.number({ message: "Expected a Number" }).optional(),
   longitude: z.number({ message: "Expected a Number" }).optional(),
@@ -68,6 +69,7 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
           setValue("latitude", data.address?.latitude || undefined);
           setValue("longitude", data.address?.longitude || undefined);
           setValue("vcLink", data.vcLink || "");
+          setValue("management", data.management || "");
           setPhoneNumbers(
             data.contactMobileNumbers?.length === 0
               ? [""]
@@ -109,6 +111,7 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
     setValue("pinCode", "");
     setValue("latitude", undefined);
     setValue("longitude", undefined);
+    setValue("management", "");
     setValue("vcLink", "");
     setUser(undefined);
     dispatch(clearUpdate());
@@ -167,6 +170,7 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
             contactMobileNumbers: phoneNumbers,
             address: adressId1,
           }),
+          ...(data.management && { management: data.management }),
           ...(user && { admin: user.value }),
         };
         console.log(organizationData);
@@ -195,6 +199,7 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
             ...(phoneNumbers.length > 0 && {
               contactMobileNumbers: phoneNumbers,
             }),
+            ...(data.management && { management: data.management }),
             ...(user && { admin: user.value }),
           };
 
@@ -250,6 +255,21 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
             <p className="text-red-500 text-sm">{errors.name.message}</p>
           )}
         </div>
+        <div className="col-span-1 lg:col-span-2">
+          <Label htmlFor="management">Management</Label>
+          <Input
+            id="management"
+            {...register("management")}
+            placeholder="Enter management name"
+            className={`w-full border rounded p-2 ${
+              errors.management ? "border-red-500" : "border-gray-300"
+            } bg-white dark:bg-gray-800 dark:text-white`}
+          />
+          {errors.management && (
+            <p className="text-red-500 text-sm">{errors.management.message}</p>
+          )}
+        </div>
+      
 
         <div className="col-span-1 lg:col-span-2">
           <Label htmlFor="address" className="required">

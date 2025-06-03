@@ -18,4 +18,4 @@ export const countryFilterFields: ModelFilterInterface = {
   sortFields: ["createdAt", "updatedAt"],
 };
 
-export const Country = mongoose.model("country", countrySchema);
+export const Country = mongoose.model("Country", countrySchema);

@@ -18,8 +18,8 @@ export default function ViewStaff() {
     (state: RootState) => state.update.refresh
   );
   const staffId: any = useSelector((state: RootState) => state.staff.id);
-  const businessId: any = useSelector(
-    (state: RootState) => state.business.id
+  const organizationId: any = useSelector(
+    (state: RootState) => state.organization.id
   );
   // Debounce the search input
   const debounce = (func: Function, delay: number) => {

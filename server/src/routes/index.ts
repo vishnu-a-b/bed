@@ -9,6 +9,7 @@ import CountryRouter from "../modules/country/routes/CountryRouter";
 import StaffRouter from "../modules/staff/routes/StaffRouter";
 import BedRouter from "../modules/bed/routes/BedRouter";
 import OrganizationRouter from "../modules/organization/routes/Organization";
+import SupporterRouter from "../modules/supporter/routes/SupporterRouter";
 
 
 
@@ -23,6 +24,7 @@ router.use("/v1/address/", AddressRouter);
 router.use("/v1/organization/", OrganizationRouter);
 router.use("/v1/country/", CountryRouter);
 router.use("/v1/staff/", StaffRouter);
+router.use("/v1/supporter/", SupporterRouter);
 router.use("/v1/bed/", BedRouter);
 
 

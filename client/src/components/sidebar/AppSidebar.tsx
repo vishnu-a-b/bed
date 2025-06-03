@@ -92,69 +92,13 @@ export function AppSidebar(props: any) {
                 <SidebarTrigger className="" />
                 <a href="#">
                   <span className=" font-bold text-2xl text-center w-full">
-                    HRMS
+                    Bed Donation
                   </span>
                 </a>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Building2 className="size-4" />
-                  </div>
-                  <div className="flex flex-col gap-0.5 leading-none">
-                    {/* <span className="font-semibold">Organization</span> */}
-                    <span className=" font-bold">{selectedVersion.label}</span>
-                  </div>
-
-                  <ChevronsUpDown className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width]"
-                align="start"
-              >
-                {data.items.map((item: any) => (
-                  <DropdownMenuItem key={item._id}>
-                    <Link
-                      href={"/" + rol}
-                      className="w-full"
-                      onClick={() => {
-                        dispatch(setOrganizationId(item._id));
-                        dispatch(setOrganizationName(item.name));
-                        clearStaffId();
-                        setSelectedVersion({ id: item._id, label: item.name });
-                        dispatch(changeLink(""));
-                      }}
-                    >
-                      {item.name}{" "}
-                      {item._id === selectedVersion && (
-                        <Check className="ml-auto" />
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem>
-                  <Button
-                    className=" w-full"
-                    onClick={() => {
-                      dispatch(clearOrganizationId());
-                    }}
-                  >
-                    <Link href={"/" + rol} className="w-full h-full">
-                      Create New Organization
-                    </Link>
-                  </Button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
+          
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>

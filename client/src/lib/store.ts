@@ -6,6 +6,9 @@ import staffReducer from './slice/staffSlice';
 import organizationReducer from './slice/organizationSlice';
 import employeeFilterReducer from './slice/employeeFilterSlice';
 import updateReducer from './slice/updateSlice';
+import countryReducer from './slice/countrySlice';
+import bedReducer from './slice/bedSlice';
+import supporterReducer from './slice/supporterSlice';
 
 export const makeStore = () => {
   return configureStore({
@@ -17,6 +20,9 @@ export const makeStore = () => {
       organization: organizationReducer,
       employeeFilter: employeeFilterReducer,
       update: updateReducer,
+      country: countryReducer,
+      bed: bedReducer,
+      supporter: supporterReducer,
     },
   });
 };

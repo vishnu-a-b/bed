@@ -1355,7 +1355,7 @@
                               "type": "string"
                             }
                           },
-                          "managementType": {
+                          "management": {
                             "type": "string",
                             "example": "string"
                           },
@@ -1442,7 +1442,7 @@
             }
           },
           {
-            "name": "managementType",
+            "name": "management",
             "in": "formData",
             "required": false,
             "type": "string",
@@ -1565,7 +1565,7 @@
                         "type": "string"
                       }
                     },
-                    "managementType": {
+                    "management": {
                       "type": "string",
                       "example": "string"
                     },
@@ -1655,7 +1655,7 @@
             }
           },
           {
-            "name": "managementType",
+            "name": "management",
             "in": "formData",
             "required": false,
             "type": "string",
@@ -1841,7 +1841,7 @@
                               "type": "string"
                             }
                           },
-                          "managementType": {
+                          "management": {
                             "type": "string",
                             "example": "string"
                           },
@@ -1994,28 +1994,45 @@
           "country"
         ],
         "description": "",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
-            "name": "parameter_name",
-            "in": "body",
-            "description": "Endpoint to create a country",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "organization": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "head": {
-                  "type": "string",
-                  "example": "string"
-                }
-              }
-            }
+            "name": "name",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Name of the country"
+          },
+          {
+            "name": "organization",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "ID of the associated organization"
+          },
+          {
+            "name": "flag",
+            "in": "formData",
+            "required": false,
+            "type": "file",
+            "description": "Country flag image file"
+          },
+          {
+            "name": "currency",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Currency code (e.g., USD, EUR)",
+            "example": "USD"
+          },
+          {
+            "name": "head",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "ID of the country head/user"
           }
         ],
         "responses": {
@@ -2809,27 +2826,15 @@
         ]
       }
     },
-    "/v1/bed/": {
+    "/v1/supporter/get-all-data": {
       "get": {
         "tags": [
-          "bed"
+          "supporter"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "type": "string"
-          }
-        ],
         "responses": {
           "200": {
-            "description": "Endpoint to get bed list",
+            "description": "Endpoint to get supporter list",
             "schema": {
               "type": "object",
               "properties": {
@@ -2914,17 +2919,231 @@
             "JWT": []
           }
         ]
-      },
+      }
+    },
+    "/v1/supporter/get-country-data/{id}": {
+      "get": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoint to get supporter list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "user": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "country": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "organization": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "roles": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "joinDate": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae4ffc348ed682"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/supporter/get-bed-data/{id}": {
+      "get": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoint to get supporter list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "user": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "country": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "organization": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "roles": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "joinDate": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae4ffc348ed682"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/supporter/": {
       "post": {
         "tags": [
-          "bed"
+          "supporter"
         ],
         "description": "",
         "parameters": [
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to create a bed",
+            "description": "Endpoint to create a supporter",
             "schema": {
               "type": "object",
               "properties": {
@@ -2970,30 +3189,10 @@
             "JWT": []
           }
         ]
-      }
-    },
-    "/v1/bed/count-documents": {
+      },
       "get": {
         "tags": [
-          "bed"
-        ],
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "Endpoint to get total beds count"
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
-    },
-    "/v1/bed/get-attendance": {
-      "get": {
-        "tags": [
-          "bed"
+          "supporter"
         ],
         "description": "",
         "parameters": [
@@ -3010,7 +3209,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get bed list",
+            "description": "Endpoint to get supporter list",
             "schema": {
               "type": "object",
               "properties": {
@@ -3097,10 +3296,28 @@
         ]
       }
     },
-    "/v1/bed/user/{id}": {
+    "/v1/supporter/count-documents": {
       "get": {
         "tags": [
-          "bed"
+          "supporter"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Endpoint to get total supporters count"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/supporter/user/{id}": {
+      "get": {
+        "tags": [
+          "supporter"
         ],
         "description": "",
         "parameters": [
@@ -3113,7 +3330,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get bed details",
+            "description": "Endpoint to get supporter details",
             "schema": {
               "type": "object",
               "properties": {
@@ -3180,10 +3397,10 @@
         ]
       }
     },
-    "/v1/bed/{id}": {
+    "/v1/supporter/{id}": {
       "get": {
         "tags": [
-          "bed"
+          "supporter"
         ],
         "description": "",
         "parameters": [
@@ -3196,7 +3413,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get bed details",
+            "description": "Endpoint to get supporter details",
             "schema": {
               "type": "object",
               "properties": {
@@ -3264,7 +3481,7 @@
       },
       "put": {
         "tags": [
-          "bed"
+          "supporter"
         ],
         "description": "",
         "parameters": [
@@ -3277,7 +3494,7 @@
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to update a bed",
+            "description": "Endpoint to update a supporter",
             "schema": {
               "type": "object",
               "properties": {
@@ -3305,6 +3522,467 @@
                       "example": "string"
                     }
                   }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "supporter"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed/": {
+      "get": {
+        "tags": [
+          "Bed"
+        ],
+        "summary": "Get list of beds with pagination",
+        "description": "Endpoint to retrieve a paginated list of beds with filtering options",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items per page",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "type": "integer",
+            "default": 0
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term (filters by bed number or patient name)",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "organization",
+            "in": "query",
+            "description": "Filter by organization ID",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "Filter by country ID",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bedNo": {
+                            "type": "number",
+                            "example": 101
+                          },
+                          "patientName": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "maxNoContributer": {
+                            "type": "number",
+                            "example": 15
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 100
+                          },
+                          "vcLink": {
+                            "type": "string",
+                            "example": "https://meet.example.com/room123"
+                          },
+                          "organization": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "65cd9d8d5cae5ffc348ed638"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "General Hospital"
+                              }
+                            }
+                          },
+                          "country": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "65cd9d8d5cae5ffc348ed639"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "United States"
+                              }
+                            }
+                          },
+                          "head": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "65cd9d8d5cae5ffc348ed640"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Dr. Smith"
+                              }
+                            }
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Bed"
+        ],
+        "summary": "Create or update a bed",
+        "description": "",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Organization ID"
+          },
+          {
+            "name": "country",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Country ID"
+          },
+          {
+            "name": "bedNo",
+            "in": "formData",
+            "required": true,
+            "type": "number",
+            "description": "Bed number"
+          },
+          {
+            "name": "maxNoContributer",
+            "in": "formData",
+            "type": "number",
+            "default": 15,
+            "description": "Maximum number of contributors"
+          },
+          {
+            "name": "amount",
+            "in": "formData",
+            "type": "number",
+            "description": "Minimum contribution amount"
+          },
+          {
+            "name": "patientName",
+            "in": "formData",
+            "type": "string",
+            "description": "Patient name (optional)"
+          },
+          {
+            "name": "head",
+            "in": "formData",
+            "type": "string",
+            "description": "Head user ID"
+          },
+          {
+            "name": "vcLink",
+            "in": "formData",
+            "type": "string",
+            "description": "Video conference link (optional)"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed/count-documents": {
+      "get": {
+        "tags": [
+          "bed"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Endpoint to get total beds count"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed/{id}": {
+      "get": {
+        "tags": [
+          "bed"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoint to get bed details",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "65cd9d8d5cae5ffc348ed638"
+                    },
+                    "bedNo": {
+                      "type": "number",
+                      "example": 101
+                    },
+                    "patientName": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "maxNoContributer": {
+                      "type": "number",
+                      "example": 15
+                    },
+                    "amount": {
+                      "type": "number",
+                      "example": 100
+                    },
+                    "vcLink": {
+                      "type": "string",
+                      "example": "https://meet.example.com/room123"
+                    },
+                    "organization": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "65cd9d8d5cae5ffc348ed638"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "General Hospital"
+                        }
+                      }
+                    },
+                    "country": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "65cd9d8d5cae5ffc348ed639"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "United States"
+                        }
+                      }
+                    },
+                    "head": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "65cd9d8d5cae5ffc348ed640"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Dr. Smith"
+                        }
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "example": "2024-02-17T07:50:12.025Z"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "example": "2024-02-17T07:50:12.025Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "bed"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "parameter_name",
+            "in": "body",
+            "description": "Endpoint to update a bed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "bedNo": {
+                  "type": "number",
+                  "example": 101
+                },
+                "patientName": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "maxNoContributer": {
+                  "type": "number",
+                  "example": 15
+                },
+                "amount": {
+                  "type": "number",
+                  "example": 100
+                },
+                "vcLink": {
+                  "type": "string",
+                  "example": "https://meet.example.com/room123"
+                },
+                "organization": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "country": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed639"
+                },
+                "head": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed640"
                 }
               }
             }

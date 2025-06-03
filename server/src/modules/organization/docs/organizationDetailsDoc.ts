@@ -19,7 +19,7 @@ export const organizationDetailsDoc = async (
             photos: [
                 "string"
             ],
-            managementType: "string",
+            management: "string",
             contactMobileNumbers: [
                 "string"
             ],

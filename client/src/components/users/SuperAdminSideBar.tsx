@@ -14,18 +14,28 @@ import { fetchData } from "@/utils/api/fetchData";
 const rol = "super-admin";
 const items = [
   {
+    title: "Organization",
+    url: "organization",
+    icon: SquareUserRound,
+  },
+  {
     title: "Country",
     url: "country",
     icon: SquareUserRound,
   },
   {
     title: "Beds",
-    url: "beds",
+    url: "bed",
     icon: Hand,
   },
   {
     title: "Supporters",
-    url: "supporters",
+    url: "supporter",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Staff",
+    url: "staff",
     icon: CalendarCheck,
   },
   {
@@ -38,16 +48,16 @@ export default function SuperAdminSideBar() {
   const [data, setData] = useState();
   useEffect(() => {
 
-    const loadBusiness = async () => {
+    const loadOrganization = async () => {
       try {
-        const business = await fetchData("business");
-        setData(business.items);
+        const organization = await fetchData("organization");
+        setData(organization.items);
       } catch (error) {
-        console.error("Error loading Business:", error);
+        console.error("Error loading organization:", error);
       }
     };
 
-    loadBusiness();
+    loadOrganization();
   },[]);
   return (
       data&&
