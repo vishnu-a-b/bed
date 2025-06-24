@@ -6,11 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import toastService from "@/utils/toastService";
-import {
-  fetchBed,
-  fetchRole,
-  fetchSingleData,
-} from "@/utils/api/fetchData";
+import { fetchBed, fetchRole, fetchSingleData } from "@/utils/api/fetchData";
 import Select, { MultiValue } from "react-select";
 import { update } from "@/utils/api/updateData";
 import { create } from "@/utils/api/create";
@@ -21,7 +17,6 @@ import { clearUpdate } from "@/lib/slice/updateSlice";
 import { deleteData } from "@/utils/api/delete";
 import { RoleOption } from "@/types/api.interface";
 import { add } from "lodash";
-
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }).max(100),
@@ -51,20 +46,22 @@ const supporterSchema = z.object({
       message: "Invalid marital status",
     })
     .optional(),
-
   bed: z.string().optional(),
   isActive: z.boolean().default(true),
+
+  /** ✅ New fields */
+  nameVisible: z.boolean().optional(),
+  panNo: z.string().optional(),
 });
 
 type SupporterFormData = z.infer<typeof supporterSchema>;
 
 const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
-
   const statusOptions = [
     { value: true, label: "Active" },
     { value: false, label: "Inactive" },
   ];
-  
+
   const dispatch = useDispatch();
   const [bed, setBed] = useState<any>();
   const [gender, setGender] = useState<any>({ value: "Male", label: "Male" });
@@ -80,8 +77,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
     value: true,
     label: "Active",
   });
-  
- 
+
   const [roles, setRoles] = useState<MultiValue<RoleOption>>([]);
   const {
     handleSubmit,
@@ -89,11 +85,11 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
     setValue,
     formState: { errors },
     setError,
+    watch,
   } = useForm<SupporterFormData>({
     resolver: zodResolver(supporterSchema),
   });
 
-  
   const [isSending, setIsSending] = useState(false);
 
   const rol = "supporter";
@@ -133,11 +129,14 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           setValue("email", data.user?.email);
           setValue("amount", data.amount);
           setValue("type", data.type);
+          setValue("panNo", data.panNo || "");
+          setValue("nameVisible", data.nameVisible !== undefined ? data.nameVisible : true);
+
           setType({
             value: data.type,
             label: data.type,
           });
-          
+
           if (data.user?.dateOfBirth) {
             const formattedDate = new Date(data.user.dateOfBirth)
               .toISOString()
@@ -156,7 +155,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
               .split("T")[0];
             setValue("endDate", formattedDate);
           }
-          
+
           setGender({
             value: data.user?.gender,
             label: data.user?.gender,
@@ -165,7 +164,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
             value: data.user?.isActive,
             label: data.user?.isActive ? "Active" : "Inactive",
           });
-          
+
           setMaritalStatus({
             value: data.user?.maritalStatus,
             label: data.user?.maritalStatus,
@@ -174,7 +173,6 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
             label: data?.bed?.bedNo,
             id: data?.bed?._id,
           });
-          
 
           setValue("userId", data.user?._id);
           setValue("role", data.user?.role);
@@ -192,10 +190,11 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
     setValue("isActive", selectedOption.value);
   };
   const onSubmit = async (data: any, event: any) => {
-    console.log(roles)
+    console.log(roles);
     setIsSending(true);
     event?.preventDefault();
-    try {// Extract files
+    try {
+      // Extract files
 
       const password = "User@" + data.mobileNo;
       const userData: any = {
@@ -205,11 +204,11 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         ...(data.dateOfBirth && { dateOfBirth: data.dateOfBirth }),
         ...(gender && { gender: gender.value }),
         ...(maritalStatus && { maritalStatus: maritalStatus.value }),
-        
+
         isActive: data.isActive,
         ...(supporterId ? {} : { password }), // Include password only if creating a new user
       };
-      
+
       const formData = new FormData();
       Object.entries(userData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
@@ -223,15 +222,11 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         }
       });
       roles.forEach((role, index) =>
-        formData.append(`roles[${index}]`, '6821c34384fe6b2ba4e1cd14')
+        formData.append(`roles[${index}]`, "6821c34384fe6b2ba4e1cd14")
       );
       console.log(userData);
       if (supporterId) {
-        const responseUser = await update(
-          formData,
-          "user",
-          data.userId || "",
-        );
+        const responseUser = await update(formData, "user", data.userId || "");
         const supporterData: any = {
           ...(data.name && { name: data.name }),
           ...(bed.id && { bed: bed.id }),
@@ -241,6 +236,11 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           ...(data.amount && { amount: data.amount }),
           ...(data.address && { address: data.address }),
           ...(type.value && { type: type.value }),
+          ...(data.nameVisible !== undefined && {
+            nameVisible: data.nameVisible,
+          }),
+          ...(data.panNo && { panNo: data.panNo }),
+
           isActive: data.isActive,
           role: "regular-supporter",
         };
@@ -261,7 +261,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         const response1 = await create("user", formData, true);
 
         if (response1._id) {
-            const supporterData: any = {
+          const supporterData: any = {
             ...(data.name && { name: data.name }),
             ...(bed.id && { bed: bed.id }),
             ...(data.startDate && { startDate: data.startDate }),
@@ -270,10 +270,15 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
             ...(data.supporterRole && { role: data.supporterRole }),
             ...(type.value && { type: type.value }),
             ...(data.address && { address: data.address }),
+            ...(data.nameVisible !== undefined && {
+              nameVisible: data.nameVisible,
+            }),
+            ...(data.panNo && { panNo: data.panNo }),
+
             isActive: data.isActive,
             user: response1._id,
             role: "regular-supporter",
-            };
+          };
           const response = await create("supporter", supporterData);
           if (response._id) {
             toastService.success("Supporter created successfully");
@@ -408,7 +413,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           <p className="text-red-500 text-sm">{errors.dateOfBirth.message}</p>
         )}
       </div>
-      
+
       <div>
         <Label htmlFor="startDate">Start Date</Label>
         <Input
@@ -432,13 +437,12 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         )}
       </div>
 
-      
       <div>
         <Label htmlFor="amount">Amount</Label>
         <Input
           type="number"
           id="amount"
-          {...register("amount",{ valueAsNumber: true })}
+          {...register("amount", { valueAsNumber: true })}
           placeholder="Enter amount"
           className={`w-full ${errors.amount ? "border-red-500" : ""}`}
         />
@@ -446,7 +450,6 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           <p className="text-red-500 text-sm">{errors.amount.message}</p>
         )}
       </div>
-
 
       <div>
         <Label>Gender</Label>
@@ -463,7 +466,6 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           <p className="text-red-500 text-sm">{errors.gender.message}</p>
         )}
       </div>
-      
 
       <div>
         <Label htmlFor="maritalStatus">Marital Status</Label>
@@ -491,7 +493,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
 
       <div>
         <Label htmlFor="bed" className="required">
-        bed
+          bed
         </Label>
         <AsyncSelect
           cacheOptions
@@ -506,6 +508,40 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
         {errors.bed && (
           <p className="text-red-500 text-sm">{errors.bed.message}</p>
         )}
+      </div>
+      <div>
+        <Label htmlFor="panNo">PAN Number</Label>
+        <Input
+          id="panNo"
+          {...register("panNo")}
+          placeholder="Enter PAN number"
+          className="w-full"
+        />
+        {errors.panNo && (
+          <p className="text-red-500 text-sm">{errors.panNo.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="nameVisible">Display Name Publicly</Label>
+        <Select
+          id="nameVisible"
+          options={[
+            { value: true, label: "Yes" },
+            { value: false, label: "No" },
+          ]}
+          value={
+            watch("nameVisible") !== undefined
+              ? {
+                  value: watch("nameVisible"),
+                  label: watch("nameVisible") ? "Yes" : "No",
+                }
+              : undefined
+          }
+          onChange={(selectedOption) =>
+            setValue("nameVisible", selectedOption?.value)
+          }
+        />
       </div>
 
       <div>
@@ -528,7 +564,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
           <p className="text-red-500 text-sm">{errors.type.message}</p>
         )}
       </div>
-      
+
       <div>
         <Label>Status</Label>
         <Select

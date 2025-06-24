@@ -63,7 +63,7 @@ export const columns: ColumnDef<Bed>[] = [
     cell: ({ row }) => {
       const org = row.original.organization;
       const id = row.original._id;
-      const link = org?.vcLink && id ? `${org.vcLink}bed/bed=${id}` : "";
+      const link = org?.vcLink+"/bed?" && id ? `${org.vcLink}bed=${id}` : "";
 
       const handleCopy = async () => {
         if (!link) {

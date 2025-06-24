@@ -18,9 +18,7 @@ export default function ViewSupporter() {
     (state: RootState) => state.update.refresh
   );
   const supporterId: any = useSelector((state: RootState) => state.supporter.id);
-  const organizationId: any = useSelector(
-    (state: RootState) => state.organization.id
-  );
+
   // Debounce the search input
   const debounce = (func: Function, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -82,6 +80,7 @@ export default function ViewSupporter() {
   useEffect(() => {
     async function fetchData() {
       const result = await getData();
+      console.log("Fetched Data:", result);
       setData(result);
     }
     fetchData();

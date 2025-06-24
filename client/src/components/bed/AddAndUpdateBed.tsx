@@ -17,14 +17,16 @@ import AsyncSelect from "react-select/async";
 import { loadCountryOptions } from "@/utils/api/loadSelectData";
 import { loadUsers } from "@/utils/api/loadSelectData";
 import { RootState } from "@/lib/store";
+import { FileState, MultiImageDropzone } from "../ui/Multi-Image";
 
 // Zod schema for validation
 const bedSchema = z.object({
   bedNo: z.number().min(1, "Bed number must be at least 1"),
-  maxNoContributer: z.number().min(1).max(100),
+  fixedAmount: z.number().min(1).max(1000000, "Fixed amount must be between 1 and 1,000,000"),
   amount: z.number().min(0),
   patientName: z.string().optional(),
   vcLink: z.string().url().optional().or(z.literal("")),
+  qrPhoto: z.string().optional(),
 });
 
 // Infer form type from Zod schema
@@ -36,8 +38,9 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   const [organization, setOrganization] = useState<any>();
   const [country, setCountry] = useState<any>();
   const [isSending, setIsSending] = useState(false);
+  const [fileStates, setFileStates] = useState<FileState[]>([]);
+
   const dispatch = useDispatch();
-  
 
   const {
     handleSubmit,
@@ -48,9 +51,9 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   } = useForm<BedFormData>({
     resolver: zodResolver(bedSchema),
     defaultValues: {
-      maxNoContributer: 15,
+      fixedAmount: 15,
       amount: 0,
-    }
+    },
   });
 
   useEffect(() => {
@@ -60,19 +63,26 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
         try {
           const items: any = await fetchSingleData(bedId, "bed");
           const data = items.items;
-          
+
           setValue("bedNo", data.bedNo);
-          setValue("maxNoContributer", data.maxNoContributer);
+          setValue("fixedAmount", data.fixedAmount);
           setValue("amount", data.amount);
           setValue("patientName", data.patientName || "");
           setValue("vcLink", data.vcLink || "");
+          setValue("qrPhoto", data.qrPhoto || "");
 
           if (data.organization) {
-            setOrganization({ value: data.organization._id, label: data.organization.name });
+            setOrganization({
+              value: data.organization._id,
+              label: data.organization.name,
+            });
           }
 
           if (data.country) {
-            const countryItems: any = await fetchSingleData(data.country, "country");
+            const countryItems: any = await fetchSingleData(
+              data.country,
+              "country"
+            );
             setCountry({ value: data.country._id, label: data.country.name });
           }
 
@@ -92,14 +102,14 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   }, [bedId, setValue]);
 
   const clear = () => {
-   
-    setValue("maxNoContributer", 15);
+    setValue("fixedAmount", 15);
     setValue("amount", 0);
     setValue("patientName", "");
     setValue("vcLink", "");
     setHead(undefined);
     setOrganization(undefined);
     setCountry(undefined);
+    setFileStates([]);
     dispatch(clearUpdate());
   };
 
@@ -118,31 +128,36 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   const onSubmit = async (data: BedFormData) => {
     setIsSending(true);
     try {
-      const bedData: any = {
-        ...data,
-        ...(organization && { organization: organization.value }),
-        ...(country && { country: country.value }),
-        ...(head && { head: head.value }),
-      };
-      console.log("Submitting form data:", bedData);
+      const formData = new FormData();
+
+      formData.append("bedNo", String(data.bedNo));
+      formData.append("fixedAmount", String(data.fixedAmount));
+      formData.append("amount", String(data.amount));
+      formData.append("patientName", data.patientName ?? "");
+      formData.append("vcLink", data.vcLink ?? "");
+
+      if (organization) formData.append("organization", organization.value);
+      if (country) formData.append("country", country.value);
+      if (head) formData.append("head", head.value);
+
+      const qrPhoto = fileStates[0]?.file;
+      if (qrPhoto) formData.append("qrPhoto", qrPhoto);
+
+      let response;
       if (bedId) {
-        const response = await update(bedData,"bed", bedId );
-        if (response._id) {
-          toastService.success("Bed updated successfully");
-          clear();
-        } else {
-          setError(response.id, { message: response.value });
-          toastService.error("An error occurred while submitting the form");
-        }
+        response = await update(formData, "bed", bedId, true); // Make sure this uses `multipart/form-data`
       } else {
-        const response = await create("bed", bedData);
-        if (response._id) {
-          toastService.success("Bed created successfully");
-          clear();
-        } else {
-          setError(response.id, { message: response.value });
-          toastService.error("An error occurred while submitting the form");
-        }
+        response = await create("bed", formData, true); // Make sure this uses `multipart/form-data`
+      }
+
+      if (response._id) {
+        toastService.success(
+          `Bed ${bedId ? "updated" : "created"} successfully`
+        );
+        clear();
+      } else {
+        setError(response.id, { message: response.value });
+        toastService.error("An error occurred while submitting the form");
       }
     } catch (error) {
       console.error("Failed to submit form:", error);
@@ -177,7 +192,6 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
           onChange={handleOrganizationChange}
           classNamePrefix="select"
           isClearable
-
         />
       </div>
 
@@ -214,25 +228,27 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="maxNoContributer" className="required">
-          Maximum Contributors
+        <Label htmlFor="fixedAmount" className="required">
+          Donation Amount
         </Label>
         <Input
-          id="maxNoContributer"
+          id="fixedAmount"
           type="number"
-          {...register("maxNoContributer", { valueAsNumber: true })}
+          {...register("fixedAmount", { valueAsNumber: true })}
           className={`w-full border rounded p-2 ${
-            errors.maxNoContributer ? "border-red-500" : "border-gray-300"
+            errors.fixedAmount ? "border-red-500" : "border-gray-300"
           } bg-white dark:bg-gray-800 dark:text-white`}
         />
-        {errors.maxNoContributer && (
-          <p className="text-red-500 text-sm">{errors.maxNoContributer.message}</p>
+        {errors.fixedAmount && (
+          <p className="text-red-500 text-sm">
+            {errors.fixedAmount.message}
+          </p>
         )}
       </div>
 
       <div>
         <Label htmlFor="amount" className="required">
-          Cost
+          Monthly Cost 
         </Label>
         <Input
           id="amount"
@@ -249,9 +265,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="patientName">
-          Patient Name
-        </Label>
+        <Label htmlFor="patientName">Patient Name</Label>
         <Input
           id="patientName"
           {...register("patientName")}
@@ -260,9 +274,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="vcLink">
-          Video Conference Link
-        </Label>
+        <Label htmlFor="vcLink">Video Conference Link</Label>
         <Input
           id="vcLink"
           {...register("vcLink")}
@@ -274,9 +286,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="head">
-          Bed Head/Manager
-        </Label>
+        <Label htmlFor="head">Bed Head/Manager</Label>
         <AsyncSelect
           cacheOptions
           loadOptions={loadUsers}
@@ -288,12 +298,33 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
         />
       </div>
 
+      <div>
+        <Label htmlFor="flag">Flag</Label>
+        <MultiImageDropzone
+          value={fileStates}
+          dropzoneOptions={{
+            maxFiles: 1, // Only one file for flag
+            maxSize: 1024 * 1024 * 5, // 5 MB
+            accept: {
+              "image/*": [".png", ".jpg", ".jpeg", ".svg"],
+            },
+          }}
+          onChange={setFileStates}
+          onFilesAdded={async (addedFiles) => {
+            setFileStates([...fileStates, ...addedFiles]);
+          }}
+        />
+        {errors.qrPhoto && (
+          <p className="text-red-500 text-sm">{errors.qrPhoto.message}</p>
+        )}
+      </div>
+
       <div className="flex justify-between">
         <Button onClick={clear} className="bg-slate-400 hover:bg-slate-500">
           {bedId ? "Cancel" : "Clear"}
         </Button>
-        <Button 
-          className={isSending ? "cursor-not-allowed opacity-50" : ""} 
+        <Button
+          className={isSending ? "cursor-not-allowed opacity-50" : ""}
           type="submit"
         >
           {bedId ? "Update" : "Create"}

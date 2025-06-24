@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import {
   Settings,
-  SquareUserRound,
-  Hand,
-  CalendarCheck,
-  MapPin,
-  IndianRupee,
-  FileText,
+  Building2,
+  Flag,
+  Bed,
+  User,
+  HandCoins,
+
 } from "lucide-react";
 import { fetchData } from "@/utils/api/fetchData";
 
@@ -16,27 +16,32 @@ const items = [
   {
     title: "Organization",
     url: "organization",
-    icon: SquareUserRound,
+    icon: Building2,
   },
   {
     title: "Country",
     url: "country",
-    icon: SquareUserRound,
+    icon: Flag,
   },
   {
     title: "Beds",
     url: "bed",
-    icon: Hand,
+    icon: Bed,
   },
   {
     title: "Supporters",
     url: "supporter",
-    icon: CalendarCheck,
+    icon: User,
+  },
+  {
+    title: "Payments",
+    url: "payment",
+    icon: HandCoins,
   },
   {
     title: "Staff",
     url: "staff",
-    icon: CalendarCheck,
+    icon: User,
   },
   {
     title: "Settings",

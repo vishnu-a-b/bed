@@ -2,7 +2,7 @@
 import { BedDouble, Check} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useSearchParams } from "next/navigation";
+
 import {
   Dialog,
   DialogContent,
@@ -15,11 +15,12 @@ import Link from "next/link";
 
 
 export default function Page() {
-  const searchParams = useSearchParams();
+  
   const [selectedBeds, setSelectedBeds] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [data, setData] = React.useState<any>([]);
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const country = searchParams.get("country");
 
   useEffect(() => {
