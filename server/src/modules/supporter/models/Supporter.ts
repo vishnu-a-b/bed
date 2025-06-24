@@ -8,6 +8,11 @@ const supporterSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, maxLength: 200, required: true },
+    panNo: { type: String, maxLength: 20, required: false },
+    nameVisible: {
+      type: Boolean,
+      default: true,
+    },
     bed: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Bed",

@@ -19,7 +19,10 @@ export default class SupporterService {
     skip = skip ? skip : 0;
 
     const supporters = await Supporter.find(filterQuery)
-      .populate(["user", "bed"])
+      .populate([
+      "user",
+      { path: "bed", populate: { path: "organization" } }
+      ])
       .sort(sort)
       .limit(limit)
       .skip(skip);
@@ -111,16 +114,16 @@ export default class SupporterService {
     const countryData = await Bed.aggregate([
       {
         $match: {
-          country: new mongoose.Types.ObjectId(countryId)
-        }
+          country: new mongoose.Types.ObjectId(countryId),
+        },
       },
       {
         $lookup: {
           from: "countries",
           localField: "country",
           foreignField: "_id",
-          as: "country"
-        }
+          as: "country",
+        },
       },
       { $unwind: "$country" },
       {
@@ -131,17 +134,17 @@ export default class SupporterService {
           currency: { $first: "$country.currency" },
           totalBedsInCountry: { $sum: 1 },
           totalAmountOfBed: { $sum: "$amount" },
-          beds: { $push: "$_id" } // Collect all bed IDs
-        }
-      }
+          beds: { $push: "$_id" }, // Collect all bed IDs
+        },
+      },
     ]);
-  
+
     if (countryData.length === 0) {
       throw new Error("Country not found");
     }
-  
+
     const country = countryData[0];
-  
+
     // 2. Get supporter amounts for the country
     const supporterData = await Supporter.aggregate([
       {
@@ -149,37 +152,37 @@ export default class SupporterService {
           from: "beds",
           localField: "bed",
           foreignField: "_id",
-          as: "bed"
-        }
+          as: "bed",
+        },
       },
       { $unwind: "$bed" },
       {
         $match: {
-          "bed.country": new mongoose.Types.ObjectId(countryId)
-        }
+          "bed.country": new mongoose.Types.ObjectId(countryId),
+        },
       },
       {
         $group: {
           _id: null,
-          totalAmountOfSupporter: { $sum: "$amount" }
-        }
-      }
+          totalAmountOfSupporter: { $sum: "$amount" },
+        },
+      },
     ]);
-  
+
     // 3. Get detailed bed information with supporter counts
     const bedsWithSupporters = await Bed.aggregate([
       {
         $match: {
-          country: new mongoose.Types.ObjectId(countryId)
-        }
+          country: new mongoose.Types.ObjectId(countryId),
+        },
       },
       {
         $lookup: {
           from: "supporters",
           localField: "_id",
           foreignField: "bed",
-          as: "supporters"
-        }
+          as: "supporters",
+        },
       },
       {
         $project: {
@@ -187,12 +190,12 @@ export default class SupporterService {
           bedId: "$_id",
           totalAmountOfTheBed: "$amount",
           totalNoOfSupportersByBed: { $size: "$supporters" },
-          totalAmountFromSupporters: { $sum: "$supporters.amount" }
-        }
+          totalAmountFromSupporters: { $sum: "$supporters.amount" },
+        },
       },
-      { $sort: { bedNo: 1 } }
+      { $sort: { bedNo: 1 } },
     ]);
-  
+
     return {
       countryId: country._id,
       countryName: country.countryName,
@@ -200,13 +203,13 @@ export default class SupporterService {
       totalBedsInCountry: country.totalBedsInCountry,
       totalAmountOfSupporter: supporterData[0]?.totalAmountOfSupporter || 0,
       totalAmountOfBed: country.totalAmountOfBed,
-      beds: bedsWithSupporters.map(bed => ({
+      beds: bedsWithSupporters.map((bed) => ({
         bedNo: bed.bedNo,
         bedId: bed.bedId,
         totalAmountOfTheBed: bed.totalAmountOfTheBed,
         totalNoOfSupportersByBed: bed.totalNoOfSupportersByBed,
-        totalAmountFromSupporters: bed.totalAmountFromSupporters
-      }))
+        totalAmountFromSupporters: bed.totalAmountFromSupporters,
+      })),
     };
   };
 
@@ -215,65 +218,71 @@ export default class SupporterService {
     if (!bedId || !mongoose.Types.ObjectId.isValid(bedId)) {
       throw new Error("Invalid bed ID");
     }
-  
+
     // 1. Get basic bed information
     const bedData = await Bed.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(bedId)
-        }
+          _id: new mongoose.Types.ObjectId(bedId),
+        },
       },
       {
         $lookup: {
           from: "countries",
           localField: "country",
           foreignField: "_id",
-          as: "country"
-        }
+          as: "country",
+        },
       },
-      { $unwind: "$country" }
+      { $unwind: "$country" },
     ]);
-  
+
     if (bedData.length === 0) {
       throw new Error("Bed not found");
     }
-  
+
     const bed = bedData[0];
-  
+
     // 2. Get all supporters for this bed with their names directly from supporter schema
     const supportersData = await Supporter.aggregate([
       {
         $match: {
-          bed: new mongoose.Types.ObjectId(bedId)
-        }
+          bed: new mongoose.Types.ObjectId(bedId),
+        },
       },
       {
         $project: {
-          supporterName: "$name", // Directly use the name field from supporter
+          supporterName: {
+            $cond: {
+              if: { $eq: ["$nameVisible", true] },
+              then: "$name",
+              else: "Anonymous",
+            },
+          }, 
           amount: 1,
           createdAt: 1,
           // Include any other supporter fields you need
-        }
+        },
       },
-      { $sort: { createdAt: -1 } } // Sort by newest first
+      { $sort: { createdAt: -1 } }, // Sort by newest first
     ]);
-  
+
     // 3. Calculate totals (unchanged)
     const totals = await Supporter.aggregate([
       {
         $match: {
-          bed: new mongoose.Types.ObjectId(bedId)
-        }
+          bed: new mongoose.Types.ObjectId(bedId),
+        },
       },
       {
         $group: {
           _id: null,
           totalNoOfSupportersByBed: { $sum: 1 },
-          totalAmountFromSupporters: { $sum: "$amount" }
-        }
-      }
+          totalAmountFromSupporters: { $sum: "$amount" },
+        },
+      },
     ]);
-  
+
     return {
       bedNo: bed.bedNo,
       bedId: bed._id,
@@ -281,14 +290,15 @@ export default class SupporterService {
       countryName: bed.country.name,
       currency: bed.country.currency,
       totalAmountOfTheBed: bed.amount,
+      fixedAmount: bed.fixedAmount,
       totalNoOfSupportersByBed: totals[0]?.totalNoOfSupportersByBed || 0,
       totalAmountFromSupporters: totals[0]?.totalAmountFromSupporters || 0,
-      supporters: supportersData.map(supporter => ({
+      supporters: supportersData.map((supporter) => ({
         supporterName: supporter.supporterName,
         amount: supporter.amount,
-        date: supporter.createdAt
+        date: supporter.createdAt,
         // Include any other supporter fields you need
-      }))
+      })),
     };
   };
 
