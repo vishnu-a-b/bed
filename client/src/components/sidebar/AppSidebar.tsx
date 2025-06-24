@@ -23,11 +23,7 @@ import { logout } from "@/utils/api/apiAuth";
 import Link from "next/link";
 import React, { use, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import {
-  clearOrganizationId,
-  setOrganizationId,
-  setOrganizationName,
-} from "@/lib/slice/organizationSlice";
+
 import { clearStaffId } from "@/lib/slice/staffSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUserDetails } from "@/lib/slice/userSlice";
@@ -51,10 +47,7 @@ export function AppSidebar(props: any) {
   );
   const link: string = useSelector((state: RootState) => state.link.link);
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(setOrganizationName(data?.items[0]?.name));
-    dispatch(setOrganizationId(data?.items[0]?._id));
-  }, []);
+
   useEffect(() => {
     // Update the `link` state with the last segment of the current path
     const links = window.location.pathname.split("/");

@@ -9,6 +9,7 @@ import updateReducer from './slice/updateSlice';
 import countryReducer from './slice/countrySlice';
 import bedReducer from './slice/bedSlice';
 import supporterReducer from './slice/supporterSlice';
+import paymentReducer from './slice/paymentSlice';
 
 export const makeStore = () => {
   return configureStore({
@@ -23,6 +24,7 @@ export const makeStore = () => {
       country: countryReducer,
       bed: bedReducer,
       supporter: supporterReducer,
+      payment: paymentReducer,
     },
   });
 };

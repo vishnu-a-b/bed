@@ -10,6 +10,7 @@ import StaffRouter from "../modules/staff/routes/StaffRouter";
 import BedRouter from "../modules/bed/routes/BedRouter";
 import OrganizationRouter from "../modules/organization/routes/Organization";
 import SupporterRouter from "../modules/supporter/routes/SupporterRouter";
+import PaymentRouter from "../modules/payment/routes/PaymentRouter";
 
 
 
@@ -26,6 +27,7 @@ router.use("/v1/country/", CountryRouter);
 router.use("/v1/staff/", StaffRouter);
 router.use("/v1/supporter/", SupporterRouter);
 router.use("/v1/bed/", BedRouter);
+router.use("/v1/payment/", PaymentRouter);
 
 
 export default router;

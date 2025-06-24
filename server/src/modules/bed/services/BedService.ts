@@ -5,7 +5,15 @@ import { Bed } from "../models/Bed";
 
 export default class BedService {
   create = async (bed: any) => {
-    return await Bed.create(bed);
+    console.log("BedService create", bed);
+    try{
+      
+      return await Bed.create(bed);
+    }catch (error) {
+      //console.error("Error creating bed:", error);
+      throw new Error("Failed to create bed");
+    }
+    
   };
 
   find = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {

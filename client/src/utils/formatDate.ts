@@ -68,3 +68,48 @@ export const timeOnly = (date: string) => {
   return ` ${time}`; // Combined date and time format
 };
 
+
+/**
+ * Formats a date string or Date object into a readable format
+ * @param date - Date string or Date object
+ * @param options - Intl.DateTimeFormat options
+ * @returns Formatted date string (e.g., "Jan 1, 2023" or "01/01/2023")
+ */
+export const formatDate1 = (
+  date: string | Date | undefined,
+  options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }
+): string => {
+  if (!date) return 'N/A';
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return 'Invalid Date';
+    
+    return new Intl.DateTimeFormat('en-US', options).format(dateObj);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid Date';
+  }
+};
+
+/**
+ * Formats a date into ISO date string (YYYY-MM-DD)
+ * Useful for date inputs
+ */
+export const formatISODate = (date: string | Date | undefined): string => {
+  if (!date) return '';
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return '';
+    
+    return dateObj.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Error formatting ISO date:', error);
+    return '';
+  }
+};

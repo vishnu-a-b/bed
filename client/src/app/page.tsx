@@ -10,7 +10,6 @@ export default function Home() {
         <div>
           <img src={"/logo.png"} alt="logo_" width={100} height={100} />
         </div>
-
         <div>
           <ul className="space-x-1 hidden md:flex">
             <li className="bg-zinc-100 text-black py-1 px-2 rounded-full text-sm">

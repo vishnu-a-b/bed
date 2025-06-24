@@ -18,9 +18,9 @@ export const multerFileStorageForUserData = multer.diskStorage({
   },
 });
 
-export const multerFileStorageForAttendance = multer.diskStorage({
+export const multerFileStorageForQr = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/attendance/");
+    cb(null, "public/bed/");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);

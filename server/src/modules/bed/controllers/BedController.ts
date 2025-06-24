@@ -6,6 +6,7 @@ import NotFoundError from "../../../errors/errorTypes/NotFoundError";
 import mongoose from "mongoose";
 import BadRequestError from "../../../errors/errorTypes/BadRequestError";
 import BedService from "../services/BedService";
+import Configs from "../../../configs/configs";
 
 export default class BedController extends BaseController {
   service = new BedService();
@@ -16,6 +17,13 @@ export default class BedController extends BaseController {
         next(new ValidationFailedError({ errors: errors.array() }));
         return;
       }
+      let body = req.body;
+      if (req.file) {
+        console.log("req.files", req.file);
+        const file = req.file;
+        body.qrPhoto = Configs.domain + "bed/" + file.filename;
+      }
+
       req.body.createdBy = req.user._id;
       const bed = await this.service.create(req.body);
       this.sendSuccessResponse(res, 201, { data: bed });
@@ -40,8 +48,6 @@ export default class BedController extends BaseController {
       next(e);
     }
   };
-
-
 
   countTotalDocuments = async (
     req: Request,

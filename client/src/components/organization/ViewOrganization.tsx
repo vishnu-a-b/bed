@@ -84,7 +84,9 @@ export default function ViewOrganization() {
       const result = await getData();
       setData(result);
     }
+    
     fetchData();
+    console.log("Fetching data with params:",data);
   }, [pageIndex, pageSize, debouncedSearch, statusFilter, refresh, organizationId]);
 
   return (

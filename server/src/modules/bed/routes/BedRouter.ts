@@ -12,32 +12,36 @@ import { bedUpdateDoc } from "../docs/bedUpdateDoc";
 import { bedUpdateValidator } from "../validators/bedUpdateValidator";
 import BedController from "../controllers/BedController";
 import { bedDeleteDoc } from "../docs/bedDeleteDoc";
+import multer from "multer";
+import { multerFileStorage, multerFileStorageForQr } from "../../../multer/multerConfig";
+import { multerImageFilter } from "../../../multer/multerFileFilters";
+import BadRequestError from "../../../errors/errorTypes/BadRequestError";
 
 const router = express.Router();
 const controller = new BedController();
 
 
+const upload = multer({
+  storage: multerFileStorageForQr,
+  fileFilter: multerImageFilter,
+}).single("qrPhoto");
 
-// const upload = multer({
-//   storage: multerFileStorage,
-//   fileFilter: multerImageFilter,
-// }).any(); // allows multiple files
+const uploadMethod = (req: Request, res: Response, next: NextFunction) => {
+  return upload(req, res, function (err) {
+    if (err) {
+      return next(new BadRequestError({ error: "invalid file type" }));
+    }
+    console.log("===== Incoming multipart/form-data Request =====");
+    console.log("🔸 req.body (form fields):", req.body);
+    console.log("🔸 req.files (uploaded files):", req.file);
+    console.log("================================================");
 
-// const uploadMethod = (req: Request, res: Response, next: NextFunction) => {
-//   return upload(req, res, function (err) {
-//     if (err) {
-//       return next(new BadRequestError({ error: "invalid file type" }));
-//     }
+    next();
+  });
+};
 
-//     // ✅ log incoming multipart/form-data
-//     console.log("===== Incoming multipart/form-data Request =====");
-//     console.log("🔸 req.body (form fields):", req.body);
-//     console.log("🔸 req.files (uploaded files):", req.files);
-//     console.log("================================================");
 
-//     next();
-//   });
-// };
+
 
 const authorization = authorizeUser({ allowedRoles: [] });
 
@@ -70,6 +74,7 @@ router.post(
   "/",
   authorization,
   bedCreateDoc, // Add if file uploads are needed
+  uploadMethod,
   bedCreateValidator,
   controller.create
 );
@@ -78,6 +83,7 @@ router.put(
   "/:id",
   authorization,
   bedUpdateDoc, 
+  uploadMethod,
   bedUpdateValidator,
   controller.update
 );

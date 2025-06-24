@@ -6,12 +6,22 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
 import UpdatePasswordForm from "./ChangePassword";
+import toastService from "@/utils/toastService";
 
 export interface Employee {
+  _id: string;
   name: string;
   user: {
     mobileNo: string;
+    dateOfBirth?: string;
+    email?: string;
   };
+  bed: {
+    organization: {
+      name: string;
+      vcLink?: string;
+    }
+  }
   amount: number;
   role: string;
 }
@@ -46,6 +56,69 @@ export const columns: ColumnDef<Employee>[] = [
             <ViewDetails data={data} />
           </DialogContent>
         </Dialog>
+      );
+    },
+  },
+
+    {
+    accessorKey: "link",
+    header: "Link",
+    cell: ({ row }) => {
+      const org = row.original.bed?.organization;
+      const id = row.original._id;
+      const link = org?.vcLink && id ? `${org.vcLink}/supporter?supporter=${id}` : "";
+
+      const handleCopy = async () => {
+        if (!link) {
+          toastService.error("Link not available.");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(link);
+          toastService.success("Link copied to clipboard!");
+        } catch (err) {
+          toastService.error("Failed to copy link.");
+        }
+      };
+
+      const handleShare = async () => {
+        if (!link) {
+          toastService.error("Link not available.");
+          return;
+        }
+
+        const shareData = {
+          title: document.title,
+          text: "Check this out!",
+          url: link,
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+          } catch (err) {
+            toastService.error("Sharing failed.");
+            console.error("Sharing failed:", err);
+          }
+        } else {
+          const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
+            `${shareData.text} ${shareData.url}`
+          )}`;
+          window.open(whatsappURL, "_blank");
+        }
+      };
+
+      return (
+        <div className="flex flex-col gap-1 max-w-[180px]">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              Copy
+            </Button>
+            {/* <Button variant="outline" size="sm" onClick={handleShare}>
+              Share
+            </Button> */}
+          </div>
+        </div>
       );
     },
   },
