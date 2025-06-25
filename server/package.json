@@ -12,6 +12,7 @@
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/nodemailer": "^6.4.17",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
@@ -36,6 +37,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^7.0.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

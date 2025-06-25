@@ -6,6 +6,7 @@ import NotFoundError from "../../../errors/errorTypes/NotFoundError";
 import mongoose from "mongoose";
 import BadRequestError from "../../../errors/errorTypes/BadRequestError";
 import SupporterService from "../services/SupporterService";
+import supporterMailer from "../../../services/mailService";
 
 export default class SupporterController extends BaseController {
   service = new SupporterService();
@@ -17,8 +18,15 @@ export default class SupporterController extends BaseController {
         next(new ValidationFailedError({ errors: errors.array() }));
         return;
       }
-      const supporter = await this.service.create(req.body);
+      const supporter:any = await this.service.create(req.body);
+      if (supporter && supporter._id) {
+        await supporterMailer.sendWelcomeEmail({
+          supporterId: supporter._id.toString(),
+        });
+      }
       this.sendSuccessResponse(res, 201, { data: supporter });
+      
+      
     } catch (e: any) {
       next(e);
     }

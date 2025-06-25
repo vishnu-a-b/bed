@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Share2, Heart, DollarSign, Users, BedDouble } from "lucide-react";
 import { motion } from "framer-motion";
 import { PaymentForm } from "@/components/payment/PaymentForm";
+import { Qr } from "@/components/payment/Qr";
 
 
 export default function SupporterDetailsPage() {
@@ -229,6 +230,7 @@ export default function SupporterDetailsPage() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogDescription>
+                  <Qr supporter={supporterData} />
                   {/* <PaymentForm supporter={supporterData} /> */}
                 </DialogDescription>
               </DialogHeader>
