@@ -336,11 +336,11 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
         </div>
 
         <div>
-          <Label htmlFor="vcLink">organization Meeting Link</Label>
+          <Label htmlFor="vcLink">organization Link</Label>
           <Input
             id="vcLink"
             {...register("vcLink")}
-            placeholder="Enter organization Meeting Link"
+            placeholder="Enter organization Link"
             className={`w-full border rounded p-2 ${
               errors.vcLink ? "border-red-500" : "border-gray-300"
             } bg-white dark:bg-gray-800 dark:text-white`}

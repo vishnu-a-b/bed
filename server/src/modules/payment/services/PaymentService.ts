@@ -161,6 +161,8 @@ export default class PaymentService {
       supporterId: supporter._id,
       supporterName: supporter.nameVisible ? supporter.name : "Anonymous",
       bedNo: supporter.bed.bedNo,
+      qrPhoto: supporter.bed.qrPhoto,
+      fixedAmount: supporter.bed.fixedAmount,
       bedId: supporter.bed._id,
       countryId: supporter.country._id,
       countryName: supporter.country.name,

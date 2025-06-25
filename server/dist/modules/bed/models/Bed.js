@@ -11,8 +11,10 @@ const bedSchema = new mongoose_1.default.Schema({
     bedNo: { type: Number },
     maxNoContributer: { type: Number, default: 15 },
     amount: { type: Number },
+    fixedAmount: { type: Number },
     patientName: { type: String },
     address: { type: String },
+    qrPhoto: { type: String, required: false, maxLength: 200 },
     head: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" },
     vcLink: {
         type: String,

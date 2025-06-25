@@ -19,6 +19,7 @@ const NotFoundError_1 = __importDefault(require("../../../errors/errorTypes/NotF
 const mongoose_1 = __importDefault(require("mongoose"));
 const BadRequestError_1 = __importDefault(require("../../../errors/errorTypes/BadRequestError"));
 const BedService_1 = __importDefault(require("../services/BedService"));
+const configs_1 = __importDefault(require("../../../configs/configs"));
 class BedController extends BaseController_1.default {
     constructor() {
         super(...arguments);
@@ -29,6 +30,12 @@ class BedController extends BaseController_1.default {
                 if (!errors.isEmpty()) {
                     next(new ValidationFailedError_1.default({ errors: errors.array() }));
                     return;
+                }
+                let body = req.body;
+                if (req.file) {
+                    console.log("req.files", req.file);
+                    const file = req.file;
+                    body.qrPhoto = configs_1.default.domain + "bed/" + file.filename;
                 }
                 req.body.createdBy = req.user._id;
                 const bed = yield this.service.create(req.body);

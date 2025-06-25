@@ -17,7 +17,14 @@ const Bed_1 = require("../models/Bed");
 class BedService {
     constructor() {
         this.create = (bed) => __awaiter(this, void 0, void 0, function* () {
-            return yield Bed_1.Bed.create(bed);
+            console.log("BedService create", bed);
+            try {
+                return yield Bed_1.Bed.create(bed);
+            }
+            catch (error) {
+                //console.error("Error creating bed:", error);
+                throw new Error("Failed to create bed");
+            }
         });
         this.find = (_a) => __awaiter(this, [_a], void 0, function* ({ limit, skip, filterQuery, sort }) {
             limit = limit ? limit : 10;

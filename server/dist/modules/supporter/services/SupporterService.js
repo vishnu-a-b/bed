@@ -30,7 +30,10 @@ class SupporterService {
             limit = limit ? limit : 10;
             skip = skip ? skip : 0;
             const supporters = yield Supporter_1.Supporter.find(filterQuery)
-                .populate(["user", "bed"])
+                .populate([
+                "user",
+                { path: "bed", populate: { path: "organization" } }
+            ])
                 .sort(sort)
                 .limit(limit)
                 .skip(skip);
@@ -115,16 +118,16 @@ class SupporterService {
             const countryData = yield Bed_1.Bed.aggregate([
                 {
                     $match: {
-                        country: new mongoose_1.default.Types.ObjectId(countryId)
-                    }
+                        country: new mongoose_1.default.Types.ObjectId(countryId),
+                    },
                 },
                 {
                     $lookup: {
                         from: "countries",
                         localField: "country",
                         foreignField: "_id",
-                        as: "country"
-                    }
+                        as: "country",
+                    },
                 },
                 { $unwind: "$country" },
                 {
@@ -135,9 +138,9 @@ class SupporterService {
                         currency: { $first: "$country.currency" },
                         totalBedsInCountry: { $sum: 1 },
                         totalAmountOfBed: { $sum: "$amount" },
-                        beds: { $push: "$_id" } // Collect all bed IDs
-                    }
-                }
+                        beds: { $push: "$_id" }, // Collect all bed IDs
+                    },
+                },
             ]);
             if (countryData.length === 0) {
                 throw new Error("Country not found");
@@ -150,36 +153,36 @@ class SupporterService {
                         from: "beds",
                         localField: "bed",
                         foreignField: "_id",
-                        as: "bed"
-                    }
+                        as: "bed",
+                    },
                 },
                 { $unwind: "$bed" },
                 {
                     $match: {
-                        "bed.country": new mongoose_1.default.Types.ObjectId(countryId)
-                    }
+                        "bed.country": new mongoose_1.default.Types.ObjectId(countryId),
+                    },
                 },
                 {
                     $group: {
                         _id: null,
-                        totalAmountOfSupporter: { $sum: "$amount" }
-                    }
-                }
+                        totalAmountOfSupporter: { $sum: "$amount" },
+                    },
+                },
             ]);
             // 3. Get detailed bed information with supporter counts
             const bedsWithSupporters = yield Bed_1.Bed.aggregate([
                 {
                     $match: {
-                        country: new mongoose_1.default.Types.ObjectId(countryId)
-                    }
+                        country: new mongoose_1.default.Types.ObjectId(countryId),
+                    },
                 },
                 {
                     $lookup: {
                         from: "supporters",
                         localField: "_id",
                         foreignField: "bed",
-                        as: "supporters"
-                    }
+                        as: "supporters",
+                    },
                 },
                 {
                     $project: {
@@ -187,10 +190,10 @@ class SupporterService {
                         bedId: "$_id",
                         totalAmountOfTheBed: "$amount",
                         totalNoOfSupportersByBed: { $size: "$supporters" },
-                        totalAmountFromSupporters: { $sum: "$supporters.amount" }
-                    }
+                        totalAmountFromSupporters: { $sum: "$supporters.amount" },
+                    },
                 },
-                { $sort: { bedNo: 1 } }
+                { $sort: { bedNo: 1 } },
             ]);
             return {
                 countryId: country._id,
@@ -199,13 +202,13 @@ class SupporterService {
                 totalBedsInCountry: country.totalBedsInCountry,
                 totalAmountOfSupporter: ((_a = supporterData[0]) === null || _a === void 0 ? void 0 : _a.totalAmountOfSupporter) || 0,
                 totalAmountOfBed: country.totalAmountOfBed,
-                beds: bedsWithSupporters.map(bed => ({
+                beds: bedsWithSupporters.map((bed) => ({
                     bedNo: bed.bedNo,
                     bedId: bed.bedId,
                     totalAmountOfTheBed: bed.totalAmountOfTheBed,
                     totalNoOfSupportersByBed: bed.totalNoOfSupportersByBed,
-                    totalAmountFromSupporters: bed.totalAmountFromSupporters
-                }))
+                    totalAmountFromSupporters: bed.totalAmountFromSupporters,
+                })),
             };
         });
         this.findOneBedData = (bedId) => __awaiter(this, void 0, void 0, function* () {
@@ -218,18 +221,18 @@ class SupporterService {
             const bedData = yield Bed_1.Bed.aggregate([
                 {
                     $match: {
-                        _id: new mongoose_1.default.Types.ObjectId(bedId)
-                    }
+                        _id: new mongoose_1.default.Types.ObjectId(bedId),
+                    },
                 },
                 {
                     $lookup: {
                         from: "countries",
                         localField: "country",
                         foreignField: "_id",
-                        as: "country"
-                    }
+                        as: "country",
+                    },
                 },
-                { $unwind: "$country" }
+                { $unwind: "$country" },
             ]);
             if (bedData.length === 0) {
                 throw new Error("Bed not found");
@@ -239,33 +242,39 @@ class SupporterService {
             const supportersData = yield Supporter_1.Supporter.aggregate([
                 {
                     $match: {
-                        bed: new mongoose_1.default.Types.ObjectId(bedId)
-                    }
+                        bed: new mongoose_1.default.Types.ObjectId(bedId),
+                    },
                 },
                 {
                     $project: {
-                        supporterName: "$name", // Directly use the name field from supporter
+                        supporterName: {
+                            $cond: {
+                                if: { $eq: ["$nameVisible", true] },
+                                then: "$name",
+                                else: "Anonymous",
+                            },
+                        },
                         amount: 1,
                         createdAt: 1,
                         // Include any other supporter fields you need
-                    }
+                    },
                 },
-                { $sort: { createdAt: -1 } } // Sort by newest first
+                { $sort: { createdAt: -1 } }, // Sort by newest first
             ]);
             // 3. Calculate totals (unchanged)
             const totals = yield Supporter_1.Supporter.aggregate([
                 {
                     $match: {
-                        bed: new mongoose_1.default.Types.ObjectId(bedId)
-                    }
+                        bed: new mongoose_1.default.Types.ObjectId(bedId),
+                    },
                 },
                 {
                     $group: {
                         _id: null,
                         totalNoOfSupportersByBed: { $sum: 1 },
-                        totalAmountFromSupporters: { $sum: "$amount" }
-                    }
-                }
+                        totalAmountFromSupporters: { $sum: "$amount" },
+                    },
+                },
             ]);
             return {
                 bedNo: bed.bedNo,
@@ -274,14 +283,15 @@ class SupporterService {
                 countryName: bed.country.name,
                 currency: bed.country.currency,
                 totalAmountOfTheBed: bed.amount,
+                fixedAmount: bed.fixedAmount,
                 totalNoOfSupportersByBed: ((_a = totals[0]) === null || _a === void 0 ? void 0 : _a.totalNoOfSupportersByBed) || 0,
                 totalAmountFromSupporters: ((_b = totals[0]) === null || _b === void 0 ? void 0 : _b.totalAmountFromSupporters) || 0,
-                supporters: supportersData.map(supporter => ({
+                supporters: supportersData.map((supporter) => ({
                     supporterName: supporter.supporterName,
                     amount: supporter.amount,
-                    date: supporter.createdAt
+                    date: supporter.createdAt,
                     // Include any other supporter fields you need
-                }))
+                })),
             };
         });
         this.countTotalDocuments = () => __awaiter(this, void 0, void 0, function* () { return yield Supporter_1.Supporter.countDocuments(); });

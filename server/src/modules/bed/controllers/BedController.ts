@@ -97,6 +97,15 @@ export default class BedController extends BaseController {
         return;
       }
 
+      let body = req.body;
+      if (req.file) {
+        console.log("req.files", req.file);
+        const file = req.file;
+        body.qrPhoto = Configs.domain + "bed/" + file.filename;
+      }
+
+      req.body.createdBy = req.user._id;
+
       const bed = await this.service.update({
         id: req.params.id,
         bed: req.body,
