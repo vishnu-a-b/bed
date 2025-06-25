@@ -107,19 +107,19 @@ export default function BedDetailsPage() {
         >
           <StatCard
             title="Bed Value"
-            value={`${bedData?.currency} ${bedData.totalAmountOfTheBed.toLocaleString()}`}
+            value={`${bedData?.currency} ${bedData.totalAmountOfTheBed}`}
             icon={<DollarSign className="w-6 h-6 text-blue-600" />}
             color="bg-blue-50"
           />
           <StatCard
             title="Monthly Support"
-            value={`${bedData?.currency} ${bedData.fixedAmount.toLocaleString()}`}
+            value={`${bedData?.currency} ${bedData.fixedAmount}`}
             icon={<DollarSign className="w-6 h-6 text-purple-600" />}
             color="bg-purple-50"
           />
           <StatCard
             title="Total Donations"
-            value={`${bedData?.currency} ${bedData.totalAmountFromSupporters.toLocaleString()}`}
+            value={`${bedData?.currency} ${bedData.totalAmountFromSupporters}`}
             icon={<Users className="w-6 h-6 text-green-600" />}
             color="bg-green-50"
           />

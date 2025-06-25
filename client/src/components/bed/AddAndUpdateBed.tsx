@@ -299,7 +299,7 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="flag">Flag</Label>
+        <Label htmlFor="flag">Qr Photo</Label>
         <MultiImageDropzone
           value={fileStates}
           dropzoneOptions={{

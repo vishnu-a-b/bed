@@ -9,6 +9,11 @@ const staffRoles_1 = require("../../base/enums/staffRoles");
 const supporterSchema = new mongoose_1.default.Schema({
     user: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, maxLength: 200, required: true },
+    panNo: { type: String, maxLength: 20, required: false },
+    nameVisible: {
+        type: Boolean,
+        default: true,
+    },
     bed: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "Bed",

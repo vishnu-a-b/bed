@@ -15,6 +15,7 @@ const StaffRouter_1 = __importDefault(require("../modules/staff/routes/StaffRout
 const BedRouter_1 = __importDefault(require("../modules/bed/routes/BedRouter"));
 const Organization_1 = __importDefault(require("../modules/organization/routes/Organization"));
 const SupporterRouter_1 = __importDefault(require("../modules/supporter/routes/SupporterRouter"));
+const PaymentRouter_1 = __importDefault(require("../modules/payment/routes/PaymentRouter"));
 const router = express_1.default.Router();
 router.use("/", IndexRouter_1.default);
 router.use("/v1/auth/", AuthenticationRouter_1.default);
@@ -27,4 +28,5 @@ router.use("/v1/country/", CountryRouter_1.default);
 router.use("/v1/staff/", StaffRouter_1.default);
 router.use("/v1/supporter/", SupporterRouter_1.default);
 router.use("/v1/bed/", BedRouter_1.default);
+router.use("/v1/payment/", PaymentRouter_1.default);
 exports.default = router;

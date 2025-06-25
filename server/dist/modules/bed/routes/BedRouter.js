@@ -17,25 +17,28 @@ const bedUpdateDoc_1 = require("../docs/bedUpdateDoc");
 const bedUpdateValidator_1 = require("../validators/bedUpdateValidator");
 const BedController_1 = __importDefault(require("../controllers/BedController"));
 const bedDeleteDoc_1 = require("../docs/bedDeleteDoc");
+const multer_1 = __importDefault(require("multer"));
+const multerConfig_1 = require("../../../multer/multerConfig");
+const multerFileFilters_1 = require("../../../multer/multerFileFilters");
+const BadRequestError_1 = __importDefault(require("../../../errors/errorTypes/BadRequestError"));
 const router = express_1.default.Router();
 const controller = new BedController_1.default();
-// const upload = multer({
-//   storage: multerFileStorage,
-//   fileFilter: multerImageFilter,
-// }).any(); // allows multiple files
-// const uploadMethod = (req: Request, res: Response, next: NextFunction) => {
-//   return upload(req, res, function (err) {
-//     if (err) {
-//       return next(new BadRequestError({ error: "invalid file type" }));
-//     }
-//     // ✅ log incoming multipart/form-data
-//     console.log("===== Incoming multipart/form-data Request =====");
-//     console.log("🔸 req.body (form fields):", req.body);
-//     console.log("🔸 req.files (uploaded files):", req.files);
-//     console.log("================================================");
-//     next();
-//   });
-// };
+const upload = (0, multer_1.default)({
+    storage: multerConfig_1.multerFileStorageForQr,
+    fileFilter: multerFileFilters_1.multerImageFilter,
+}).single("qrPhoto");
+const uploadMethod = (req, res, next) => {
+    return upload(req, res, function (err) {
+        if (err) {
+            return next(new BadRequestError_1.default({ error: "invalid file type" }));
+        }
+        console.log("===== Incoming multipart/form-data Request =====");
+        console.log("🔸 req.body (form fields):", req.body);
+        console.log("🔸 req.files (uploaded files):", req.file);
+        console.log("================================================");
+        next();
+    });
+};
 const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
 // Bed routes
 router.get("/", bedListDoc_1.bedListDoc, (0, setFilterParams_1.default)(Bed_1.bedFilterFields), controller.get);
@@ -43,8 +46,8 @@ router.get("/count-documents", bedCountDoc_1.bedCountDoc, controller.countTotalD
 router.get("/:id", bedDetailsDoc_1.bedDetailsDoc, controller.getOne);
 router.use(authenticateUser_1.authenticateUser);
 router.post("/", authorization, bedCreateDoc_1.bedCreateDoc, // Add if file uploads are needed
-bedCreateValidator_1.bedCreateValidator, controller.create);
-router.put("/:id", authorization, bedUpdateDoc_1.bedUpdateDoc, bedUpdateValidator_1.bedUpdateValidator, controller.update);
+uploadMethod, bedCreateValidator_1.bedCreateValidator, controller.create);
+router.put("/:id", authorization, bedUpdateDoc_1.bedUpdateDoc, uploadMethod, bedUpdateValidator_1.bedUpdateValidator, controller.update);
 router.delete("/:id", authorization, bedDeleteDoc_1.bedDeleteDoc, controller.delete);
 // Add any additional bed-specific routes here
 // For example:

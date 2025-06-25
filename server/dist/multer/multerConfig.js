@@ -23,7 +23,7 @@ exports.multerFileStorageForUserData = multer_1.default.diskStorage({
 });
 exports.multerFileStorageForQr = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "public/attendance/");
+        cb(null, "public/bed/");
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + "-" + file.originalname);

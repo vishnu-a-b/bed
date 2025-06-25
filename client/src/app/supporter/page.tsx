@@ -229,21 +229,11 @@ export default function SupporterDetailsPage() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogDescription>
-                  <PaymentForm supporter={supporterData} />
+                  {/* <PaymentForm supporter={supporterData} /> */}
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
           </Dialog>
-          
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all"
-          >
-            <Share2 className="mr-2 h-5 w-5" />
-            Share Profile
-          </Button>
         </motion.div>
 
         {/* Supporter Details Section */}

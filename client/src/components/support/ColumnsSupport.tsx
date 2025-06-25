@@ -66,8 +66,8 @@ export const columns: ColumnDef<Employee>[] = [
     cell: ({ row }) => {
       const org = row.original.bed?.organization;
       const id = row.original._id;
-      const link = org?.vcLink && id ? `${org.vcLink}/supporter?supporter=${id}` : "";
-
+      const link = org?.vcLink && id ? `${org.vcLink.replace(/\/$/, "")}/supporter?supporter=${id}` : "";
+      console.log("Link:", link);
       const handleCopy = async () => {
         if (!link) {
           toastService.error("Link not available.");
