@@ -8,15 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { setIsAuth } from "@/lib/slice/authSlice";
+import { useMemo, useState } from "react";
+import { selectRole, setIsAuth, setRole } from "@/lib/slice/authSlice";
 import { setUserDetails } from "@/lib/slice/userSlice";
 import { Axios, loginUser } from "@/utils/api/apiAuth";
 import { useAppDispatch } from "@/lib/hooks/redux-hook";
 import toastService from "@/utils/toastService";
 import { Eye, EyeOff } from "lucide-react";
-
-
+import { useSelector } from "react-redux";
 
 // Define validation schema using Zod
 const loginSchema = z.object({
@@ -29,6 +28,8 @@ type LoginFormInputs = z.infer<typeof loginSchema>;
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const role = useSelector(selectRole);
+  const [error, setError] = useState("");
   const dispatch = useAppDispatch();
   const {
     register,
@@ -38,25 +39,37 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
+  
+
   const onSubmit = async (data: LoginFormInputs) => {
     setLoading(true);
     try {
-      const loginResponse = await loginUser(data.userName, data.password);
+      const { isSuperAdmin, roles } = await loginUser(
+        data.userName,
+        data.password
+      );
 
       const accountResponse = await Axios.get(`/account/details`);
       if (accountResponse.data.success) {
         const userData = {
           id: accountResponse.data.data._id,
-          role: "any",
           name: accountResponse.data.data.name,
-          photo: accountResponse.data.data.photo,
+          photo: accountResponse.data.data?.photo,
         };
+        console.log("User Data:", userData,roles,role);
         // toastService.success("Successfully Logged In")
-        
-        dispatch(setIsAuth(true));
-        dispatch(setUserDetails(userData));
+        const validRole = roles.some((r) => r.slug === role);
+        if ((isSuperAdmin && role === "superAdmin") || validRole) {
+          const formattedRole = isSuperAdmin ? "super-admin" : role;
+          dispatch(setRole(formattedRole));
+          dispatch(setIsAuth(true));
+          dispatch(setUserDetails({ ...userData, role: formattedRole }));
+          toastService.success("Successfully Logged In");
+          // You can keep the user on the same page by not using router.push here
+        } else {
+          setError("Wrong username or password");
+        }
       }
-    
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
@@ -80,7 +93,9 @@ export default function LoginForm() {
             required
           />
           {errors.userName && (
-            <p className="text-red-500 text-sm mt-1">{errors.userName.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.userName.message}
+            </p>
           )}
         </div>
 
@@ -98,7 +113,7 @@ export default function LoginForm() {
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-3 top-9 text-xl text-gray-500"
           >
-            {showPassword ? <Eye size={16} /> : <EyeOff size={16}/>}
+            {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">

@@ -39,7 +39,10 @@ export const fetchOrganization = async (searchTerm: any) => {
 };
 
 export const fetchBed = async (searchTerm: any) => {
-  const search = searchTerm ? `&search=${searchTerm}` : "";
+  let term= Number(searchTerm);
+  console.log("searchTerm", searchTerm, term,typeof term,typeof searchTerm);
+  const search = searchTerm ? `&search=${term}` : "";
+
   const response = await Axios.get(
     `${API_URL}/bed?limit=Infinity&sortBy=updatedAt${search}`
   );

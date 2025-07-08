@@ -13,6 +13,7 @@ import DonationForm from "../donate/donationForm";
 import { Button } from "@/components/ui/button";
 import { Share2, Heart, DollarSign, Users, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import toastService from "@/utils/toastService";
 
 export default function BedDetailsPage() {
   const bedId =
@@ -46,26 +47,77 @@ export default function BedDetailsPage() {
   if (error) return <ErrorDisplay message={error} />;
   if (!bedData) return <NotFound />;
 
-  const handleShare = async () => {
-    const shareData = {
-      title: document.title,
-      text: "Help support palliative care by sponsoring a bed!",
-      url: window.location.href,
-    };
+const handleShare = async () => {
+  if (!window.location.href) {
+    toastService.error("Link not available.");
+    return;
+  }
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.error("Sharing failed:", err);
-      }
-    } else {
-      const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
-        shareData.text + " " + shareData.url
-      )}`;
-      window.open(whatsappURL, "_blank");
-    }
+  const shareData = {
+    title: " ",
+    text: `Bed : ${bedData.bedNo}\nMonthly Contribution : ${bedData?.currency} ${bedData?.fixedAmount}\n\nClick this link:`,
+    url: window.location.href,
   };
+
+  // Enhanced sharing options
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        showShareOptions(shareData);
+      }
+    }
+  } else {
+    showShareOptions(shareData);
+  }
+};
+
+const showShareOptions = (shareData: { title: string; text: string; url: string }) => {
+  const fullText = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+  
+  const shouldShare = window.confirm(
+    `Share bed details?\n\n${shareData.text}\n\n` +
+    `Click OK for WhatsApp or Cancel for other options`
+  );
+
+  if (shouldShare) {
+    // WhatsApp
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(fullText)}`,
+      "_blank"
+    );
+  } else {
+    // Show additional options
+    const option = prompt(
+      "Choose sharing method:\n\n" +
+      "1. Copy to clipboard\n" +
+      "2. Email\n" +
+      "3. Telegram\n" +
+      "Enter option number:"
+    );
+
+    switch (option) {
+      case "1":
+        navigator.clipboard.writeText(fullText);
+        toastService.success("Copied to clipboard!");
+        break;
+      case "2":
+        window.open(
+          `mailto:?subject=${encodeURIComponent(shareData.title)}&body=${encodeURIComponent(fullText)}`
+        );
+        break;
+      case "3":
+        window.open(
+          `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.text)}`
+        );
+        break;
+      default:
+        navigator.clipboard.writeText(fullText);
+        toastService.success("Copied to clipboard!");
+    }
+  }
+};
 
   const progressPercentage = Math.min(
     100,
@@ -76,7 +128,7 @@ export default function BedDetailsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -86,7 +138,7 @@ export default function BedDetailsPage() {
             Sponsor a Bed, <span className="text-blue-600">Sustain a Life</span>
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
-            Bring dignity and comfort to those in palliative care 
+            Bring dignity and comfort to those in palliative care
           </p>
           <div className="flex justify-center items-center gap-3">
             <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1">
@@ -99,7 +151,7 @@ export default function BedDetailsPage() {
         </motion.div>
 
         {/* Stats Cards */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -113,7 +165,11 @@ export default function BedDetailsPage() {
           />
           <StatCard
             title="Monthly Support"
-            value={`${bedData?.currency} ${bedData.fixedAmount}`}
+            value={
+              bedData.fixedAmount
+                ? `${bedData?.currency} ${bedData.fixedAmount}`
+                : "No Limit"
+            }
             icon={<DollarSign className="w-6 h-6 text-purple-600" />}
             color="bg-purple-50"
           />
@@ -125,14 +181,16 @@ export default function BedDetailsPage() {
           />
           <StatCard
             title="Amount Needed"
-            value={`${bedData?.currency} ${(bedData.totalAmountOfTheBed - bedData.totalAmountFromSupporters).toLocaleString()}`}
+            value={`${bedData?.currency} ${(
+              bedData.totalAmountOfTheBed - bedData.totalAmountFromSupporters
+            ).toLocaleString()}`}
             icon={<Heart className="w-6 h-6 text-red-600" />}
             color="bg-red-50"
           />
         </motion.div>
 
         {/* Progress Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -154,16 +212,18 @@ export default function BedDetailsPage() {
           </div>
           <div className="flex justify-between text-sm text-gray-600">
             <span>
-              Raised: {bedData?.currency} {bedData.totalAmountFromSupporters.toLocaleString()}
+              Raised: {bedData?.currency}{" "}
+              {bedData.totalAmountFromSupporters.toLocaleString()}
             </span>
             <span>
-              Goal: {bedData?.currency} {bedData.totalAmountOfTheBed.toLocaleString()}
+              Goal: {bedData?.currency}{" "}
+              {bedData.totalAmountOfTheBed.toLocaleString()}
             </span>
           </div>
         </motion.div>
 
         {/* Supporters Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -188,7 +248,10 @@ export default function BedDetailsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {bedData.supporters.map((supporter: any, index: any) => (
-                  <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <TableCell>
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
@@ -205,10 +268,10 @@ export default function BedDetailsPage() {
                       {bedData?.currency} {supporter.amount.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500">
-                      {new Date(supporter.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
+                      {new Date(supporter.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
                       })}
                     </TableCell>
                   </tr>
@@ -230,7 +293,7 @@ export default function BedDetailsPage() {
         </motion.div>
 
         {/* CTA Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -245,20 +308,20 @@ export default function BedDetailsPage() {
                 Commit to Care
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
               <DialogHeader>
-                <DialogDescription>
+                <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
                   <DonationForm bed={bedData} />
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
           </Dialog>
-          
+
           <Button
             onClick={handleShare}
             variant="outline"
             size="lg"
-            className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all"
+            className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all bg-white"
           >
             <Share2 className="mr-2 h-5 w-5" />
             Share This Bed
@@ -266,7 +329,7 @@ export default function BedDetailsPage() {
         </motion.div>
 
         {/* Impact Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -309,11 +372,11 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className={`${color} p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md`}>
+    <div
+      className={`${color} p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md`}
+    >
       <div className="flex items-start">
-        <div className="p-2 rounded-lg bg-white shadow-sm mr-4">
-          {icon}
-        </div>
+        <div className="p-2 rounded-lg bg-white shadow-sm mr-4">{icon}</div>
         <div>
           <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
           <p className="text-2xl font-bold text-gray-900">{value}</p>
@@ -342,9 +405,7 @@ function TableCell({
   className?: string;
 }) {
   return (
-    <td
-      className={`px-6 py-4 whitespace-nowrap text-sm ${className}`}
-    >
+    <td className={`px-6 py-4 whitespace-nowrap text-sm ${className}`}>
       {children}
     </td>
   );

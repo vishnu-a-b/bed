@@ -21,7 +21,13 @@ export default class SupporterService {
     const supporters = await Supporter.find(filterQuery)
       .populate([
       "user",
-      { path: "bed", populate: { path: "organization" } }
+      { 
+        path: "bed", 
+        populate: [
+        { path: "organization" },
+        { path: "country" }
+        ] 
+      }
       ])
       .sort(sort)
       .limit(limit)

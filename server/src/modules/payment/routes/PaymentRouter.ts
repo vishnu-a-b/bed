@@ -18,6 +18,7 @@ import { paymentUpdateDoc } from "../docs/paymentUpdateDoc";
 // Validators (optional)
 import { paymentCreateValidator } from "../validators/paymentCreateValidator";
 import { paymentUpdateValidator } from "../validators/paymentUpdateValidator";
+import {whatsappHelper}  from "../../../services/whatsapp-simple-helper";
 
 const router = express.Router();
 const controller = new PaymentController();
@@ -29,9 +30,28 @@ router.post(
   paymentCreateValidator,
   controller.create
 );
+router.post('/send-hi', async (req, res) => {
+  try {
+    //const { phoneNumber } = req.body;
+    const messageId = await whatsappHelper.sendHiMessage('8129470310');
+    res.json({ success: true, messageId });
+  } catch (error:any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 router.get("/get-supporter-data/:id", paymentListDoc, controller.getSupporterDetails);
-router.post("/create-order",paymentListDoc, controller.createOrder);
+router.post(
+  "/create-order",
+  paymentListDoc,
+  async (req, res, next) => {
+    try {
+      await controller.createOrder(req, res);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // Verify payment
 router.post("/verify", controller.verifyPayment);

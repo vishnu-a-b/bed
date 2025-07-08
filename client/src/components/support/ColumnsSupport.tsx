@@ -20,7 +20,10 @@ export interface Employee {
     organization: {
       name: string;
       vcLink?: string;
-    }
+    };
+    country: {
+      currency: string;
+    };
   }
   amount: number;
   role: string;
@@ -38,6 +41,10 @@ export const columns: ColumnDef<Employee>[] = [
   {
     accessorKey: "amount",
     header: "Amount",
+    cell: ({ row }) => {
+      const amount = row.original.amount;
+      return `${row.original.bed?.country?.currency} ${amount}`;
+    },
   },
 
   {
@@ -133,14 +140,6 @@ const ViewDetails = ({ data }: { data: any }) => {
       <div className="flex items-center gap-2">
         <p>
           <strong>{data.name}</strong>
-          <br />
-          <p>
-            Age :
-            {data.user.dateOfBirth
-              ? calculateAge(data.user.dateOfBirth)
-              : "N/A"}
-          </p>
-          <br />
           Phone No : {data?.user?.mobileNo}
           <br />
           Email : {data?.user?.email}
@@ -148,7 +147,7 @@ const ViewDetails = ({ data }: { data: any }) => {
       </div>
 
       <div className="flex gap-2">
-        <Button
+        {/* <Button
           className=" text-sm"
           onClick={(e) => {
             dispatch(setUpdateUrl("supporter"));
@@ -164,7 +163,7 @@ const ViewDetails = ({ data }: { data: any }) => {
           <DialogContent className="sm:max-w-[425px]">
             <UpdatePasswordForm supporterId={data._id} />
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
     </div>
   );

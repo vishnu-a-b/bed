@@ -55,13 +55,16 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
         try {
           const items: any = await fetchSingleData(countryId, "country");
           const data = items.items;
-          
+
           setValue("name", data.name);
           setValue("currency", data.currency);
           setValue("flag", data.flag || "");
 
           if (data.organization) {
-            const orgItems: any = await fetchSingleData(data.organization, "organization");
+            const orgItems: any = await fetchSingleData(
+              data.organization,
+              "organization"
+            );
             const orgData = orgItems.items;
             setOrganization({ value: data.organization, label: orgData.name });
           }
@@ -101,7 +104,14 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
   };
 
   const handleOrganizationChange = (selectedOption: any) => {
-    setOrganization({value:selectedOption.id, label:selectedOption.label});
+    if (!selectedOption) {
+      setOrganization(undefined);
+    } else {
+      setOrganization({
+        value: selectedOption.id,
+        label: selectedOption.label,
+      });
+    }
   };
 
   const onSubmit = async (data: CountryFormData) => {
@@ -119,13 +129,8 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           ...(head && { head: head.value }),
         };
 
-        const response = await update(
-          countryData,
-          "country",
-          countryId,
-          true
-        );
-        
+        const response = await update(countryData, "country", countryId, true);
+
         if (response._id) {
           toastService.success("Country updated successfully");
           clear();
@@ -144,7 +149,7 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
         };
 
         const response = await create("country", countryData, true);
-        
+
         if (response._id) {
           toastService.success("Country created successfully");
           clear();
@@ -264,15 +269,15 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           <Button onClick={clear} className="bg-slate-400 hover:bg-slate-500">
             {countryId ? "Cancel" : "Clear"}
           </Button>
-          <Button 
-            className={isSending ? "cursor-not-allowed opacity-50" : ""} 
+          <Button
+            className={isSending ? "cursor-not-allowed opacity-50" : ""}
             type="submit"
           >
             {countryId ? "Update" : "Create"}
           </Button>
         </div>
       </form>
-      
+
       {isUserPopupVisible && (
         <UserCreationPopup
           onClose={() => setUserPopupVisible(false)}

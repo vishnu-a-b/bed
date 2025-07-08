@@ -190,30 +190,40 @@ export default class PaymentService {
 
   async createOrder(params: CreateOrderParams) {
     const { supporterId } = params;
-    console.log("Creating order for supporter:", supporterId);
-    // Get supporter details
-    const supporter: any = await Supporter.findById(supporterId)
-      .populate([
-      { path: "user" },
-      { 
-        path: "bed",
-        populate: { path: "country" }
-      }
-      ]);
-    if (!supporter) {
-      throw new Error("Supporter not found");
+
+    // Validate input
+    if (!supporterId) {
+      throw new Error("supporterId is required");
     }
 
-    const options = {
-      amount: supporter.amount.toString(),
-      currency: supporter.bed.country?.currency || "INR", // Default to INR if not set
-      receipt: `receipt_${Date.now()}`,
-    };
+    console.log("Creating order for supporter:", supporterId);
 
     try {
+      // Get supporter details with proper typing
+      const supporter = await Supporter.findById(supporterId).populate<{
+        user: any;
+        bed: { _id: any; country: any };
+      }>([{ path: "user" }, { path: "bed", populate: { path: "country" } }]);
+
+      if (!supporter) {
+        throw new Error("Supporter not found");
+      }
+
+      // Validate amount
+      if (!supporter.amount || isNaN(Number(supporter.amount))) {
+        throw new Error("Invalid amount specified for supporter");
+      }
+
+      // Create Razorpay order
+      const options = {
+        amount: Math.round(Number(supporter.amount) * 100), // Convert to paise
+        currency: supporter.bed.country?.currency || "INR",
+        receipt: `receipt_${Date.now()}`,
+      };
+
       const order = await razorpay.orders.create(options);
 
-      // Create a payment record in database (status: pending)
+      // Create payment record
       const payment = new Payment({
         razorpay_order_id: order.id,
         amount: order.amount,
@@ -223,8 +233,8 @@ export default class PaymentService {
         paymentMode: "online",
         supporter: supporterId,
         bed: supporter.bed._id,
-        email: supporter.user.email, // assuming user has email
-        contact: supporter.user.phoneNumber, // assuming user has phoneNumber
+        email: supporter.user?.email,
+        contact: supporter.user?.phoneNumber,
         created_at: Math.floor(Date.now() / 1000),
         notes: order.notes,
       });
@@ -232,16 +242,19 @@ export default class PaymentService {
       await payment.save();
 
       return {
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        key: process.env.RAZORPAY_KEY_ID,
+        success: true,
+        data: {
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          key: process.env.RAZORPAY_KEY_ID,
+        },
       };
     } catch (error) {
-      console.error("Error creating Razorpay order:", error);
-      throw error;
+      console.error("Error in createOrder service:", error);
+      throw error; // Re-throw for controller to handle
     }
-  }
+  };
 
   async verifyPayment(params: VerifyPaymentParams) {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =

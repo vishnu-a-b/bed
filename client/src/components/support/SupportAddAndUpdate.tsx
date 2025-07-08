@@ -17,6 +17,7 @@ import { clearUpdate } from "@/lib/slice/updateSlice";
 import { deleteData } from "@/utils/api/delete";
 import { RoleOption } from "@/types/api.interface";
 import { add } from "lodash";
+import { loadBedOptions } from "@/utils/api/loadSelectData";
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }).max(100),
@@ -318,15 +319,7 @@ const SupporterForm = ({ supporterId }: { supporterId?: string }) => {
     dispatch(clearUpdate());
   };
 
-  const loadBedOptions = async (inputValue: string) => {
-    const response = await fetchBed(inputValue);
-    const data: any[] = response.items;
 
-    return data.map((bed: any) => ({
-      id: bed._id,
-      label: bed.bedNo,
-    }));
-  };
 
   return (
     <form

@@ -5,6 +5,9 @@ import { Axios } from "@/utils/api/apiAuth";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { columns, Bed } from "./ColumnsBed";
+import AsyncSelect from "react-select/async";
+import { loadOrganizationOptions } from "@/utils/api/loadSelectData";
+import { selectRole } from "@/lib/slice/authSlice";
 
 export default function ViewBed() {
   const [data, setData] = useState<Bed[]>([]);
@@ -14,6 +17,8 @@ export default function ViewBed() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [organization, setOrganization] = useState<any>();
+  const role=useSelector(selectRole);
   const refresh: boolean = useSelector(
     (state: RootState) => state.update.refresh
   );
@@ -40,6 +45,16 @@ export default function ViewBed() {
     }, 500),
     []
   );
+  const handleOrganizationChange = (selectedOption: any) => {
+    if (!selectedOption) {
+      setOrganization(null);
+    } else {
+      setOrganization({
+        value: selectedOption.id,
+        label: selectedOption.label,
+      });
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -58,18 +73,23 @@ export default function ViewBed() {
         setTotalRows(1);
         return items;
       }
-    //   if (statusFilter === "Occupied") {
-    //     isActiveFilter = "isOccupied__eq=true&";
-    //   } else if (statusFilter === "Available") {
-    //     isActiveFilter = "isOccupied__eq=false&";
-    //   }
-      
+      //   if (statusFilter === "Occupied") {
+      //     isActiveFilter = "isOccupied__eq=true&";
+      //   } else if (statusFilter === "Available") {
+      //     isActiveFilter = "isOccupied__eq=false&";
+      //   }
+
       let orgFilter = "";
-    //   if (organizationId) {
-    //     orgFilter = `organization__eq=${organizationId}&`;
-    //   }
+      if (organization && organization.value) {
+        orgFilter = `organization__eq=${organization.value}&`;
+      }
 
       const searchParam = debouncedSearch ? `search=${debouncedSearch}&` : "";
+      console.log(
+        `/bed?limit=${pageSize}&skip=${
+          pageIndex * pageSize
+        }&${orgFilter}${isActiveFilter}${searchParam}`
+      );
       const response = await Axios.get(
         `/bed?limit=${pageSize}&skip=${
           pageIndex * pageSize
@@ -91,7 +111,16 @@ export default function ViewBed() {
       setData(result);
     }
     fetchData();
-  }, [pageIndex, pageSize, debouncedSearch, statusFilter, refresh, bedId, organizationId]);
+  }, [
+    pageIndex,
+    pageSize,
+    debouncedSearch,
+    statusFilter,
+    refresh,
+    bedId,
+    organizationId,
+    organization,
+  ]);
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -105,18 +134,15 @@ export default function ViewBed() {
             placeholder="Search beds by patient or number..."
             className="mb-4 p-2 border rounded"
           />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPageIndex(0);
-            }}
-            className={`mb-4 p-2 border border-gray-300 rounded`}
-          >
-            <option value="all">All Beds</option>
-            <option value="Occupied">Occupied</option>
-            <option value="Available">Available</option>
-          </select>
+          <AsyncSelect
+            cacheOptions
+            loadOptions={loadOrganizationOptions}
+            defaultOptions
+            value={organization}
+            onChange={handleOrganizationChange}
+            classNamePrefix="select"
+            isClearable
+          />
         </div>
         <DataTable
           url="bed"
@@ -127,7 +153,7 @@ export default function ViewBed() {
           pageSize={pageSize}
           onPageChange={setPageIndex}
           onPageSizeChange={setPageSize}
-          actions={{ delete: true, edit: true }}
+          actions={{ delete: role==='super-admin' , edit: role==='super-admin' }}
         />
       </div>
     </div>

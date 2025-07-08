@@ -30,7 +30,6 @@ export default function Page() {
         const response = await axios(
           `${API_URL}/supporter/get-country-data/${country}`
         );
-        console.log(response.data);
         setData(response?.data);
         setSelectedBeds(response?.data?.beds[0]);
         setLoading(false);

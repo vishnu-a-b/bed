@@ -4187,6 +4187,19 @@
         ]
       }
     },
+    "/v1/payment/send-hi": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/v1/payment/get-supporter-data/{id}": {
       "get": {
         "tags": [
@@ -4379,9 +4392,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [

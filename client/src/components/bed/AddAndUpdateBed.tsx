@@ -22,7 +22,7 @@ import { FileState, MultiImageDropzone } from "../ui/Multi-Image";
 // Zod schema for validation
 const bedSchema = z.object({
   bedNo: z.number().min(1, "Bed number must be at least 1"),
-  fixedAmount: z.number().min(1).max(1000000, "Fixed amount must be between 1 and 1,000,000"),
+  fixedAmount: z.string().optional(),
   amount: z.number().min(0),
   patientName: z.string().optional(),
   vcLink: z.string().url().optional().or(z.literal("")),
@@ -51,7 +51,6 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   } = useForm<BedFormData>({
     resolver: zodResolver(bedSchema),
     defaultValues: {
-      fixedAmount: 15,
       amount: 0,
     },
   });
@@ -102,13 +101,8 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   }, [bedId, setValue]);
 
   const clear = () => {
-    setValue("fixedAmount", 15);
-    setValue("amount", 0);
     setValue("patientName", "");
     setValue("vcLink", "");
-    setHead(undefined);
-    setOrganization(undefined);
-    setCountry(undefined);
     setFileStates([]);
     dispatch(clearUpdate());
   };
@@ -118,11 +112,22 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
   };
 
   const handleOrganizationChange = (selectedOption: any) => {
-    setOrganization({ value: selectedOption.id, label: selectedOption.label });
+    if (!selectedOption) {
+      setOrganization(null);
+    } else {
+      setOrganization({
+        value: selectedOption.id,
+        label: selectedOption.label,
+      });
+    }
   };
 
   const handleCountryChange = (selectedOption: any) => {
-    setCountry({ value: selectedOption.id, label: selectedOption.label });
+    if (!selectedOption) {
+      setCountry(null);
+    } else {
+      setCountry({ value: selectedOption.id, label: selectedOption.label });
+    }
   };
 
   const onSubmit = async (data: BedFormData) => {
@@ -131,7 +136,9 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       const formData = new FormData();
 
       formData.append("bedNo", String(data.bedNo));
-      formData.append("fixedAmount", String(data.fixedAmount));
+      if (data.fixedAmount) {
+        formData.append("fixedAmount", String(data.fixedAmount));
+      }
       formData.append("amount", String(data.amount));
       formData.append("patientName", data.patientName ?? "");
       formData.append("vcLink", data.vcLink ?? "");
@@ -228,32 +235,12 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
       </div>
 
       <div>
-        <Label htmlFor="fixedAmount" className="required">
-          Donation Amount
-        </Label>
-        <Input
-          id="fixedAmount"
-          type="number"
-          {...register("fixedAmount", { valueAsNumber: true })}
-          className={`w-full border rounded p-2 ${
-            errors.fixedAmount ? "border-red-500" : "border-gray-300"
-          } bg-white dark:bg-gray-800 dark:text-white`}
-        />
-        {errors.fixedAmount && (
-          <p className="text-red-500 text-sm">
-            {errors.fixedAmount.message}
-          </p>
-        )}
-      </div>
-
-      <div>
         <Label htmlFor="amount" className="required">
-          Monthly Cost 
+          Monthly Cost
         </Label>
         <Input
           id="amount"
           type="number"
-          step="0.01"
           {...register("amount", { valueAsNumber: true })}
           className={`w-full border rounded p-2 ${
             errors.amount ? "border-red-500" : "border-gray-300"
@@ -261,6 +248,21 @@ const AddAndUpdateBed = ({ bedId }: { bedId?: string }) => {
         />
         {errors.amount && (
           <p className="text-red-500 text-sm">{errors.amount.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="fixedAmount">Fixed Donation Amount</Label>
+        <Input
+          id="fixedAmount"
+          type="text"
+          {...register("fixedAmount")}
+          className={`w-full border rounded p-2 ${
+            errors.fixedAmount ? "border-red-500" : "border-gray-300"
+          } bg-white dark:bg-gray-800 dark:text-white`}
+        />
+        {errors.fixedAmount && (
+          <p className="text-red-500 text-sm">{errors.fixedAmount.message}</p>
         )}
       </div>
 

@@ -1,4 +1,10 @@
-import { fetchOrganization, fetchDepartment, fetchDesignation, fetchUsers, fetchCountry } from "./fetchData";
+import {
+  fetchOrganization,
+  fetchDesignation,
+  fetchUsers,
+  fetchCountry,
+  fetchBed,
+} from "./fetchData";
 
 export const loadOrganizationOptions = async (inputValue: string) => {
   const response = await fetchOrganization(inputValue);
@@ -18,8 +24,15 @@ export const loadCountryOptions = async (inputValue: string) => {
     label: busines.name,
   }));
 };
+export const loadBedOptions = async (inputValue: string) => {
+  const response = await fetchBed(inputValue);
+  const data: any[] = response.items;
 
-
+  return data.map((bed: any) => ({
+    id: bed._id,
+    label: `${bed.bedNo} - ${bed?.organization?.name}`,
+  }));
+};
 
 export const loadDesignationOptions = async (inputValue: string) => {
   const response = await fetchDesignation(inputValue);

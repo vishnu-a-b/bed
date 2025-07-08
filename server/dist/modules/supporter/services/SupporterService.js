@@ -32,7 +32,13 @@ class SupporterService {
             const supporters = yield Supporter_1.Supporter.find(filterQuery)
                 .populate([
                 "user",
-                { path: "bed", populate: { path: "organization" } }
+                {
+                    path: "bed",
+                    populate: [
+                        { path: "organization" },
+                        { path: "country" }
+                    ]
+                }
             ])
                 .sort(sort)
                 .limit(limit)
