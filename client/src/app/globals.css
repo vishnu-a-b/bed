@@ -40,9 +40,8 @@ body {
     --sidebar-accent: 220 90% 56%;
     --sidebar-accent-foreground: 240 98% 98%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
-  .dark {
+  /* .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 88%;
     --card: 0 0% 3.9%;
@@ -75,24 +74,22 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+  }*/
 }
 
 .required:after {
-  content:" *";
+  content: " *";
   color: red;
 }
 /* HTML: <div class="loader"></div> */
 .loader {
   width: 45px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#04AA6D 0 0);
+  --c: no-repeat linear-gradient(#04aa6d 0 0);
   background: var(--c), var(--c), var(--c);
-  animation: 
-    l18-1 1s infinite,
-    l18-2 1s infinite;
+  animation: l18-1 1s infinite, l18-2 1s infinite;
 }
-.dark .select__single-value{
+/* .dark .select__single-value{
   @apply  text-white;
 }
 .dark .select__control {
@@ -101,25 +98,27 @@ body {
 
 .dark .select__menu {
   @apply bg-white text-black;
-}
-
-/* .dark .select__option {
-  @apply bg- text-black;
 } */
-/* .dark .select__menu:hover{
-  @apply text-black;
-} */
-
-
-
 
 @keyframes l18-1 {
- 0%,100% {background-size:20% 100%}
- 33%,66% {background-size:20% 20%}
+  0%,
+  100% {
+    background-size: 20% 100%;
+  }
+  33%,
+  66% {
+    background-size: 20% 20%;
+  }
 }
 @keyframes l18-2 {
- 0%,33%   {background-position: 0    0,50% 50%,100% 100%}
- 66%,100% {background-position: 100% 0,50% 50%,0    100%}
+  0%,
+  33% {
+    background-position: 0 0, 50% 50%, 100% 100%;
+  }
+  66%,
+  100% {
+    background-position: 100% 0, 50% 50%, 0 100%;
+  }
 }
 
 @layer base {

@@ -128,42 +128,50 @@ export default class PaymentController extends BaseController {
       }
     }
   };
-  createOrder= async(req: Request, res: Response)=> {
+  createOrder = async (req: Request, res: Response) => {
     try {
-      console.log("create order", req.body);
-      const {  supporterId } = req.body;
+        const { supporterId } = req.body;
+        
+        const result = await this.service.createOrder({ supporterId });
 
-      const order = await this.service.createOrder({
-        supporterId,     
-      });
+        // Wrap the response in a data object
+        return res.json({
+            success: true,
+            data: {
+                orderId: result.data.orderId,
+                amount: result.data.amount,
+                currency: result.data.currency,
+                key: result.data.key
+            }
+        });
 
-      res.json(order);
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      console.error("Error in createOrder controller:", error);
+
+      // Handle different error types
+      let statusCode = 500;
+      let errorMessage = "An unknown error occurred";
+
       if (error instanceof Error) {
-        if (error instanceof Error) {
-          if (error instanceof Error) {
-            res
-              .status(500)
-              .json({
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : "An unknown error occurred",
-              });
-          } else {
-            res.status(500).json({ error: "An unknown error occurred" });
-          }
-        } else {
-          res.status(500).json({ error: "An unknown error occurred" });
+        errorMessage = error.message;
+        if (error.message.includes("not found")) {
+          statusCode = 404;
+        } else if (
+          error.message.includes("required") ||
+          error.message.includes("Invalid")
+        ) {
+          statusCode = 400;
         }
-      } else {
-        res.status(500).json({ error: "An unknown error occurred" });
       }
-    }
-  }
 
-  verifyPayment= async(req: Request, res: Response)=> {
+      return res.status(statusCode).json({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  };
+
+  verifyPayment = async (req: Request, res: Response) => {
     try {
       const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
         req.body;
@@ -177,14 +185,10 @@ export default class PaymentController extends BaseController {
       res.json(payment);
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
     }
-  }
+  };
 }

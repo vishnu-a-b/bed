@@ -19,6 +19,7 @@ const NotFoundError_1 = __importDefault(require("../../../errors/errorTypes/NotF
 const mongoose_1 = __importDefault(require("mongoose"));
 const BadRequestError_1 = __importDefault(require("../../../errors/errorTypes/BadRequestError"));
 const SupporterService_1 = __importDefault(require("../services/SupporterService"));
+const mailService_1 = __importDefault(require("../../../services/mailService"));
 class SupporterController extends BaseController_1.default {
     constructor() {
         super(...arguments);
@@ -32,6 +33,11 @@ class SupporterController extends BaseController_1.default {
                     return;
                 }
                 const supporter = yield this.service.create(req.body);
+                if (supporter && supporter._id) {
+                    yield mailService_1.default.sendWelcomeEmail({
+                        supporterId: supporter._id.toString(),
+                    });
+                }
                 this.sendSuccessResponse(res, 201, { data: supporter });
             }
             catch (e) {

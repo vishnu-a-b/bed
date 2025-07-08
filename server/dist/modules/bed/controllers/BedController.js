@@ -104,6 +104,13 @@ class BedController extends BaseController_1.default {
                     next(new ValidationFailedError_1.default({ errors: errors.array() }));
                     return;
                 }
+                let body = req.body;
+                if (req.file) {
+                    console.log("req.files", req.file);
+                    const file = req.file;
+                    body.qrPhoto = configs_1.default.domain + "bed/" + file.filename;
+                }
+                req.body.createdBy = req.user._id;
                 const bed = yield this.service.update({
                     id: req.params.id,
                     bed: req.body,

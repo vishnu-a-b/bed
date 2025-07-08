@@ -57,27 +57,67 @@ class SupporterMailer {
   private generateWelcomeTemplate(name: string, supportLink: string): string {
     return `
       <!DOCTYPE html>
-      <html>
-      <head>
-          <style>
-              /* Your email styles here */
-              .button {
-                  background-color: #15c;
-                  color: white;
-                  padding: 10px 20px;
-                  text-decoration: none;
-                  border-radius: 5px;
-                  display: inline-block;
-              }
-          </style>
-      </head>
-      <body>
-          <p>Dear ${name},</p>
-          <p>Thank you for registering as a supporter!</p>
-          <p>Your supporter link: <a href="${supportLink}" class="button">Access Portal</a></p>
-          <p>Best regards,<br/>Shanthibhavan Team</p>
-      </body>
-      </html>
+<html>
+<head>
+    <style>
+        /* Email styles with better button presentation */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .button-container {
+            margin: 25px 0;
+        }
+        .button {
+            background-color: #1565c0;
+            color: white;
+            padding: 12px 0;
+            text-decoration: none;
+            border-radius: 4px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button:hover {
+            background-color: #0d47a1;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <p>Dear ${name},</p>
+    
+    <p>Thank you for registering as a supporter with Shanthibhavan!</p>
+    
+    <p>You can now access your supporter portal using the button below:</p>
+    
+    <div class="button-container">
+        <a href="${supportLink}" class="button">Access Your Supporter Portal</a>
+    </div>
+    
+    <p>If the button above doesn't work, copy and paste this link into your browser:<br>
+    <small>${supportLink}</small></p>
+    
+    <div class="footer">
+        <p>Best regards,<br>
+        <strong>The Shanthibhavan Team</strong></p>
+    </div>
+</body>
+</html>
     `;
   }
 }

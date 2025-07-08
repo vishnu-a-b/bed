@@ -23,7 +23,7 @@ const bedSchema = new mongoose.Schema(
 );
 
 export const bedFilterFields: ModelFilterInterface = {
-  filterFields: [],
+  filterFields: ["organization"],
   searchFields: ["bedNo"],
   sortFields: ["bedNo","createdAt", "updatedAt"],
 };

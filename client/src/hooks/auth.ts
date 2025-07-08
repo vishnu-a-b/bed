@@ -19,6 +19,7 @@ export const useAuth = (rol: string) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        dispatch(setRole(rol));
         const response = await Axios.get(`/account/details`);
         const userData = {
           id: response.data.data._id,
@@ -26,9 +27,17 @@ export const useAuth = (rol: string) => {
           name: response.data.data.name,
           photo: response.data.data.photo,
         };
-        if (response.data.success) {
+        if (response.data.data.isSuperAdmin && rol === "superAdmin") {
+          dispatch(setUserDetails({ ...userData, role: "super-admin" }));
+          dispatch(setIsAuth(true));
+        } else if (
+          response.data.data.roles.some((role: any) => role.slug === rol)
+        ) {
           dispatch(setUserDetails(userData));
           dispatch(setIsAuth(true));
+        } else {
+          dispatch(setRole(rol));
+          dispatch(setIsAuth(false));
         } 
       } catch (error) {
         console.error("Error fetching data:", error);

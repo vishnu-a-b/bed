@@ -21,7 +21,7 @@ const bedSchema = new mongoose_1.default.Schema({
     }
 }, { timestamps: true });
 exports.bedFilterFields = {
-    filterFields: [],
+    filterFields: ["organization"],
     searchFields: ["bedNo"],
     sortFields: ["bedNo", "createdAt", "updatedAt"],
 };

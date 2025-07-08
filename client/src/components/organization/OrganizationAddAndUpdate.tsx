@@ -124,8 +124,12 @@ const OrganizationForm = ({ organizationId }: { organizationId?: string }) => {
   };
 
   const handleUserChange = (selectedOption: any) => {
-    console.log(selectedOption);
-    setUser(selectedOption);
+    if (!selectedOption) {
+      setUser(undefined);
+    }else{
+       setUser(selectedOption);
+    }
+   
   };
 
 

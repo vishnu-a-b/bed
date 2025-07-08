@@ -28,18 +28,64 @@ class BedService {
         });
         this.find = (_a) => __awaiter(this, [_a], void 0, function* ({ limit, skip, filterQuery, sort }) {
             limit = limit ? limit : 10;
-            const beds = yield Bed_1.Bed.find(filterQuery)
-                .populate(["organization", "country", "head"])
-                .sort(sort)
-                .limit(limit)
-                .skip(skip);
-            const total = yield Bed_1.Bed.countDocuments(filterQuery);
-            return {
-                total,
-                limit,
-                skip,
-                items: beds,
-            };
+            try {
+                console.log("BedService find - raw input:", JSON.stringify(filterQuery, null, 2));
+                // Deep clone and sanitize the filter query
+                const sanitizedFilter = JSON.parse(JSON.stringify(filterQuery || {}));
+                // Handle $regex on bedNo by converting to exact match (if possible)
+                const sanitizeBedNo = (obj) => {
+                    var _a;
+                    if (typeof obj !== "object" || obj === null)
+                        return;
+                    for (const key in obj) {
+                        if (key === "bedNo" && ((_a = obj[key]) === null || _a === void 0 ? void 0 : _a.$regex)) {
+                            // Try to convert regex to number (if it's a simple digit match)
+                            const regexStr = obj[key].$regex;
+                            if (/^\d+$/.test(regexStr)) {
+                                obj[key] = Number(regexStr); // Exact match
+                            }
+                            else {
+                                delete obj[key]; // Remove if not a pure number
+                            }
+                        }
+                        else if (key === "$or" && Array.isArray(obj[key])) {
+                            obj[key] = obj[key]
+                                .map((condition) => {
+                                var _a;
+                                if ((_a = condition === null || condition === void 0 ? void 0 : condition.bedNo) === null || _a === void 0 ? void 0 : _a.$regex) {
+                                    const regexStr = condition.bedNo.$regex;
+                                    if (/^\d+$/.test(regexStr)) {
+                                        return Object.assign(Object.assign({}, condition), { bedNo: Number(regexStr) });
+                                    }
+                                    return {}; // Remove invalid conditions
+                                }
+                                return condition;
+                            })
+                                .filter((c) => Object.keys(c).length > 0);
+                        }
+                        else {
+                            sanitizeBedNo(obj[key]);
+                        }
+                    }
+                };
+                sanitizeBedNo(sanitizedFilter);
+                const beds = yield Bed_1.Bed.find(sanitizedFilter)
+                    .populate(["organization", "country", "head"])
+                    .sort(sort)
+                    .limit(limit)
+                    .skip(skip);
+                const total = yield Bed_1.Bed.countDocuments(sanitizedFilter);
+                return {
+                    total,
+                    limit,
+                    skip,
+                    items: beds,
+                };
+            }
+            catch (error) {
+                console.error("Error finding beds:", error);
+                throw new Error("Failed to fetch beds");
+            }
         });
         this.countTotalDocuments = () => __awaiter(this, void 0, void 0, function* () { return yield Bed_1.Bed.countDocuments(); });
         this.findOne = (id) => __awaiter(this, void 0, void 0, function* () {

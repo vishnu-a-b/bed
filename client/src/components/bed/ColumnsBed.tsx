@@ -8,6 +8,7 @@ import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
 import toastService from "@/utils/toastService";
 
 export interface Bed {
+  fixedAmount: number;
   _id: string;
   bedNo: number;
   patientName?: string;
@@ -63,7 +64,13 @@ export const columns: ColumnDef<Bed>[] = [
     cell: ({ row }) => {
       const org = row.original.organization;
       const id = row.original._id;
-      const link = org?.vcLink && id ? `${org.vcLink.replace(/\/$/, "")}/bed?bed=${id}` : "";
+      const bedNo = row.original.bedNo || "N/A"; // Add bed number field
+      const fixedAmount = row.original.fixedAmount || "No limit"; // Add fixed amount field
+      const currency = row.original.country.currency ; // Default to USD if not available
+      const link =
+        org?.vcLink && id
+          ? `${org.vcLink.replace(/\/$/, "")}/bed?bed=${id}`
+          : "";
 
       const handleCopy = async () => {
         if (!link) {
@@ -85,23 +92,72 @@ export const columns: ColumnDef<Bed>[] = [
         }
 
         const shareData = {
-          title: document.title,
-          text: "Check this out!",
+          text: `Bed : ${bedNo}\nMonthly Contribution Amount : ${currency} ${fixedAmount}\n\nClick this link:`, // Customize amount as needed
           url: link,
         };
 
+        // Enhanced sharing options
         if (navigator.share) {
           try {
             await navigator.share(shareData);
-          } catch (err) {
-            toastService.error("Sharing failed.");
-            console.error("Sharing failed:", err);
+          } catch (err:any) {
+            if (err.name !== "AbortError") {
+              showShareOptions(shareData);
+            }
           }
         } else {
-          const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
-            `${shareData.text} ${shareData.url}`
-          )}`;
-          window.open(whatsappURL, "_blank");
+          showShareOptions(shareData);
+        }
+      };
+
+      const showShareOptions = (shareData:any) => {
+        const text = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+
+        // Create a more sophisticated share dialog
+        const shouldShare = window.confirm(
+          `Share bed details?\n\n${shareData.title}\n${shareData.text}\n\n` +
+            `Click OK for WhatsApp or Cancel for other options`
+        );
+
+        if (shouldShare) {
+          // WhatsApp
+          window.open(
+            `https://wa.me/?text=${encodeURIComponent(text)}`,
+            "_blank"
+          );
+        } else {
+          // Show additional options
+          const option = prompt(
+            "Choose sharing method:\n\n" +
+              "1. Copy to clipboard\n" +
+              "2. Email\n" +
+              "3. Telegram\n" +
+              "Enter option number:"
+          );
+
+          switch (option) {
+            case "1":
+              navigator.clipboard.writeText(text);
+              toastService.success("Copied to clipboard!");
+              break;
+            case "2":
+              window.open(
+                `mailto:?subject=${encodeURIComponent(
+                  shareData.title
+                )}&body=${encodeURIComponent(text)}`
+              );
+              break;
+            case "3":
+              window.open(
+                `https://t.me/share/url?url=${encodeURIComponent(
+                  shareData.url
+                )}&text=${encodeURIComponent(shareData.text)}`
+              );
+              break;
+            default:
+              navigator.clipboard.writeText(text);
+              toastService.success("Copied to clipboard!");
+          }
         }
       };
 
@@ -111,10 +167,11 @@ export const columns: ColumnDef<Bed>[] = [
             <Button variant="outline" size="sm" onClick={handleCopy}>
               Copy
             </Button>
-            {/* <Button variant="outline" size="sm" onClick={handleShare}>
+            <Button variant="outline" size="sm" onClick={handleShare}>
               Share
-            </Button> */}
+            </Button>
           </div>
+         
         </div>
       );
     },
@@ -163,7 +220,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
       <div className="grid grid-cols-2 gap-2">
         <div>
           <p className="font-medium">Contributors</p>
-          <p>Max: {data.maxNoContributer}</p>
+          <p>Fixed Amount: {data.fixedAmount}</p>
           <p>Amount: ${data.amount.toLocaleString()}</p>
         </div>
         <div>
@@ -182,7 +239,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
       </div>
 
       <div className="flex gap-2 flex-wrap pt-4">
-        <Button
+        {/* <Button
           className="text-sm"
           onClick={(e) => {
             e.preventDefault();
@@ -201,7 +258,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
           }}
         >
           Edit
-        </Button>
+        </Button> */}
 
         {/* <Button
           className="text-sm"

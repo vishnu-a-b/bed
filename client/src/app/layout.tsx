@@ -17,18 +17,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-white dark:bg-black">
+      <body className="bg-white ">
         <StoreProvider>
-          <ThemeProvider
+          {/* <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
-          >
+          > */}
             
             <main>{children}</main>
             <ToastContainer />
-          </ThemeProvider>
+          {/* </ThemeProvider> */}
         </StoreProvider>
       </body>
     </html>

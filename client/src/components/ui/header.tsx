@@ -1,64 +1,110 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { Menu, X, Phone, Mail, Globe, MapPin } from "lucide-react";
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isPalliativeInternational, setIsPalliativeInternational] =
+    useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    // Check the URL when component mounts
+    setIsPalliativeInternational(
+      window.location.href.includes("palliativeinternational.com")
+    );
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="w-full shadow-md bg-white sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+    <header
+      className={`w-full sticky top-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-white/95 shadow-md backdrop-blur-sm" : "bg-white"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 md:py-3 flex items-center justify-between">
         {/* Logo and Title */}
-        <div className="flex items-center gap-4">
-          <img
-            src="/father.png"
-            alt="Shanthibhavan Logo"
-            className="h-16 w-auto"
-          />
-          <div>
-            <h1 className="text-lg font-bold text-gray-800 ">
-              SHANTHIBHAVAN PALLIATIVE HOSPITAL
-            </h1>
-            <p className="text-sm text-gray-500  leading-tight">
-              The first palliative Hospital in INDIA, The No-Bill hospital of KERALA
-            </p>
+        {isPalliativeInternational ? (
+          <div className="flex items-center md:gap-4 gap-1">
+            <img
+              src="/logo.png"
+              alt="Shanthibhavan Logo"
+              className="md:h-32 h-20 w-auto rounded-lg"
+            />
+            <div>
+              <h1 className="md:text-lg text-sm font-bold text-gray-800">
+                SHANTHIBHAVAN PALLIATIVE INTERNATIONAL
+              </h1>
+              <p className="md:text-sm text-xs text-gray-500 leading-tight">
+                <MapPin size={12} className="inline-block mr-1" />
+                Office 3261, Ground Floor, 470 St. Kilda Rd, MELBOURNE VIC 3004
+              </p>
+              <div className="flex gap-1 flex-wrap">
+                <div className="flex md:text-sm text-xs items-center gap-1 text-gray-500">
+                  <Phone size={12} className="text-gray-500 flex-shrink-0" />
+                  <div>
+                    <p>+61 391112473</p>
+                  </div>
+                </div>
+                <a
+                  className="flex md:text-sm text-xs items-center gap-1 text-gray-500"
+                  href="https://palliativeinternational.com/"
+                >
+                  <Globe size={12} className="text-gray-500 flex-shrink-0" />
+                  <div>
+                    <p>palliativeinternational.com</p>
+                  </div>
+                </a>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Desktop Info */}
-        <div className="hidden md:grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600  text-right">
-  <span>📍 Thrissur, Thiruvananthapuram</span>
-  <span>📅 Established: 2016</span>
-  <span>📞 0487 - 66 11 600</span>
-  <span>📱 +91 91426 53804</span>
-  <span>🌐 shanthibhavan.in</span>
-  <span>📧 office@shanthibhavan.in</span>
-</div>
-
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-gray-700 "
-        >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        ) : (
+          <div className="flex items-center md:gap-4 gap-1">
+            <img
+              src="/father.png"
+              alt="Shanthibhavan Logo"
+              className="md:h-32 h-20 w-auto rounded-lg"
+            />
+            <div>
+              <h1 className="md:text-lg text-sm font-bold text-gray-800">
+                SHANTHIBHAVAN PALLIATIVE HOSPITAL
+              </h1>
+              <p className="md:text-sm text-xs text-gray-500 leading-tight">
+                The first palliative Hospital in INDIA, The No-Bill hospital of
+                KERALA
+              </p>
+              <p className="md:text-sm text-xs text-gray-500 leading-tight">
+                <MapPin size={12} className="inline-block mr-1" />
+                Mountain of Mercy, Pallissery, Arattupuzha.P.O, Thrissur
+              </p>
+              <div className="flex gap-1 flex-wrap">
+                <div className="flex md:text-sm text-xs items-center gap-1 text-gray-500">
+                  <Phone size={12} className="text-gray-500 flex-shrink-0" />
+                  <div>
+                    <p>0487-6611600</p>
+                  </div>
+                </div>
+                <a
+                  className="flex md:text-sm text-xs items-center gap-1 text-gray-500"
+                  href="https://shanthibhavan.in/"
+                >
+                  <Globe size={12} className="text-gray-500 flex-shrink-0" />
+                  <div>
+                    <p>shanthibhavan.in</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Mobile Dropdown */}
-      {menuOpen && (
-        <div className="md:hidden px-4 pb-4 text-sm text-gray-600  space-y-1">
-          <div>Thrissur, Thiruvananthapuram</div>
-          <div>📞 0487 - 66 11 600</div>
-          <div>📱 +91 91426 53804</div>
-          <div>🌐 www.shanthibhavan.in</div>
-          <div>📧 office@shanthibhavan.in</div>
-          <div>Established: 2016</div>
-        </div>
-      )}
     </header>
-  )
+  );
 }

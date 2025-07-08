@@ -17,10 +17,17 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import toastService from "@/utils/toastService";
 import axios from "axios";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  mobileNo: z.string().min(1, { message: "Mobile number is required" }),
+  mobileNo: z
+  .string()
+  .min(8, { message: "Phone number with country code is required" })
+  .regex(/^\d+$/, { message: "Invalid phone number format" }),
+
   email: z.string().email({ message: "Invalid email address" }),
   address: z.string().optional(),
   type: z.enum(["Individual", "Organization"]),
@@ -31,7 +38,7 @@ const supporterSchema = z.object({
 
 type SupporterFormData = z.infer<typeof supporterSchema>;
 
-const DonationForm = ({ bed }: any) => {
+const DonationForm = ({ bed }: { bed?: any }) => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [isSending, setIsSending] = useState(false);
   const [showPanField, setShowPanField] = useState(false);
@@ -41,17 +48,20 @@ const DonationForm = ({ bed }: any) => {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<SupporterFormData>({
     resolver: zodResolver(supporterSchema),
     defaultValues: {
       type: "Individual",
       nameVisible: true,
+      amount: bed?.fixedAmount > 0 ? bed.fixedAmount : 0,
     },
   });
 
   const type = watch("type");
   const nameVisible = watch("nameVisible");
+  const amount = watch("amount");
 
   const onSubmit = async (data: SupporterFormData) => {
     setIsSending(true);
@@ -69,7 +79,7 @@ const DonationForm = ({ bed }: any) => {
           user: response1.data.data._id,
           name: data.name,
           bed: bed?.bedId,
-          amount: data.amount,
+          amount: bed?.fixedAmount > 0 ? bed.fixedAmount : data.amount,
           type: data.type,
           role: "regular-supporter",
           nameVisible: data.nameVisible,
@@ -82,34 +92,38 @@ const DonationForm = ({ bed }: any) => {
         );
         if (response.data.success) {
           toastService.success("Thank you for your Support");
-          setValue("name", "");
-          setValue("mobileNo", "");
-          setValue("email", "");
-          setValue("amount", 0);
-          setValue("type", "Individual");
-          setValue("address", "");
-          setValue("nameVisible", true);
-          setValue("panNo", "");
+          reset();
           setShowPanField(false);
-          window.location.reload();
+          window.location.reload(); // Reload to reflect changes
         } else {
-          toastService.error("Error");
+          toastService.error("Error creating supporter");
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting form:", error);
-      toastService.error("Error submitting form");
+      toastService.error(
+        error.response?.data?.message || "Error submitting form"
+      );
     } finally {
       setIsSending(false);
     }
   };
- console.log("Bed Data:", bed);
+
   return (
-    <div className=" h-[90vh] overflow-scroll">
-      <div className="space-y-6 ">
-        {/* Supporter Type */}
-        <div >
-          <Label className="text-sm font-medium text-gray-700  block">
+    <div className="p-4 text-left">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <h2 className="text-2xl font-bold mb-4 text-center">Support Bed</h2>
+
+        {bed?.fixedAmount && bed?.fixedAmount > 0 && (
+          <div>
+            <div className="text-lg font-semibold mb-2 border border-dotted border-blue-500 p-3 rounded">
+              Monthly Support Amount: {bed?.currency} {bed?.fixedAmount}
+            </div>
+          </div>
+        )}
+
+        <div>
+          <Label className="text-sm font-medium text-gray-700 block">
             Supporter Type
           </Label>
           <Select
@@ -131,7 +145,6 @@ const DonationForm = ({ bed }: any) => {
           )}
         </div>
 
-        {/* Name */}
         <div>
           <Label htmlFor="name" className="block font-medium required">
             Name
@@ -157,17 +170,20 @@ const DonationForm = ({ bed }: any) => {
           <Label htmlFor="nameVisible">Do you want to display your name?</Label>
         </div>
 
-        {/* Mobile Number */}
         <div>
-          <Label htmlFor="mobileNo" className="block payment font-medium required">
+          <Label htmlFor="mobileNo" className="block font-medium required">
             Phone Number
           </Label>
-          <Input
-            id="mobileNo"
-            {...register("mobileNo")}
-            placeholder="Enter phone number"
-            className={errors.mobileNo ? "border-red-500 w-full" : "w-full"}
-            required
+          <PhoneInput
+            country={bed?.currency === "INR" ? "in" : "au"}
+            inputProps={{
+              name: "mobileNo",
+              required: true,
+            }}
+            value={watch("mobileNo")}
+            onChange={(value) => setValue("mobileNo", value)}
+            inputClass={errors.mobileNo ? "border-red-500 w-full" : "w-full"}
+            containerClass="w-full"
           />
           {errors.mobileNo && (
             <p className="text-red-500 text-sm mt-1">
@@ -176,9 +192,8 @@ const DonationForm = ({ bed }: any) => {
           )}
         </div>
 
-        {/* Email */}
         <div>
-          <Label htmlFor="email" className="block  font-medium required">
+          <Label htmlFor="email" className="block font-medium required">
             Email Address
           </Label>
           <Input
@@ -194,35 +209,40 @@ const DonationForm = ({ bed }: any) => {
           )}
         </div>
 
-        {/* Donation Amount */}
-        <div>
-          <Label htmlFor="amount" className="block font-medium">
-            Donation Amount 
-          </Label>
-          <Input
-            id="amount"
-            type="number"
-            {...register("amount", { valueAsNumber: true })}
-            placeholder="0.00"
-            value={bed.fixedAmount}
-            className={errors.amount ? "border-red-500 w-full" : "w-full"}
-            required
-          />
-          {errors.amount && (
-            <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
-          )}
-        </div>
+        {(!bed?.fixedAmount || bed?.fixedAmount === 0) && (
+          <div>
+            <Label htmlFor="amount" className="block font-medium">
+              Donation Amount
+            </Label>
+            <Input
+              id="amount"
+              type="number"
+              {...register("amount", { valueAsNumber: true })}
+              placeholder="0.00"
+              className={errors.amount ? "border-red-500 w-full" : "w-full"}
+              required
+            />
+            {errors.amount && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.amount.message}
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* Address */}
         <div>
           <Label htmlFor="address" className="block font-medium">
             Address (Optional)
           </Label>
-          <Input
+          <textarea
             id="address"
             {...register("address")}
             placeholder="Enter address"
-            className={errors.address ? "border-red-500 w-full" : "w-full"}
+            className={
+              (errors.address ? "border-red-500 " : "") +
+              "w-full rounded border px-3 py-2 focus:outline-none focus:ring"
+            }
+            rows={3}
           />
           {errors.address && (
             <p className="text-red-500 text-sm mt-1">
@@ -231,11 +251,8 @@ const DonationForm = ({ bed }: any) => {
           )}
         </div>
 
-        {/* Name Visibility Checkbox */}
-
-        {/* 80G Tax Exemption Toggle */}
-        <div>
-          <Label className="block mb-1 font-medium ">
+        {/* <div>
+          <Label className="block mb-1 font-medium">
             Do you want 80-G Tax Exempted?
           </Label>
           <div className="flex gap-4">
@@ -259,10 +276,9 @@ const DonationForm = ({ bed }: any) => {
           </div>
         </div>
 
-        {/* PAN Number (conditionally rendered) */}
         {showPanField && (
           <div>
-            <Label htmlFor="panNo" className="block  font-medium">
+            <Label htmlFor="panNo" className="block font-medium">
               PAN Number
             </Label>
             <Input
@@ -272,19 +288,18 @@ const DonationForm = ({ bed }: any) => {
               className="w-full"
             />
           </div>
-        )}
+        )} */}
 
-        {/* Submit Button */}
         <div className="pt-4">
           <Button
+            type="submit"
             className="w-full py-3 bg-blue-600 hover:bg-blue-700"
             disabled={isSending}
-            onClick={handleSubmit(onSubmit)}
           >
             {isSending ? "Processing..." : "Submit"}
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
