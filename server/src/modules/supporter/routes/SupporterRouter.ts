@@ -29,8 +29,10 @@ router.use(authenticateUser);
 
 const authorization = authorizeUser({ allowedRoles: [] });
 
-router.get(
-  "/",
+router.get("/supporter-head", supporterListDoc, controller.getSupporterHead);
+
+router.post(
+  "/get",
   supporterListDoc,
   setFilterParams(supporterFilterFields),
   controller.get

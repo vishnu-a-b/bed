@@ -45,15 +45,20 @@ class SupporterController extends BaseController_1.default {
             }
         });
         this.get = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 const { limit, skip } = req.query;
                 const { filterQuery, sort } = req;
+                console.log(req.body);
+                const filters = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.filters) || {};
+                const startDate = filters.startDate;
+                const endDate = filters.endDate;
                 const data = yield this.service.find({
                     limit: Number(limit),
                     skip: Number(skip),
                     filterQuery,
                     sort,
-                });
+                }, startDate, endDate);
                 this.sendSuccessResponseList(res, 200, { data });
             }
             catch (e) {
@@ -63,6 +68,16 @@ class SupporterController extends BaseController_1.default {
         this.getAllData = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const data = yield this.service.findAllData();
+                this.sendSuccessResponseList(res, 200, { data });
+            }
+            catch (e) {
+                next(e);
+            }
+        });
+        this.getSupporterHead = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("getSupporterHead called");
+                const data = yield this.service.findHeadingData();
                 this.sendSuccessResponseList(res, 200, { data });
             }
             catch (e) {

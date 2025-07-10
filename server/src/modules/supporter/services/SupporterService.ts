@@ -14,31 +14,221 @@ export default class SupporterService {
     }
   };
 
-  find = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
-    limit = limit ? limit : 10;
-    skip = skip ? skip : 0;
+  // controllers/supporterController.js
 
-    const supporters = await Supporter.find(filterQuery)
-      .populate([
-      "user",
-      { 
-        path: "bed", 
-        populate: [
-        { path: "organization" },
-        { path: "country" }
-        ] 
+  findHeadingData = async () => {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+
+    return await Supporter.aggregate([
+      // 1. Join with related collections
+      {
+        $lookup: {
+          from: "beds",
+          localField: "bed",
+          foreignField: "_id",
+          as: "bed",
+        },
+      },
+      { $unwind: { path: "$bed", preserveNullAndEmptyArrays: false } },
+      {
+        $lookup: {
+          from: "countries",
+          localField: "bed.country",
+          foreignField: "_id",
+          as: "country",
+        },
+      },
+      { $unwind: { path: "$country", preserveNullAndEmptyArrays: false } },
+      {
+        $lookup: {
+          from: "payments",
+          localField: "_id",
+          foreignField: "supporter",
+          as: "payments",
+        },
+      },
+
+      // 2. Group by Organization and Country
+      {
+        $group: {
+          _id: {
+            organization: "$bed.organization",
+            country: "$country._id",
+            countryName: "$country.name",
+            currency: "$country.currency",
+          },
+          // Supporter counts
+          totalSupporters: { $sum: 1 },
+          activeSupporters: {
+            $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] },
+          },
+          thisDaySupporters: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfDay] }, 1, 0],
+            },
+          },
+          thisMonthSupporters: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfMonth] }, 1, 0],
+            },
+          },
+          thisWeekSupporters: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfWeek] }, 1, 0],
+            },
+          },
+          // Amount calculations
+          totalAmount: { $sum: { $sum: "$amount" } },
+          thisDayAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfDay] }, "$amount", 0],
+            },
+          },
+          thisMonthAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfMonth] }, "$amount", 0],
+            },
+          },
+          thisWeekAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$createdAt", startOfWeek] }, "$amount", 0],
+            },
+          },
+        },
+      },
+
+      // 3. Reshape into organization-centric format
+      {
+        $group: {
+          _id: "$_id.organization",
+          organizationId: { $first: "$_id.organization" },
+          data: {
+            $push: {
+              country: "$_id.countryName",
+              currency: "$_id.currency",
+              totalSupporters: "$totalSupporters",
+              activeSupporters: "$activeSupporters",
+              thisDaySupporters: "$thisDaySupporters",
+              thisMonthSupporters: "$thisMonthSupporters",
+              thisWeekSupporters: "$thisWeekSupporters",
+              totalAmount: "$totalAmount",
+              thisDayAmount: "$thisDayAmount",
+              thisMonthAmount: "$thisMonthAmount",
+              thisWeekAmount: "$thisWeekAmount",
+            },
+          },
+          // Calculate organization-wide totals
+          totalSupporters: { $sum: "$totalSupporters" },
+          activeSupporters: { $sum: "$activeSupporters" },
+          thisDaySupporters: { $sum: "$thisDaySupporters" },
+          thisMonthSupporters: { $sum: "$thisMonthSupporters" },
+          thisWeekSupporters: { $sum: "$thisWeekSupporters" },
+          totalAmount: { $sum: "$totalAmount" },
+          thisDayAmount: { $sum: "$thisDayAmount" },
+          thisMonthAmount: { $sum: "$thisMonthAmount" },
+          thisWeekAmount: { $sum: "$thisWeekAmount" },
+        },
+      },
+
+      // 4. Join organization details
+      {
+        $lookup: {
+          from: "organizations",
+          localField: "organizationId",
+          foreignField: "_id",
+          as: "organization",
+        },
+      },
+      { $unwind: "$organization" },
+      {
+        $project: {
+          organizationId: 1,
+          organizationName: "$organization.name",
+          data: 1,
+          totalSupporters: 1,
+          activeSupporters: 1,
+          thisDaySupporters: 1,
+          thisMonthSupporters: 1,
+          thisWeekSupporters: 1,
+          totalAmount: 1,
+          thisDayAmount: 1,
+          thisMonthAmount: 1,
+          thisWeekAmount: 1,
+          _id: 0,
+        },
+      },
+    ]);
+  };
+
+  // API Route
+
+  find = async (
+    { limit, skip, filterQuery, sort }: ListFilterData,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+
+    try {
+      limit = limit ? limit : 10;
+      skip = skip ? skip : 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          createdAt: {
+            ...(startDate && { 
+              $gte: (() => {
+          const d = new Date(startDate);
+          d.setHours(0, 0, 0, 0);
+          return d;
+              })()
+            }),
+            ...(endDate && { 
+              $lte: (() => {
+          const d = new Date(endDate!);
+          d.setHours(23, 59, 59, 999);
+          return d;
+              })()
+            }),
+          },
+        };
       }
-      ])
-      .sort(sort)
-      .limit(limit)
-      .skip(skip);
-    const total = await Supporter.countDocuments(filterQuery);
-    return {
-      total,
-      limit,
-      skip,
-      items: supporters,
-    };
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", finalFilter);
+
+      const supporters = await Supporter.find(finalFilter)
+        .populate([
+          "user",
+          {
+            path: "bed",
+            populate: [{ path: "organization" }, { path: "country" }],
+          },
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+
+      const total = await Supporter.countDocuments(finalFilter);
+      return {
+        total,
+        limit,
+        skip,
+        items: supporters,
+      };
+    } catch (error) {
+      console.error("Error finding supporters:", error);
+      throw error;
+    }
   };
 
   findAllData = async () => {
@@ -264,7 +454,7 @@ export default class SupporterService {
               then: "$name",
               else: "Anonymous",
             },
-          }, 
+          },
           amount: 1,
           createdAt: 1,
           // Include any other supporter fields you need

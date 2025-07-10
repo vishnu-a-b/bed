@@ -216,7 +216,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      { url!='attendance' && <DataTablePagination table={table} />}
+      { url!='supporter' && <DataTablePagination table={table} />}
     </div>
   );
 }

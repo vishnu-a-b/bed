@@ -18,15 +18,13 @@ export default class SupporterController extends BaseController {
         next(new ValidationFailedError({ errors: errors.array() }));
         return;
       }
-      const supporter:any = await this.service.create(req.body);
+      const supporter: any = await this.service.create(req.body);
       if (supporter && supporter._id) {
         await supporterMailer.sendWelcomeEmail({
           supporterId: supporter._id.toString(),
         });
       }
       this.sendSuccessResponse(res, 201, { data: supporter });
-      
-      
     } catch (e: any) {
       next(e);
     }
@@ -36,12 +34,20 @@ export default class SupporterController extends BaseController {
     try {
       const { limit, skip } = req.query;
       const { filterQuery, sort } = req;
-      const data = await this.service.find({
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      });
+      console.log(req.body);
+      const filters = req.body?.filters || {};
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      const data = await this.service.find(
+        {
+          limit: Number(limit),
+          skip: Number(skip),
+          filterQuery,
+          sort,
+        },
+        startDate,
+        endDate
+      );
 
       this.sendSuccessResponseList(res, 200, { data });
     } catch (e: any) {
@@ -52,6 +58,21 @@ export default class SupporterController extends BaseController {
   getAllData = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this.service.findAllData();
+
+      this.sendSuccessResponseList(res, 200, { data });
+    } catch (e: any) {
+      next(e);
+    }
+  };
+
+  getSupporterHead = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      console.log("getSupporterHead called");
+      const data: any = await this.service.findHeadingData();
 
       this.sendSuccessResponseList(res, 200, { data });
     } catch (e: any) {
