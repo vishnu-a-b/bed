@@ -26,7 +26,8 @@ router.get("/get-bed-data/:id", supporterListDoc_1.supporterListDoc, controller.
 router.post("/", supporterCreateDoc_1.supporterCreateDoc, supporerCreateValidator_1.supporterCreateValidator, controller.create);
 router.use(authenticateUser_1.authenticateUser);
 const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
-router.get("/", supporterListDoc_1.supporterListDoc, (0, setFilterParams_1.default)(Supporter_1.supporterFilterFields), controller.get);
+router.get("/supporter-head", supporterListDoc_1.supporterListDoc, controller.getSupporterHead);
+router.post("/get", supporterListDoc_1.supporterListDoc, (0, setFilterParams_1.default)(Supporter_1.supporterFilterFields), controller.get);
 router.get("/count-documents", supporterCountDoc_1.supporterCountDoc, controller.countTotalDocuments);
 router.get("/user/:id", supporterDetailsDoc_1.supporterDetailsDoc, controller.getWithUserId);
 router.get("/:id", supporterDetailsDoc_1.supporterDetailsDoc, controller.getOne);

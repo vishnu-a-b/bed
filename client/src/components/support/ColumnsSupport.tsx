@@ -9,6 +9,7 @@ import UpdatePasswordForm from "./ChangePassword";
 import toastService from "@/utils/toastService";
 
 export interface Employee {
+  createdAt: string | number | Date;
   _id: string;
   name: string;
   user: {
@@ -24,7 +25,7 @@ export interface Employee {
     country: {
       currency: string;
     };
-  }
+  };
   amount: number;
   role: string;
 }
@@ -37,6 +38,23 @@ export const columns: ColumnDef<Employee>[] = [
   {
     accessorKey: "user.mobileNo",
     header: "Phone No",
+  },
+  {
+    accessorKey: "bed.bedNo",
+    header: "Bed",
+  },
+  {
+    accessorKey: "bed.organization.name",
+    header: "Organization",
+  },
+  {
+    accessorKey: "data",
+    header: "Date",
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
+      const formattedDate = date.toLocaleDateString();
+      return formattedDate;
+    },
   },
   {
     accessorKey: "amount",
@@ -67,14 +85,16 @@ export const columns: ColumnDef<Employee>[] = [
     },
   },
 
-    {
+  {
     accessorKey: "link",
     header: "Link",
     cell: ({ row }) => {
       const org = row.original.bed?.organization;
       const id = row.original._id;
-      const link = org?.vcLink && id ? `${org.vcLink.replace(/\/$/, "")}/supporter?supporter=${id}` : "";
-      console.log("Link:", link);
+      const link =
+        org?.vcLink && id
+          ? `${org.vcLink.replace(/\/$/, "")}/supporter?supporter=${id}`
+          : "";
       const handleCopy = async () => {
         if (!link) {
           toastService.error("Link not available.");

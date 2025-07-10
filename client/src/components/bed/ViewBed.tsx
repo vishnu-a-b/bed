@@ -153,7 +153,7 @@ export default function ViewBed() {
           pageSize={pageSize}
           onPageChange={setPageIndex}
           onPageSizeChange={setPageSize}
-          actions={{ delete: role==='super-admin' , edit: role==='super-admin' }}
+          actions={{ delete: role==='superAdmin' , edit: role==='superAdmin' }}
         />
       </div>
     </div>
