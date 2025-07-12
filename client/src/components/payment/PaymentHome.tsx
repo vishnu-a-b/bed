@@ -7,6 +7,7 @@ import { RootState } from "@/lib/store";
 import { clearPaymentId, setPaymentId } from "@/lib/slice/paymentSlice";
 import PaymentForm from "./PaymentAddAndUpdate";
 import { clearUpdate } from "@/lib/slice/updateSlice";
+import ViewPayment from "./ViewPayment";
 
 export default function PaymentHome() {
   const [showViewPayments, setShowViewPayments] = useState(true);
@@ -40,7 +41,7 @@ export default function PaymentHome() {
       {url === 'payment' ? (
        id && <PaymentForm paymentId={id} />
       ) : showViewPayments ? (
-        <ViewPayments />
+        <ViewPayment />
       ) : (
         <PaymentForm />
       )}

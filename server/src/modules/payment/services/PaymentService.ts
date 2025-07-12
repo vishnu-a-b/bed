@@ -31,24 +31,213 @@ export default class PaymentService {
     }
   };
 
-  find = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
-    limit = limit ? limit : 10;
-    skip = skip ? skip : 0;
+  findPaymentHeadingData = async () => {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
 
-    const payments = await Payment.find(filterQuery)
-      .populate(["supporter", "bed"])
-      .sort(sort)
-      .limit(limit)
-      .skip(skip);
+    return await Payment.aggregate([
+      // 1. Join with related collections
+      {
+        $lookup: {
+          from: "supporters",
+          localField: "supporter",
+          foreignField: "_id",
+          as: "supporter",
+        },
+      },
+      { $unwind: { path: "$supporter", preserveNullAndEmptyArrays: false } },
+      {
+        $lookup: {
+          from: "beds",
+          localField: "bed",
+          foreignField: "_id",
+          as: "bed",
+        },
+      },
+      { $unwind: { path: "$bed", preserveNullAndEmptyArrays: false } },
+      {
+        $lookup: {
+          from: "countries",
+          localField: "bed.country",
+          foreignField: "_id",
+          as: "country",
+        },
+      },
+      { $unwind: { path: "$country", preserveNullAndEmptyArrays: false } },
 
-    const total = await Payment.countDocuments(filterQuery);
+      // 2. Group by Organization and Country
+      {
+        $group: {
+          _id: {
+            organization: "$bed.organization",
+            country: "$country._id",
+            countryName: "$country.name",
+            currency: "$country.currency",
+            paymentMethod: "$paymentMethod",
+            status: "$status",
+          },
+          // Payment counts
+          totalPayments: { $sum: 1 },
+          thisDayPayments: {
+            $sum: {
+              $cond: [{ $gte: ["$paymentDate", startOfDay] }, 1, 0],
+            },
+          },
+          thisMonthPayments: {
+            $sum: {
+              $cond: [{ $gte: ["$paymentDate", startOfMonth] }, 1, 0],
+            },
+          },
+          thisWeekPayments: {
+            $sum: {
+              $cond: [{ $gte: ["paymentDate", startOfWeek] }, 1, 0],
+            },
+          },
+          // Amount calculations
+          totalAmount: { $sum: "$amount" },
+          thisDayAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$paymentDate", startOfDay] }, "$amount", 0],
+            },
+          },
+          thisMonthAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$paymentDate", startOfMonth] }, "$amount", 0],
+            },
+          },
+          thisWeekAmount: {
+            $sum: {
+              $cond: [{ $gte: ["$paymentDate", startOfWeek] }, "$amount", 0],
+            },
+          },
+        },
+      },
 
-    return {
-      total,
-      limit,
-      skip,
-      items: payments,
-    };
+      // 3. Reshape into organization-centric format
+      {
+        $group: {
+          _id: "$_id.organization",
+          organizationId: { $first: "$_id.organization" },
+          data: {
+            $push: {
+              country: "$_id.countryName",
+              currency: "$_id.currency",
+              paymentMethod: "$_id.paymentMethod",
+              status: "$_id.status",
+              totalPayments: "$totalPayments",
+              thisDayPayments: "$thisDayPayments",
+              thisMonthPayments: "$thisMonthPayments",
+              thisWeekPayments: "$thisWeekPayments",
+              totalAmount: "$totalAmount",
+              thisDayAmount: "$thisDayAmount",
+              thisMonthAmount: "$thisMonthAmount",
+              thisWeekAmount: "$thisWeekAmount",
+            },
+          },
+          // Calculate organization-wide totals
+          totalPayments: { $sum: "$totalPayments" },
+          thisDayPayments: { $sum: "$thisDayPayments" },
+          thisMonthPayments: { $sum: "$thisMonthPayments" },
+          thisWeekPayments: { $sum: "$thisWeekPayments" },
+          
+        },
+      },
+
+      // 4. Join organization details
+      {
+        $lookup: {
+          from: "organizations",
+          localField: "organizationId",
+          foreignField: "_id",
+          as: "organization",
+        },
+      },
+      { $unwind: "$organization" },
+      {
+        $project: {
+          organizationId: 1,
+          organizationName: "$organization.name",
+          data: 1,
+          totalPayments: 1,
+          thisDayPayments: 1,
+          thisMonthPayments: 1,
+          thisWeekPayments: 1,
+          totalAmount: 1,
+          thisDayAmount: 1,
+          thisMonthAmount: 1,
+          thisWeekAmount: 1,
+          _id: 0,
+        },
+      },
+    ]);
+  };
+
+  find = async (
+    { limit, skip, filterQuery, sort }: ListFilterData,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+
+    try {
+      limit = limit ? limit : 10;
+      skip = skip ? skip : 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          paymentDate: {
+            ...(startDate && {
+              $gte: (() => {
+                const d = new Date(startDate);
+                d.setHours(0, 0, 0, 0);
+                return d;
+              })(),
+            }),
+            ...(endDate && {
+              $lte: (() => {
+                const d = new Date(endDate!);
+                d.setHours(23, 59, 59, 999);
+                return d;
+              })(),
+            }),
+          },
+        };
+      }
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", finalFilter);
+
+      const payment = await Payment.find(finalFilter)
+        .populate([
+          {
+            path: "bed",
+            populate: [{ path: "organization" }, { path: "country" }],
+          },
+          "supporter",
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+
+      const total = await Payment.countDocuments(finalFilter);
+      return {
+        total,
+        limit,
+        skip,
+        items: payment,
+      };
+    } catch (error) {
+      console.error("Error finding supporters:", error);
+      throw error;
+    }
   };
 
   countTotalDocuments = async () => {
@@ -254,7 +443,7 @@ export default class PaymentService {
       console.error("Error in createOrder service:", error);
       throw error; // Re-throw for controller to handle
     }
-  };
+  }
 
   async verifyPayment(params: VerifyPaymentParams) {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
