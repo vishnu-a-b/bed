@@ -72,6 +72,7 @@ export const paymentFilterFields = {
     "currency",
     "paymentMode",
     "manualMethod",
+    "paymentDate",
     "recordedBy",
   ],
   searchFields: [

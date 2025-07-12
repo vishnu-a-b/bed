@@ -20,7 +20,7 @@ const paymentSchema = z.object({
   razorpay_order_id: z.string().optional(),
   razorpay_signature: z.string().optional(),
   amount: z.number().min(1, { message: "Amount must be positive" }),
-  currency: z.string().default("INR"),
+  currency: z.enum(["INR", "AUD"]).default("INR"),
   status: z.string().min(1, { message: "Status is required" }),
   method: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
@@ -28,7 +28,7 @@ const paymentSchema = z.object({
   created_at: z.number().optional(),
   notes: z.any().optional(),
   paymentMode: z.enum(["online", "offline"]).default("online"),
-  manualMethod: z.enum(["cash", "cheque", "bank_transfer"]).optional(),
+  manualMethod: z.enum(["cash", "cheque", "upi", "bank_transfer"]).optional(),
   transactionReference: z.string().optional(),
   paymentDate: z.string().optional(),
   remarks: z.string().optional(),
@@ -55,7 +55,18 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
   const manualMethodOptions = [
     { value: "cash", label: "Cash" },
     { value: "cheque", label: "Cheque" },
+    { value: "upi", label: "UPI" },
     { value: "bank_transfer", label: "Bank Transfer" },
+  ];
+
+  const currencyOptions = [
+    { value: "INR", label: "INR" },
+    { value: "AUD", label: "AUD" },
+  ];
+
+  const verificationOptions = [
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
   ];
 
   const dispatch = useDispatch();
@@ -69,6 +80,10 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
   const [status, setStatus] = useState<any>({
     value: "captured",
     label: "Captured",
+  });
+  const [currency, setCurrency] = useState<any>({
+    value: "INR",
+    label: "INR",
   });
   const [isVerified, setIsVerified] = useState<any>({
     value: false,
@@ -111,7 +126,6 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
           setValue("transactionReference", data.transactionReference || "");
           setValue("paymentDate", data.paymentDate?.split('T')[0] || "");
           setValue("remarks", data.remarks || "");
-          //setValue("recordedBy", data.recordedBy || "");
           setValue("supporter", data.supporter._id);
           setValue("bed", data.bed._id);
           setValue("isVerified", data.isVerified || false);
@@ -124,6 +138,11 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
           setPaymentMode({
             value: data.paymentMode || "online",
             label: data.paymentMode === "offline" ? "Offline" : "Online",
+          });
+
+          setCurrency({
+            value: data.currency || "INR",
+            label: data.currency || "INR",
           });
 
           if (data.manualMethod) {
@@ -163,7 +182,6 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
   const handlePaymentModeChange = (selectedOption: any) => {
     setPaymentMode(selectedOption);
     setValue("paymentMode", selectedOption.value);
-    // Reset manual method when switching modes
     if (selectedOption.value === "online") {
       setManualMethod(undefined);
       setValue("manualMethod", undefined);
@@ -173,6 +191,11 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
   const handleManualMethodChange = (selectedOption: any) => {
     setManualMethod(selectedOption);
     setValue("manualMethod", selectedOption.value);
+  };
+
+  const handleCurrencyChange = (selectedOption: any) => {
+    setCurrency(selectedOption);
+    setValue("currency", selectedOption.value);
   };
 
   const handleVerificationChange = (selectedOption: any) => {
@@ -190,7 +213,6 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
       };
 
       if (paymentId) {
-        console.log("Updating payment with ID:", paymentId);
         const response = await update(paymentData, "payment", paymentId);
         if (response._id) {
           toastService.success("Payment updated successfully");
@@ -227,6 +249,7 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
     setSupporter(undefined);
     setPaymentMode({ value: "online", label: "Online" });
     setStatus({ value: "captured", label: "Captured" });
+    setCurrency({ value: "INR", label: "INR" });
     setIsVerified({ value: false, label: "No" });
     dispatch(clearUpdate());
   };
@@ -274,13 +297,16 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
 
       <div>
         <Label htmlFor="currency">Currency</Label>
-        <Input
+        <Select
           id="currency"
-          {...register("currency")}
-          defaultValue="INR"
-          className="w-full"
-          disabled
+          options={currencyOptions}
+          value={currency}
+          onChange={handleCurrencyChange}
+          classNamePrefix="select"
         />
+        {errors.currency && (
+          <p className="text-red-500 text-sm">{errors.currency.message}</p>
+        )}
       </div>
 
       <div>
@@ -474,12 +500,10 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
       <div>
         <Label>Verified</Label>
         <Select
-          options={[
-            { value: true, label: "Yes" },
-            { value: false, label: "No" },
-          ]}
+          options={verificationOptions}
           value={isVerified}
           onChange={handleVerificationChange}
+          classNamePrefix="select"
         />
       </div>
 

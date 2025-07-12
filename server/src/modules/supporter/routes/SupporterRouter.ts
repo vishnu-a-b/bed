@@ -37,6 +37,13 @@ router.post(
   setFilterParams(supporterFilterFields),
   controller.get
 );
+
+router.get(
+  "/supporter",
+  supporterListDoc,
+  setFilterParams(supporterFilterFields),
+  controller.getSupporter
+);
 router.get(
   "/count-documents",
   supporterCountDoc,

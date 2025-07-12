@@ -29,12 +29,20 @@ export default class PaymentController extends BaseController {
     try {
       const { limit, skip } = req.query;
       const { filterQuery, sort } = req;
-      const data = await this.service.find({
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      });
+      console.log(req.body);
+      const filters = req.body?.filters || {};
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      const data = await this.service.find(
+        {
+          limit: Number(limit),
+          skip: Number(skip),
+          filterQuery,
+          sort,
+        },
+        startDate,
+        endDate
+      );
 
       this.sendSuccessResponseList(res, 200, { data });
     } catch (e: any) {
@@ -54,6 +62,21 @@ export default class PaymentController extends BaseController {
       next(e);
     }
   };
+
+    getPaymentHead = async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ) => {
+      try {
+        console.log("getPaymentHead called");
+        const data: any = await this.service.findPaymentHeadingData();
+  
+        this.sendSuccessResponseList(res, 200, { data });
+      } catch (e: any) {
+        next(e);
+      }
+    };
 
   getOne = async (req: Request, res: Response, next: NextFunction) => {
     try {

@@ -58,7 +58,7 @@ export const fetchCountry = async (searchTerm: any) => {
 export const fetchSupporter = async (searchTerm?: string) => {
   const search = searchTerm ? `&search=${searchTerm}` : "";
   const response = await Axios.get(
-    `${API_URL}/supporter?limit=Infinity&sortBy=updatedAt${search}`
+    `${API_URL}/supporter/supporter?limit=Infinity&sortBy=updatedAt${search}`
   );
   return response.data.data;
 };

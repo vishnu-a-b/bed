@@ -166,6 +166,26 @@ export default class SupporterService {
 
   // API Route
 
+  findSupporter = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
+    limit = limit ? limit : 10;
+    skip = skip ? skip : 0;
+
+    const supporters = await Supporter.find(filterQuery)
+      .populate(["bed"])
+      .sort(sort)
+      .limit(limit)
+      .skip(skip);
+
+    const total = await Supporter.countDocuments(filterQuery);
+
+    return {
+      total,
+      limit,
+      skip,
+      items: supporters,
+    };
+  };
+
   find = async (
     { limit, skip, filterQuery, sort }: ListFilterData,
     startDate?: string,
@@ -181,19 +201,19 @@ export default class SupporterService {
       if (startDate || endDate) {
         dateFilter = {
           createdAt: {
-            ...(startDate && { 
+            ...(startDate && {
               $gte: (() => {
-          const d = new Date(startDate);
-          d.setHours(0, 0, 0, 0);
-          return d;
-              })()
+                const d = new Date(startDate);
+                d.setHours(0, 0, 0, 0);
+                return d;
+              })(),
             }),
-            ...(endDate && { 
+            ...(endDate && {
               $lte: (() => {
-          const d = new Date(endDate!);
-          d.setHours(23, 59, 59, 999);
-          return d;
-              })()
+                const d = new Date(endDate!);
+                d.setHours(23, 59, 59, 999);
+                return d;
+              })(),
             }),
           },
         };
