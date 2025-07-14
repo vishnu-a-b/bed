@@ -25,6 +25,7 @@ router.post(
   supporterCreateValidator,
   controller.create
 );
+router.get('/contact-info', supporterListDoc, controller.getContactInfoController);
 router.use(authenticateUser);
 
 const authorization = authorizeUser({ allowedRoles: [] });

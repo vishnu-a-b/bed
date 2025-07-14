@@ -24,6 +24,9 @@ const countrySchema = z.object({
   name: z.string().min(1, { message: "Name is required" }).max(200),
   currency: z.string().min(1, { message: "Currency is required" }).max(200),
   flag: z.string().max(200).optional(),
+  address: z.string().max(500).optional(),
+  phoneNumber: z.string().max(50).optional(),
+  website: z.string().max(200).optional(),
 });
 
 // Infer form type from Zod schema
@@ -59,6 +62,9 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           setValue("name", data.name);
           setValue("currency", data.currency);
           setValue("flag", data.flag || "");
+          setValue("address", data.address || "");
+          setValue("phoneNumber", data.phoneNumber || "");
+          setValue("website", data.website || "");
 
           if (data.organization) {
             const orgItems: any = await fetchSingleData(
@@ -93,6 +99,9 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
     setValue("name", "");
     setValue("currency", "");
     setValue("flag", "");
+    setValue("address", "");
+    setValue("phoneNumber", "");
+    setValue("website", "");
     setHead(undefined);
     setOrganization(undefined);
     setFileStates([]);
@@ -127,6 +136,9 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           ...(flagFile && { flag: flagFile }),
           ...(organization && { organization: organization.value }),
           ...(head && { head: head.value }),
+          ...(data.address && { address: data.address }),
+          ...(data.phoneNumber && { phoneNumber: data.phoneNumber }),
+          ...(data.website && { website: data.website }),
         };
 
         const response = await update(countryData, "country", countryId, true);
@@ -146,6 +158,9 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           ...(flagFile && { flag: flagFile }),
           ...(organization && { organization: organization.value }),
           ...(head && { head: head.value }),
+          ...(data.address && { address: data.address }),
+          ...(data.phoneNumber && { phoneNumber: data.phoneNumber }),
+          ...(data.website && { website: data.website }),
         };
 
         const response = await create("country", countryData, true);
@@ -214,27 +229,6 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
           )}
         </div>
 
-        {/* <div>
-          <Label htmlFor="flag">Flag</Label>
-          <MultiImageDropzone
-            value={fileStates}
-            dropzoneOptions={{
-              maxFiles: 1, // Only one file for flag
-              maxSize: 1024 * 1024 * 5, // 5 MB
-              accept: {
-                "image/*": [".png", ".jpg", ".jpeg", ".svg"]
-              }
-            }}
-            onChange={setFileStates}
-            onFilesAdded={async (addedFiles) => {
-              setFileStates([...fileStates, ...addedFiles]);
-            }}
-          />
-          {errors.flag && (
-            <p className="text-red-500 text-sm">{errors.flag.message}</p>
-          )}
-        </div> */}
-
         <div>
           <Label htmlFor="organization">Organization</Label>
           <AsyncSelect
@@ -246,6 +240,52 @@ const AddAndUpdateCountry = ({ countryId }: { countryId?: string }) => {
             classNamePrefix="select"
             isClearable
           />
+        </div>
+
+        <div>
+          <h6>Office Details</h6>
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            {...register("address")}
+            placeholder="Enter address"
+            className={`w-full border rounded p-2 ${
+              errors.address ? "border-red-500" : "border-gray-300"
+            } bg-white dark:bg-gray-800 dark:text-white`}
+          />
+          {errors.address && (
+            <p className="text-red-500 text-sm">{errors.address.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Input
+            id="phoneNumber"
+            {...register("phoneNumber")}
+            placeholder="Enter phone number"
+            className={`w-full border rounded p-2 ${
+              errors.phoneNumber ? "border-red-500" : "border-gray-300"
+            } bg-white dark:bg-gray-800 dark:text-white`}
+          />
+          {errors.phoneNumber && (
+            <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="website">Website</Label>
+          <Input
+            id="website"
+            {...register("website")}
+            placeholder="https://example.com"
+            className={`w-full border rounded p-2 ${
+              errors.website ? "border-red-500" : "border-gray-300"
+            } bg-white dark:bg-gray-800 dark:text-white`}
+          />
+          {errors.website && (
+            <p className="text-red-500 text-sm">{errors.website.message}</p>
+          )}
         </div>
 
         <div>

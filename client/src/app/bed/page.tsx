@@ -32,7 +32,9 @@ export default function BedDetailsPage() {
           const response = await axios(
             `${API_URL}/supporter/get-bed-data/${bedId}`
           );
+          console.log("Bed Data:", response?.data);
           setBedData(response?.data);
+          
         } catch (err) {
           setError(err instanceof Error ? err.message : "Unknown error");
         } finally {

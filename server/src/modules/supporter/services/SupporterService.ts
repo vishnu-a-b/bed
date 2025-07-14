@@ -5,7 +5,19 @@ import { Bed } from "../../bed/models/Bed";
 import { Country } from "../../country/models/Country";
 import { Supporter } from "../models/Supporter";
 
+
+interface ContactInfoResponse {
+  address?: string;
+  phoneNumber?: string;
+  website?: string;
+  organizationName: string;
+  countryName: string;
+  currency: string;
+  source: 'country' | 'none'; // modified to indicate if country info was available
+}
+
 export default class SupporterService {
+  
   create = async (supporter: any) => {
     try {
       return await Supporter.create(supporter);
@@ -166,7 +178,12 @@ export default class SupporterService {
 
   // API Route
 
-  findSupporter = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
+  findSupporter = async ({
+    limit,
+    skip,
+    filterQuery,
+    sort,
+  }: ListFilterData) => {
     limit = limit ? limit : 10;
     skip = skip ? skip : 0;
 
@@ -429,6 +446,66 @@ export default class SupporterService {
     };
   };
 
+  getContactInfo = async (supporterId?: string, bedId?: string) => {
+    try {
+      let bed :any;
+      let organization;
+      let country;
+
+      if (supporterId) {
+        // Find supporter and populate bed
+        const supporter = await Supporter.findById(supporterId).populate({
+          path: "bed",
+          populate: [{ path: "organization" }, { path: "country" }],
+        });
+
+        if (!supporter) {
+          throw new Error("Supporter not found");
+        }
+
+        bed = supporter.bed;
+      } else if (bedId) {
+        // Find bed directly
+        bed = await Bed.findById(bedId)
+          .populate("organization")
+          .populate("country");
+      } else {
+        throw new Error("Either supporterId or bedId must be provided");
+      }
+
+      if (!bed) {
+        throw new Error("Bed not found");
+      }
+
+      organization = bed.organization;
+      country = bed.country;
+
+      // Initialize response with mandatory fields
+      const response: ContactInfoResponse = {
+        organizationName: organization?.name || "N/A",
+        countryName: country?.name || "N/A",
+        currency: country?.currency || "N/A",
+        source: "none", // default to none
+      };
+
+      // Only add contact info if country has them
+      if (country) {
+        if (country.address) response.address = country.address;
+        if (country.phoneNumber) response.phoneNumber = country.phoneNumber;
+        if (country.website) response.website = country.website;
+
+        // If any contact info was added from country, set source to 'country'
+        if (response.address || response.phoneNumber || response.website) {
+          response.source = "country";
+        }
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Error in getContactInfo:", error);
+      throw error;
+    }
+  };
   findOneBedData = async (bedId: string) => {
     // Validate bedId
     if (!bedId || !mongoose.Types.ObjectId.isValid(bedId)) {

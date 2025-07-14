@@ -87,6 +87,9 @@ export default class BedService {
     return await Bed.findById(id).populate(["organization", "country"]);
   };
 
+  
+
+
   findOneWithUserId = async (id: string) => {
     const beds = await Bed.find({ user: id })
       .populate(["organization", "country"])
