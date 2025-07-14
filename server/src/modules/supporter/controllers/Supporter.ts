@@ -55,6 +55,47 @@ export default class SupporterController extends BaseController {
     }
   };
 
+  getContactInfoController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { supporterId, bedId } = req.query;
+
+      if (!supporterId && !bedId) {
+        res.status(400).json({
+          success: false,
+          message: "Either supporterId or bedId must be provided",
+        });
+        return; // Just return without returning the response
+      }
+
+      const contactInfo = await this.service.getContactInfo(
+        supporterId?.toString(),
+        bedId?.toString()
+      );
+
+      res.status(200).json({
+        success: true,
+        data: contactInfo,
+      });
+    } catch (error: any) {
+      console.error("Error in getContactInfoController:", error);
+
+      const statusCode = error.message.includes("not found") ? 404 : 500;
+      const message =
+        statusCode === 404
+          ? error.message
+          : "Failed to fetch contact information";
+
+      res.status(statusCode).json({
+        success: false,
+        message,
+      });
+    }
+  };
+
   getSupporter = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { limit, skip } = req.query;
