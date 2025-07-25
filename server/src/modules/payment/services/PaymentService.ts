@@ -1,24 +1,36 @@
 import mongoose from "mongoose";
 import NotFoundError from "../../../errors/errorTypes/NotFoundError";
 import ListFilterData from "../../../interfaces/ListFilterData";
-import Razorpay from "razorpay";
-import crypto from "crypto";
+
+
 import { Payment } from "../models/Payment";
 import { Supporter } from "../../supporter/models/Supporter";
+import paypal from '@paypal/checkout-server-sdk';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// PayPal client setup - moved to top and fixed
+const environment = process.env.NODE_ENV === 'production' 
+  ? new paypal.core.LiveEnvironment(
+      process.env.PAYPAL_CLIENT_ID!,
+      process.env.PAYPAL_CLIENT_SECRET!
+    )
+  : new paypal.core.SandboxEnvironment(
+      process.env.PAYPAL_CLIENT_ID!,
+      process.env.PAYPAL_CLIENT_SECRET!
+    );
+
+const paypalClient = new paypal.core.PayPalHttpClient(environment);
+
+// Keep Razorpay for backwards compatibility if needed
+
 
 interface CreateOrderParams {
   supporterId: string;
 }
 
 interface VerifyPaymentParams {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
+  paypal_order_id: string;
+  paypal_payment_id: string;
+  paypal_payer_id: string;
 }
 
 export default class PaymentService {
@@ -142,7 +154,6 @@ export default class PaymentService {
           thisDayPayments: { $sum: "$thisDayPayments" },
           thisMonthPayments: { $sum: "$thisMonthPayments" },
           thisWeekPayments: { $sum: "$thisWeekPayments" },
-          
         },
       },
 
@@ -311,7 +322,7 @@ export default class PaymentService {
           createdAt: 1,
           paymentDate: 1,
           isVerified: 1,
-          razorpay_payment_id: 1,
+          paypal_payment_id: 1, // Changed from razorpay_payment_id
           transactionReference: 1,
           // Include any other payment fields you need
         },
@@ -370,7 +381,7 @@ export default class PaymentService {
         isVerified: payment.isVerified,
         reference:
           payment.paymentMode === "online"
-            ? payment.razorpay_payment_id
+            ? payment.paypal_payment_id // Changed from razorpay_payment_id
             : payment.transactionReference,
         // Include any other payment fields you need
       })),
@@ -380,15 +391,14 @@ export default class PaymentService {
   async createOrder(params: CreateOrderParams) {
     const { supporterId } = params;
 
-    // Validate input
     if (!supporterId) {
       throw new Error("supporterId is required");
     }
 
-    console.log("Creating order for supporter:", supporterId);
+    console.log("Creating PayPal order for supporter:", supporterId);
 
     try {
-      // Get supporter details with proper typing
+      // Get supporter details
       const supporter = await Supporter.findById(supporterId).populate<{
         user: any;
         bed: { _id: any; country: any };
@@ -398,80 +408,135 @@ export default class PaymentService {
         throw new Error("Supporter not found");
       }
 
-      // Validate amount
       if (!supporter.amount || isNaN(Number(supporter.amount))) {
         throw new Error("Invalid amount specified for supporter");
       }
 
-      // Create Razorpay order
-      const options = {
-        amount: Math.round(Number(supporter.amount) * 100), // Convert to paise
-        currency: supporter.bed.country?.currency || "INR",
-        receipt: `receipt_${Date.now()}`,
-      };
+      // Create PayPal order
+      const request = new paypal.orders.OrdersCreateRequest();
+      request.prefer("return=representation");
+      request.requestBody({
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            amount: {
+              currency_code: supporter.bed.country?.currency || "USD",
+              value: supporter.amount.toFixed(2), // PayPal expects string with 2 decimal places
+            },
+            description: `Payment for bed support - ${supporter.bed._id}`,
+            custom_id: supporterId.toString(),
+            reference_id: `supporter_${supporterId}_${Date.now()}`,
+          },
+        ],
+        application_context: {
+          brand_name: "Your App Name",
+          landing_page: "BILLING",
+          user_action: "PAY_NOW",
+          return_url: `${process.env.CLIENT_URL}/payment/success`,
+          cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
+        },
+      });
 
-      const order = await razorpay.orders.create(options);
+      // Use the properly declared paypalClient
+      const order = await paypalClient.execute(request);
 
       // Create payment record
       const payment = new Payment({
-        razorpay_order_id: order.id,
-        amount: order.amount,
-        currency: order.currency,
+        paypal_order_id: order.result.id,
+        amount: Number(supporter.amount),
+        currency: supporter.bed.country?.currency || "USD",
         status: "pending",
-        method: "online",
+        method: "paypal",
         paymentMode: "online",
         supporter: supporterId,
         bed: supporter.bed._id,
         email: supporter.user?.email,
         contact: supporter.user?.phoneNumber,
         created_at: Math.floor(Date.now() / 1000),
-        notes: order.notes,
+        paypal_payment_status: order.result.status,
+        notes: {
+          order_id: order.result.id,
+          supporter_id: supporterId,
+        },
       });
 
       await payment.save();
 
+      // Get approval URL
+      const approvalUrl = order.result.links?.find(
+        (link: any) => link.rel === "approve"
+      )?.href;
+
       return {
         success: true,
         data: {
-          orderId: order.id,
-          amount: order.amount,
-          currency: order.currency,
-          key: process.env.RAZORPAY_KEY_ID,
+          orderId: order.result.id,
+          amount: Number(supporter.amount),
+          currency: supporter.bed.country?.currency || "USD",
+          clientId: process.env.PAYPAL_CLIENT_ID,
+          approvalUrl: approvalUrl,
         },
       };
     } catch (error) {
       console.error("Error in createOrder service:", error);
-      throw error; // Re-throw for controller to handle
+      throw error;
     }
   }
 
   async verifyPayment(params: VerifyPaymentParams) {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
-      params;
+    const { paypal_order_id, paypal_payment_id, paypal_payer_id } = params;
 
     // Find the payment record
-    const payment = await Payment.findOne({ razorpay_order_id });
+    const payment = await Payment.findOne({ paypal_order_id });
     if (!payment) {
       throw new Error("Payment record not found");
     }
 
-    // Verify the signature
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
+    try {
+      // Capture the PayPal order
+      const request:any = new paypal.orders.OrdersCaptureRequest(paypal_order_id);
+      request.requestBody({});
 
-    if (generatedSignature !== razorpay_signature) {
-      throw new Error("Invalid signature");
+      // Use the properly declared paypalClient
+      const capture = await paypalClient.execute(request);
+
+      if (capture.result.status === "COMPLETED") {
+        // Extract payment details from capture result
+        const captureDetails =
+          capture.result.purchase_units[0].payments.captures[0];
+
+        // Update payment record
+        payment.paypal_payment_id = captureDetails.id;
+        payment.paypal_payer_id = paypal_payer_id;
+        payment.status = "captured";
+        payment.paypal_payment_status = "COMPLETED";
+        payment.isVerified = true;
+
+        // Store PayPal fees and net amount if available
+        if (captureDetails.seller_receivable_breakdown) {
+          payment.paypal_transaction_fee = parseFloat(
+            captureDetails.seller_receivable_breakdown.paypal_fee?.value || "0"
+          );
+          payment.paypal_net_amount = parseFloat(
+            captureDetails.seller_receivable_breakdown.net_amount?.value || "0"
+          );
+        }
+
+        await payment.save();
+
+        return payment;
+      } else {
+        throw new Error(
+          `Payment capture failed with status: ${capture.result.status}`
+        );
+      }
+    } catch (error) {
+      // Update payment status to failed
+      payment.status = "failed";
+      payment.paypal_payment_status = "FAILED";
+      await payment.save();
+
+      throw error;
     }
-
-    // Update payment record
-    payment.razorpay_payment_id = razorpay_payment_id;
-    payment.razorpay_signature = razorpay_signature;
-    payment.status = "captured";
-    payment.isVerified = true;
-    await payment.save();
-
-    return payment;
   }
 }

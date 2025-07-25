@@ -171,6 +171,22 @@ class SupporterService {
             ]);
         });
         // API Route
+        this.findSupporter = (_a) => __awaiter(this, [_a], void 0, function* ({ limit, skip, filterQuery, sort, }) {
+            limit = limit ? limit : 10;
+            skip = skip ? skip : 0;
+            const supporters = yield Supporter_1.Supporter.find(filterQuery)
+                .populate(["bed"])
+                .sort(sort)
+                .limit(limit)
+                .skip(skip);
+            const total = yield Supporter_1.Supporter.countDocuments(filterQuery);
+            return {
+                total,
+                limit,
+                skip,
+                items: supporters,
+            };
+        });
         this.find = (_a, startDate_1, endDate_1) => __awaiter(this, [_a, startDate_1, endDate_1], void 0, function* ({ limit, skip, filterQuery, sort }, startDate, endDate) {
             console.log("Service received dates:", startDate, endDate);
             try {
@@ -184,13 +200,13 @@ class SupporterService {
                                 const d = new Date(startDate);
                                 d.setHours(0, 0, 0, 0);
                                 return d;
-                            })()
+                            })(),
                         })), (endDate && {
                             $lte: (() => {
                                 const d = new Date(endDate);
                                 d.setHours(23, 59, 59, 999);
                                 return d;
-                            })()
+                            })(),
                         })),
                     };
                 }
@@ -385,6 +401,63 @@ class SupporterService {
                     totalAmountFromSupporters: bed.totalAmountFromSupporters,
                 })),
             };
+        });
+        this.getContactInfo = (supporterId, bedId) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                let bed;
+                let organization;
+                let country;
+                if (supporterId) {
+                    // Find supporter and populate bed
+                    const supporter = yield Supporter_1.Supporter.findById(supporterId).populate({
+                        path: "bed",
+                        populate: [{ path: "organization" }, { path: "country" }],
+                    });
+                    if (!supporter) {
+                        throw new Error("Supporter not found");
+                    }
+                    bed = supporter.bed;
+                }
+                else if (bedId) {
+                    // Find bed directly
+                    bed = yield Bed_1.Bed.findById(bedId)
+                        .populate("organization")
+                        .populate("country");
+                }
+                else {
+                    throw new Error("Either supporterId or bedId must be provided");
+                }
+                if (!bed) {
+                    throw new Error("Bed not found");
+                }
+                organization = bed.organization;
+                country = bed.country;
+                // Initialize response with mandatory fields
+                const response = {
+                    organizationName: (organization === null || organization === void 0 ? void 0 : organization.name) || "N/A",
+                    countryName: (country === null || country === void 0 ? void 0 : country.name) || "N/A",
+                    currency: (country === null || country === void 0 ? void 0 : country.currency) || "N/A",
+                    source: "none", // default to none
+                };
+                // Only add contact info if country has them
+                if (country) {
+                    if (country.address)
+                        response.address = country.address;
+                    if (country.phoneNumber)
+                        response.phoneNumber = country.phoneNumber;
+                    if (country.website)
+                        response.website = country.website;
+                    // If any contact info was added from country, set source to 'country'
+                    if (response.address || response.phoneNumber || response.website) {
+                        response.source = "country";
+                    }
+                }
+                return response;
+            }
+            catch (error) {
+                console.error("Error in getContactInfo:", error);
+                throw error;
+            }
         });
         this.findOneBedData = (bedId) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;

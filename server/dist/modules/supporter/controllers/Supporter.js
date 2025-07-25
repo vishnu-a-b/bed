@@ -65,6 +65,50 @@ class SupporterController extends BaseController_1.default {
                 next(e);
             }
         });
+        this.getContactInfoController = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { supporterId, bedId } = req.query;
+                if (!supporterId && !bedId) {
+                    res.status(400).json({
+                        success: false,
+                        message: "Either supporterId or bedId must be provided",
+                    });
+                    return; // Just return without returning the response
+                }
+                const contactInfo = yield this.service.getContactInfo(supporterId === null || supporterId === void 0 ? void 0 : supporterId.toString(), bedId === null || bedId === void 0 ? void 0 : bedId.toString());
+                res.status(200).json({
+                    success: true,
+                    data: contactInfo,
+                });
+            }
+            catch (error) {
+                console.error("Error in getContactInfoController:", error);
+                const statusCode = error.message.includes("not found") ? 404 : 500;
+                const message = statusCode === 404
+                    ? error.message
+                    : "Failed to fetch contact information";
+                res.status(statusCode).json({
+                    success: false,
+                    message,
+                });
+            }
+        });
+        this.getSupporter = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { limit, skip } = req.query;
+                const { filterQuery, sort } = req;
+                const data = yield this.service.findSupporter({
+                    limit: Number(limit),
+                    skip: Number(skip),
+                    filterQuery,
+                    sort,
+                });
+                this.sendSuccessResponseList(res, 200, { data });
+            }
+            catch (e) {
+                next(e);
+            }
+        });
         this.getAllData = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const data = yield this.service.findAllData();

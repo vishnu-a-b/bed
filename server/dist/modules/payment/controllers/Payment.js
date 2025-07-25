@@ -39,15 +39,20 @@ class PaymentController extends BaseController_1.default {
             }
         });
         this.get = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 const { limit, skip } = req.query;
                 const { filterQuery, sort } = req;
+                console.log(req.body);
+                const filters = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.filters) || {};
+                const startDate = filters.startDate;
+                const endDate = filters.endDate;
                 const data = yield this.service.find({
                     limit: Number(limit),
                     skip: Number(skip),
                     filterQuery,
                     sort,
-                });
+                }, startDate, endDate);
                 this.sendSuccessResponseList(res, 200, { data });
             }
             catch (e) {
@@ -58,6 +63,16 @@ class PaymentController extends BaseController_1.default {
             try {
                 const count = yield this.service.countTotalDocuments();
                 this.sendSuccessResponse(res, 200, { data: { count } });
+            }
+            catch (e) {
+                next(e);
+            }
+        });
+        this.getPaymentHead = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("getPaymentHead called");
+                const data = yield this.service.findPaymentHeadingData();
+                this.sendSuccessResponseList(res, 200, { data });
             }
             catch (e) {
                 next(e);
@@ -143,20 +158,19 @@ class PaymentController extends BaseController_1.default {
             try {
                 const { supporterId } = req.body;
                 const result = yield this.service.createOrder({ supporterId });
-                // Wrap the response in a data object
                 return res.json({
                     success: true,
                     data: {
                         orderId: result.data.orderId,
                         amount: result.data.amount,
                         currency: result.data.currency,
-                        key: result.data.key
-                    }
+                        clientId: result.data.clientId,
+                        approvalUrl: result.data.approvalUrl,
+                    },
                 });
             }
             catch (error) {
                 console.error("Error in createOrder controller:", error);
-                // Handle different error types
                 let statusCode = 500;
                 let errorMessage = "An unknown error occurred";
                 if (error instanceof Error) {
@@ -177,11 +191,11 @@ class PaymentController extends BaseController_1.default {
         });
         this.verifyPayment = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+                const { paypal_order_id, paypal_payment_id, paypal_payer_id } = req.body;
                 const payment = yield this.service.verifyPayment({
-                    razorpay_payment_id,
-                    razorpay_order_id,
-                    razorpay_signature,
+                    paypal_order_id,
+                    paypal_payment_id,
+                    paypal_payer_id,
                 });
                 res.json(payment);
             }

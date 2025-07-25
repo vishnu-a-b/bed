@@ -58,7 +58,8 @@ router.post("/verify", controller.verifyPayment);
 router.use(authenticateUser_1.authenticateUser);
 // Common authorization
 const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
-router.get("/", paymentListDoc_1.paymentListDoc, (0, setFilterParams_1.default)(Payment_2.paymentFilterFields), controller.get);
+router.get("/payment-head", paymentListDoc_1.paymentListDoc, controller.getPaymentHead);
+router.post("/get", paymentListDoc_1.paymentListDoc, (0, setFilterParams_1.default)(Payment_2.paymentFilterFields), controller.get);
 router.get("/count-documents", paymentCountDoc_1.paymentCountDoc, controller.countTotalDocuments);
 router.get("/:id", paymentDetailsDoc_1.paymentDetailsDoc, controller.getOne);
 router.put("/:id", paymentUpdateDoc_1.paymentUpdateDoc, paymentUpdateValidator_1.paymentUpdateValidator, controller.update);
