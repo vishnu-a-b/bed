@@ -11,7 +11,7 @@ import BedRouter from "../modules/bed/routes/BedRouter";
 import OrganizationRouter from "../modules/organization/routes/Organization";
 import SupporterRouter from "../modules/supporter/routes/SupporterRouter";
 import PaymentRouter from "../modules/payment/routes/PaymentRouter";
-
+import GenerousContributionPaymentRouter from "../modules/GenerousContributionPayment/routes/generousContributionPaymentRoutes";
 
 
 const router = express.Router();
@@ -28,6 +28,7 @@ router.use("/v1/staff/", StaffRouter);
 router.use("/v1/supporter/", SupporterRouter);
 router.use("/v1/bed/", BedRouter);
 router.use("/v1/payment/", PaymentRouter);
+router.use("/v1/generous-payments/",GenerousContributionPaymentRouter )
 
 
 export default router;

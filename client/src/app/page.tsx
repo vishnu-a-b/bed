@@ -1,6 +1,8 @@
 import About from "@/components/bedbooking/about";
 import BookingStat from "@/components/bedbooking/bookingStat";
 import SwiperWrapper from "@/components/bedbooking/swipper";
+import GenerousContributionsForm from "@/components/payment/GCForm";
+
 import React from "react";
 
 export default function Home() {
@@ -30,6 +32,7 @@ export default function Home() {
       </nav>
       <SwiperWrapper />
       <BookingStat />
+      <GenerousContributionsForm />
       <About />
     </div>
   );
