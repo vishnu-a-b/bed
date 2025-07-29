@@ -1,12 +1,7 @@
-import Footer from "@/components/ui/footer";
-import SponsorshipSection from "@/components/ui/SponsorshipSection";
+'use client'
+import Footer from "@/components/donation/footer";
+import Header from "@/components/donation/header";
 
-import dynamic from 'next/dynamic';
-
-const Header = dynamic(() => import('@/components/ui/header'), {
-  ssr: false,
-  loading: () => <div className="w-full h-20 bg-white" />,
-});
 
 export default function RootLayout({
   children,
@@ -17,7 +12,7 @@ export default function RootLayout({
     <>
       <Header />
       <main>{children}</main>
-      <SponsorshipSection />
+      <Footer />
       {/* <Footer /> */}
     </> 
   );

@@ -15,7 +15,7 @@ import {
 // TypeScript interfaces
 interface Contributor {
   name: string;
-
+  email: string;
   phone: string;
 }
 
@@ -42,14 +42,14 @@ interface FormErrors {
 type SubmitStatus = "success" | "error" | null;
 
 const GenerousContributionsForm: React.FC = () => {
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [formData, setFormData] = useState<FormData>({
     amount: "",
-    currency: "AUD", // Changed from AUD to USD to match backend
+    currency: "AUD",
     contributor: {
       name: "",
       phone: "",
+      email: "", // 👈 Added
     },
     source: "website",
   });
@@ -71,6 +71,11 @@ const GenerousContributionsForm: React.FC = () => {
 
     if (!formData.contributor.phone.trim()) {
       newErrors.phone = "Phone number is required";
+    }
+    if (!formData.contributor.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.contributor.email)) {
+      newErrors.email = "Invalid email address";
     }
 
     setErrors(newErrors);
@@ -204,6 +209,7 @@ const GenerousContributionsForm: React.FC = () => {
           contributor: {
             name: "",
             phone: "",
+            email: "",
           },
           source: "website",
         });
@@ -357,6 +363,28 @@ const GenerousContributionsForm: React.FC = () => {
                 </div>
                 {errors.phone && (
                   <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="email"
+                    value={formData.contributor.email}
+                    onChange={(e) =>
+                      handleInputChange("contributor", "email", e.target.value)
+                    }
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      errors.email ? "border-red-300" : "border-gray-300"
+                    }`}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
             </div>

@@ -11,9 +11,12 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
     "@types/nodemailer": "^6.4.17",
+    "@types/number-to-words": "^1.2.3",
     "@types/paypal__checkout-server-sdk": "^1.0.8",
+    "@types/pdfkit": "^0.17.2",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
@@ -30,6 +33,7 @@
     "canvas": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.21.1",
     "express-async-errors": "^3.1.1",
     "express-mongo-sanitize": "^2.2.0",
@@ -40,10 +44,12 @@
     "mongoose": "^8.8.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^7.0.3",
+    "number-to-words": "^1.2.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "password-validator": "^5.3.0",
+    "puppeteer": "^24.15.0",
     "razorpay": "^2.9.6",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"

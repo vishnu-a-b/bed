@@ -5107,6 +5107,16 @@
         }
       }
     },
+    "/v1/generous-payments/payment-success": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/v1/generous-payments/": {
       "get": {
         "description": "",

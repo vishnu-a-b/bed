@@ -7,7 +7,22 @@ import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
   title: "Bed Donation program by ShanthiBhavan",
-  description: "Bed Donation program by ShanthiBhavan",
+  description: "Make a lasting impact with ShanthiBhavan's Bed Donation Program — donate a bed and bring comfort to those who need it most.",
+  openGraph: {
+    title: "Bed Donation Program by ShanthiBhavan",
+    description:
+      "Make a lasting impact with ShanthiBhavan's Bed Donation Program — donate a bed and bring comfort to those who need it most.",
+    siteName: "ShanthiBhavan",
+    images: [
+      {
+        url: "https://palliativeinternational.com/assets/images/about/about-v1-img2.jpg", // 🔁 Use full URL
+        width: 1200,
+        height: 630,
+        alt: "ShanthiBhavan Bed Donation Banner",
+      },
+    ],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
