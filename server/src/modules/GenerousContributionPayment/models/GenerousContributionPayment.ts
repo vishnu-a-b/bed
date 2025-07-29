@@ -1,8 +1,19 @@
 // server/src/modules/payment/models/GenerousContributionPayment.ts
 import mongoose from "mongoose";
 
+// Counter schema for auto-incrementing receipt numbers
+const counterSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 }
+});
+
+const Counter = mongoose.model('Counter', counterSchema);
+
 const generousContributionPaymentSchema = new mongoose.Schema(
   {
+    // Receipt Number (auto-increment)
+    receiptNumber: { type: String, unique: true },
+    
     // PayPal Order/Payment IDs - NO unique constraints here
     paypal_order_id: { type: String },
     paypal_payment_id: { type: String },
@@ -15,8 +26,9 @@ const generousContributionPaymentSchema = new mongoose.Schema(
     paypal_refund_response: { type: Object }, // Full refund response (if applicable)
     
     // PayPal Payer Information (extracted from response)
-    name:{ type: String },
-    phNo:{ type: String },
+    name: { type: String },
+    phNo: { type: String },
+    email: { type: String },
     payer: {
       email_address: { type: String },
       payer_id: { type: String },
@@ -125,6 +137,26 @@ const generousContributionPaymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Pre-save middleware to generate receipt number
+generousContributionPaymentSchema.pre('save', async function(next) {
+  if (this.isNew && !this.receiptNumber) {
+    try {
+      const counter = await Counter.findByIdAndUpdate(
+        'generous_contribution_receipt',
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      
+      // Format: GC-YYYY-000001
+      const currentYear = new Date().getFullYear();
+      this.receiptNumber = `GC-${currentYear}-${counter.seq.toString().padStart(6, '0')}`;
+    } catch (error:any) {
+      return next(error);
+    }
+  }
+  next();
+});
+
 // Virtual for full payer name
 generousContributionPaymentSchema.virtual('payer.full_name').get(function() {
   if (this.payer?.name) {
@@ -145,7 +177,8 @@ export const generousContributionPaymentFilterFields = {
     "isApproved",
     "paymentDate",
     "recordedBy",
-    "approvedBy"
+    "approvedBy",
+    "receiptNumber"
   ],
   searchFields: [
     "paypal_payment_id",
@@ -154,9 +187,10 @@ export const generousContributionPaymentFilterFields = {
     "payer.email_address",
     "payer.name.given_name",
     "payer.name.surname",
-    "transactionReference"
+    "transactionReference",
+    "receiptNumber"
   ],
-  sortFields: ["createdAt", "amount", "paymentDate", "payer.name.given_name"],
+  sortFields: ["createdAt", "amount", "paymentDate", "payer.name.given_name", "receiptNumber"],
 };
 
 export const GenerousContributionPayment = mongoose.model(

@@ -2,6 +2,7 @@
 import paypal from "@paypal/checkout-server-sdk";
 import { GenerousContributionPayment } from "../models/GenerousContributionPayment";
 import { Types } from "mongoose";
+import DonationReceiptMailer from "../../../services/DonationReceiptMailer";
 
 // PayPal SDK Configuration
 const environment =
@@ -19,6 +20,7 @@ const client = new paypal.core.PayPalHttpClient(environment);
 
 // Type Definitions
 type Contributor = {
+  email: string;
   name: string;
   phone?: string;
 };
@@ -191,6 +193,7 @@ export default class GenerousContributionPaymentService {
         paymentMode: "online",
         name:contributor.name,
         phNo:contributor.phone,
+        email:contributor.email,
         paymentDate: new Date(),
         source,
         isApproved: true,
@@ -217,53 +220,124 @@ export default class GenerousContributionPaymentService {
     }
   };
 
-  verifyPayment = async (
-    params: VerifyPaymentParams
-  ): Promise<{ success: boolean; data: PaymentVerificationResult }> => {
-    const { paypal_order_id, paypal_payment_id } = params;
+verifyPayment = async (
+  params: VerifyPaymentParams
+): Promise<{ success: boolean; data: PaymentVerificationResult }> => {
+  const { paypal_order_id, paypal_payment_id } = params;
 
-    const payment: any = await GenerousContributionPayment.findOne({
-      paypal_order_id,
-    });
-    if (!payment) {
-      throw new Error("Payment record not found");
-    }
+  const payment: any = await GenerousContributionPayment.findOne({
+    paypal_order_id,
+  });
+  
+  if (!payment) {
+    throw new Error("Payment record not found");
+  }
 
-    try {
-      const request: any = new paypal.orders.OrdersCaptureRequest(
-        paypal_order_id
-      );
-      request.requestBody({});
+  try {
+    const request: any = new paypal.orders.OrdersCaptureRequest(
+      paypal_order_id
+    );
+    request.requestBody({});
 
-      const capture = await client.execute(request);
-      if (capture.result.status === "COMPLETED") {
-        payment.paypal_payment_id = paypal_payment_id || capture.result.id;
-        payment.paypal_payer_id = capture.result.payer?.payer_id;
-        payment.paypal_capture_id =
-          capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-        payment.status = "completed";
-        payment.isApproved = true;
-        payment.notes = { ...payment.notes, paypal_capture: capture.result };
-        await payment.save();
-
-        return {
-          success: true,
-          data: {
-            payment,
-            paypal_response: capture.result,
-          },
+    const capture = await client.execute(request);
+    
+    if (capture.result.status === "COMPLETED") {
+      // Update payment record
+      payment.paypal_payment_id = paypal_payment_id || capture.result.id;
+      payment.paypal_payer_id = capture.result.payer?.payer_id;
+      payment.paypal_capture_id =
+        capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+      payment.status = "completed";
+      payment.isApproved = true;
+      payment.paypal_capture_response = capture.result; // Store complete capture response
+      payment.notes = { ...payment.notes, paypal_capture: capture.result };
+      
+      // Extract payer information from PayPal response
+      if (capture.result.payer) {
+        payment.payer = {
+          email_address: capture.result.payer.email_address,
+          payer_id: capture.result.payer.payer_id,
+          name: capture.result.payer.name,
+          phone: capture.result.payer.phone,
+          address: capture.result.payer.address
         };
+        
+        // Also set the top-level fields for easier access
+        payment.email = capture.result.payer.email_address;
+        if (capture.result.payer.name) {
+          payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
+        }
+        if (capture.result.payer.phone?.phone_number?.national_number) {
+          payment.phNo = capture.result.payer.phone.phone_number.national_number;
+        }
       }
-      throw new Error(
-        `Payment capture failed with status: ${capture.result.status}`
-      );
-    } catch (error) {
-      console.error("Error verifying payment:", error);
-      payment.status = "failed";
+      
       await payment.save();
-      throw error;
+
+      // Send receipt email after successful payment verification
+      try {
+        const payerEmail = payment.email ;
+        const payerName = payment.name ;
+        
+
+        if (payerEmail) {
+          await DonationReceiptMailer.sendDonationReceiptEmail({
+            email: payerEmail,
+            name: payerName,
+            phoneNo: payment.phNo,
+            amount: payment.amount,
+            transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
+            receiptNumber: payment.receiptNumber,
+            date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            programName: payment.contribution?.description || "Generous Contribution Program"
+          });
+          
+          console.log(`Donation receipt email sent successfully to ${payerEmail}`);
+        } else {
+          console.warn(`No email address found for payment ${payment.receiptNumber}`);
+        }
+      } catch (emailError:any) {
+        // Log email error but don't fail the payment verification
+        console.error("Failed to send donation receipt email:", emailError);
+        
+        // Optionally, you could add a flag to retry email sending later
+        payment.notes = {
+          ...payment.notes,
+          email_failed: true,
+          email_error: emailError.message,
+          email_retry_needed: true
+        };
+        await payment.save();
+      }
+
+      return {
+        success: true,
+        data: {
+          payment,
+          paypal_response: capture.result,
+        },
+      };
     }
-  };
+    
+    throw new Error(
+      `Payment capture failed with status: ${capture.result.status}`
+    );
+  } catch (error:any) {
+    console.error("Error verifying payment:", error);
+    payment.status = "failed";
+    payment.error_details = {
+      error_code: error.code || "VERIFICATION_FAILED",
+      error_message: error.message,
+      debug_id: error.debug_id || null
+    };
+    await payment.save();
+    throw error;
+  }
+};
 
   getAllPayments = async (
     query: Record<string, any> = {},
