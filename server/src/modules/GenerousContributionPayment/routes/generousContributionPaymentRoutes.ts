@@ -8,7 +8,7 @@ import { paymentCreateValidator } from "../validators/paymentCreateValidator";
 import { generateReceiptPDF } from "../../../services/generatePdf";
 
 const router = express.Router();
-const controller:any = new GenerousContributionPaymentController();
+const controller: any = new GenerousContributionPaymentController();
 
 router.post(
   "/create",
@@ -21,13 +21,15 @@ router.get("/public/:id", controller.getPaymentById);
 
 router.post("/verify", controller.verifyPayment);
 
-
-
 router.get("/payment-success", async (req, res) => {
   // Example input (replace with actual values from payment)
-  const paymentDetails:any = {
+  const paymentDetails: any = {
     name: "Well Wisher",
     amount: 3000,
+    phoneNo: "8848196653",
+    address: `test sgdhsadkjgkasdgjhsa hshdghsagdhhhdas,
+irinjalakuda VIC 3004,
+Australia`,
     date: "20 Dec 2024",
     transactionNumber: "9496277968",
     receiptNumber: "GC00-20598",
@@ -35,6 +37,7 @@ router.get("/payment-success", async (req, res) => {
 
   generateReceiptPDF(res, paymentDetails);
 });
+
 
 
 router.use(authenticateUser);
@@ -70,11 +73,7 @@ router.put("/:id", authorization, controller.updatePayment);
  * @desc    Delete payment record
  * @access  Private (Admin only)
  */
-router.delete(
-  "/:id",
-  authorization,
-  controller.deletePayment
-);
+router.delete("/:id", authorization, controller.deletePayment);
 
 /**
  * @route   POST /api/generous-payments/manual

@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // server/src/modules/payment/services/GenerousContributionPaymentService.ts
 const checkout_server_sdk_1 = __importDefault(require("@paypal/checkout-server-sdk"));
 const GenerousContributionPayment_1 = require("../models/GenerousContributionPayment");
+const DonationReceiptMailer_1 = __importDefault(require("../../../services/DonationReceiptMailer"));
 // PayPal SDK Configuration
 const environment = process.env.NODE_ENV === "production"
     ? new checkout_server_sdk_1.default.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
@@ -90,7 +91,7 @@ class GenerousContributionPaymentService {
                         landing_page: "BILLING",
                         user_action: "PAY_NOW",
                         return_url: `${frontendUrl}/success`,
-                        cancel_url: `${frontendUrl}/cancel`,
+                        cancel_url: `${frontendUrl}`,
                     },
                 });
                 const order = yield client.execute(request);
@@ -102,6 +103,7 @@ class GenerousContributionPaymentService {
                     paymentMode: "online",
                     name: contributor.name,
                     phNo: contributor.phone,
+                    email: contributor.email,
                     paymentDate: new Date(),
                     source,
                     isApproved: true,
@@ -125,7 +127,7 @@ class GenerousContributionPaymentService {
             }
         });
         this.verifyPayment = (params) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             const { paypal_order_id, paypal_payment_id } = params;
             const payment = yield GenerousContributionPayment_1.GenerousContributionPayment.findOne({
                 paypal_order_id,
@@ -138,14 +140,66 @@ class GenerousContributionPaymentService {
                 request.requestBody({});
                 const capture = yield client.execute(request);
                 if (capture.result.status === "COMPLETED") {
+                    // Update payment record
                     payment.paypal_payment_id = paypal_payment_id || capture.result.id;
                     payment.paypal_payer_id = (_a = capture.result.payer) === null || _a === void 0 ? void 0 : _a.payer_id;
                     payment.paypal_capture_id =
                         (_f = (_e = (_d = (_c = (_b = capture.result.purchase_units) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.payments) === null || _d === void 0 ? void 0 : _d.captures) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.id;
                     payment.status = "completed";
                     payment.isApproved = true;
+                    payment.paypal_capture_response = capture.result; // Store complete capture response
                     payment.notes = Object.assign(Object.assign({}, payment.notes), { paypal_capture: capture.result });
+                    // Extract payer information from PayPal response
+                    if (capture.result.payer) {
+                        payment.payer = {
+                            email_address: capture.result.payer.email_address,
+                            payer_id: capture.result.payer.payer_id,
+                            name: capture.result.payer.name,
+                            phone: capture.result.payer.phone,
+                            address: capture.result.payer.address
+                        };
+                        // Also set the top-level fields for easier access
+                        payment.email = capture.result.payer.email_address;
+                        if (capture.result.payer.name) {
+                            payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
+                        }
+                        if ((_h = (_g = capture.result.payer.phone) === null || _g === void 0 ? void 0 : _g.phone_number) === null || _h === void 0 ? void 0 : _h.national_number) {
+                            payment.phNo = capture.result.payer.phone.phone_number.national_number;
+                        }
+                    }
                     yield payment.save();
+                    // Send receipt email after successful payment verification
+                    try {
+                        const payerEmail = payment.email;
+                        const payerName = payment.name;
+                        if (payerEmail) {
+                            yield DonationReceiptMailer_1.default.sendDonationReceiptEmail({
+                                email: payerEmail,
+                                name: payerName,
+                                phoneNo: payment.phNo,
+                                amount: payment.amount,
+                                transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
+                                receiptNumber: payment.receiptNumber,
+                                date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }),
+                                programName: ((_j = payment.contribution) === null || _j === void 0 ? void 0 : _j.description) || "Generous Contribution Program"
+                            });
+                            console.log(`Donation receipt email sent successfully to ${payerEmail}`);
+                        }
+                        else {
+                            console.warn(`No email address found for payment ${payment.receiptNumber}`);
+                        }
+                    }
+                    catch (emailError) {
+                        // Log email error but don't fail the payment verification
+                        console.error("Failed to send donation receipt email:", emailError);
+                        // Optionally, you could add a flag to retry email sending later
+                        payment.notes = Object.assign(Object.assign({}, payment.notes), { email_failed: true, email_error: emailError.message, email_retry_needed: true });
+                        yield payment.save();
+                    }
                     return {
                         success: true,
                         data: {
@@ -159,6 +213,11 @@ class GenerousContributionPaymentService {
             catch (error) {
                 console.error("Error verifying payment:", error);
                 payment.status = "failed";
+                payment.error_details = {
+                    error_code: error.code || "VERIFICATION_FAILED",
+                    error_message: error.message,
+                    debug_id: error.debug_id || null
+                };
                 yield payment.save();
                 throw error;
             }

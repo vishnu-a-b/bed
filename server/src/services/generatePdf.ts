@@ -4,6 +4,7 @@ import path from "path";
 import { Response } from "express";
 import { toWords } from "number-to-words";
 import fs from "fs";
+import whatsappHelper from "./whatsapp-simple-helper";
 
 export const generateReceiptPDF = async (
   res: Response,
@@ -11,6 +12,8 @@ export const generateReceiptPDF = async (
     name: string;
     amount: number;
     date: string;
+    phoneNo: string;
+    address: string;
     transactionNumber: string;
     receiptNumber: string;
     programName: string;
@@ -21,6 +24,8 @@ export const generateReceiptPDF = async (
   const html = await ejs.renderFile(htmlTemplatePath, {
     name: user.name,
     amount: user.amount,
+    phoneNo: user.phoneNo,
+    address: user.address,
     date: user.date,
     transactionNumber: user.transactionNumber,
     receiptNumber: user.receiptNumber,
@@ -33,8 +38,10 @@ export const generateReceiptPDF = async (
 
   await page.setContent(html, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
+  
 
   const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+  // const response = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
 
   await browser.close();
 

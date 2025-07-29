@@ -276,15 +276,15 @@ verifyPayment = async (
 
       // Send receipt email after successful payment verification
       try {
-        const payerEmail = payment.email || payment.payer?.email_address;
-        const payerName = payment.name || payment.payer?.name ? 
-          `${payment.payer.name.given_name || ''} ${payment.payer.name.surname || ''}`.trim() : 
-          'Donor';
+        const payerEmail = payment.email ;
+        const payerName = payment.name ;
+        
 
         if (payerEmail) {
           await DonationReceiptMailer.sendDonationReceiptEmail({
             email: payerEmail,
             name: payerName,
+            phoneNo: payment.phNo,
             amount: payment.amount,
             transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
             receiptNumber: payment.receiptNumber,

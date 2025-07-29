@@ -14,7 +14,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 40px;
+        padding: 30px 40px;
       }
 
       .header img {
@@ -43,11 +43,16 @@
       } */
 
       .container {
-        padding: 40px;
+        padding: 30px 40px;
+        line-height: 1.15;
       }
 
       h1 {
         margin-bottom: 0.5rem;
+      }
+
+      h4 {
+        line-height: 0%;
       }
 
       table {
@@ -60,6 +65,14 @@
         padding: 10px;
         border: 1px solid #ddd;
         vertical-align: top;
+      }
+      .address {
+        width: 50%;
+        line-height: 1.25;
+      }
+
+      .foot {
+        line-height: 1.25;
       }
 
       .footer {
@@ -76,20 +89,33 @@
   </head>
   <body>
     <div class="header">
-      <h1>SHANTHIBHAVAN PALLIATIVE INTERNATIONAL</h1>
+      <div>
+        <h4>Shanthibhavan Palliative International Ltd</h4>
+        <h4>ΑΒΝ: 52 686 682 851</h4>
+        <h4>Public Benevolent Institution - DGR Endorsed</h4>
+      </div>
       <img
         crossorigin="anonymous"
         src="http://localhost:3001/logo/logo.png"
         alt="Logo"
       />
     </div>
+    <hr />
     <div class="container">
+      <div>
+        <p class="address">
+          To <br />
+          <%= name %> <br />
+          <%= address %> <br />
+          <%= phoneNo %>
+        </p>
+      </div>
       <p>Dear <strong><%= name %></strong>,</p>
       <p>
         Thank you for your generous donation of AUD <%= amount %>. Below are the
         details of your contribution.
       </p>
-      <h6>Payment Receipt</h6>
+      <p><strong>Receipt</strong></p>
       <p>
         We confirm the receipt of payment from Mr/Ms/Mrs Well wisher as per
         details below:-
@@ -117,16 +143,32 @@
         </tr>
       </table>
 
+      <p>
+        <br>
+        <strong>Description</strong> : This is a gift received to support the
+        free treatment of bedridden patients.
+      </p>
+      <hr />
+      <p>
+        <strong> Registered office address</strong> : Shanthibhavan palliative
+        international LTD, Office 3261, Ground Floor, 470 St Kilda Rd, MELBOURNE
+        VIC 3004, Australia
+      </p>
+
+      <hr />
+
+      <p class="foot">
+        This receipt can be used for claiming a tax deduction under Australian
+        tax law. <br />For any enquiries, please contact us at: <br />Email:
+        operationssbau@palliativeinternational.com<br />
+        Phone: +61 3 9111 2473<br />
+        Website: www.palliativeinternational.com
+      </p>
+
       <div class="footer">
         <p class="text-muted">
           This is an electronically generated receipt and does not require a
           signature.
-        </p>
-
-        <p>
-          For queries, contact us at
-          <strong>operationssbau@palliativeinternational.com</strong><br />
-          quoting your Transaction Number.
         </p>
       </div>
     </div>

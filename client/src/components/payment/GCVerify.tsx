@@ -31,7 +31,7 @@ const PaymentSuccessPage: React.FC = () => {
         }
 
         const paymentInfo = JSON.parse(paymentInfoStr);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
         // Verify payment with backend
         const response = await fetch(`${API_URL}/generous-payments/verify`, {
@@ -66,7 +66,7 @@ const PaymentSuccessPage: React.FC = () => {
   }, []);
 
   const handleReturnHome = () => {
-    window.location.href = '/payment'; // Redirect to home page
+    window.location.href = '/'; // Redirect to home page
   };
 
   return (

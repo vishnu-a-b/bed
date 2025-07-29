@@ -8,6 +8,8 @@ import { toWords } from "number-to-words";
 interface DonationMailOptions {
   email: string;
   name: string;
+  addres?: string;
+  phoneNo: string;
   amount: number;
   transactionNumber: string;
   receiptNumber: string;
@@ -30,6 +32,8 @@ class DonationReceiptMailer {
 
   private async generateReceiptPDF(receiptData: {
     name: string;
+    address?: string;
+    phoneNo: string;
     amount: number;
     date: string;
     transactionNumber: string;
@@ -41,41 +45,49 @@ class DonationReceiptMailer {
     const html = await ejs.renderFile(htmlTemplatePath, {
       name: receiptData.name,
       amount: receiptData.amount,
+      address: "",
+      phoneNo: receiptData.phoneNo,
       date: receiptData.date,
       transactionNumber: receiptData.transactionNumber,
       receiptNumber: receiptData.receiptNumber,
       programName: receiptData.programName,
-      amountWords: toWords(receiptData.amount).replace(/\b\w/g, (c) => c.toUpperCase()) + " Only",
+      amountWords:
+        toWords(receiptData.amount).replace(/\b\w/g, (c) => c.toUpperCase()) +
+        " Only",
     });
 
-    const browser = await puppeteer.launch({ 
+    const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'] // For server deployment
+      args: ["--no-sandbox", "--disable-setuid-sandbox"], // For server deployment
     });
     const page = await browser.newPage();
 
     await page.setContent(html, { waitUntil: "networkidle0" });
     await page.emulateMediaType("screen");
 
-    const pdfBuffer:any = await page.pdf({ 
-      format: "A4", 
-      printBackground: true 
+    const pdfBuffer: any = await page.pdf({
+      format: "A4",
+      printBackground: true,
     });
 
     await browser.close();
     return pdfBuffer;
   }
 
-  public async sendDonationReceiptEmail(options: DonationMailOptions): Promise<void> {
+  public async sendDonationReceiptEmail(
+    options: DonationMailOptions
+  ): Promise<void> {
     try {
       // Generate PDF receipt
       const pdfBuffer = await this.generateReceiptPDF({
         name: options.name,
         amount: options.amount,
+        address: "",
+        phoneNo: options.phoneNo,
         date: options.date,
         transactionNumber: options.transactionNumber,
         receiptNumber: options.receiptNumber,
-        programName: options.programName || "Generous Contribution Program"
+        programName: options.programName || "Generous Contribution Program",
       });
 
       // Prepare email
@@ -88,9 +100,9 @@ class DonationReceiptMailer {
           {
             filename: `${options.receiptNumber}.pdf`,
             content: pdfBuffer,
-            contentType: 'application/pdf'
-          }
-        ]
+            contentType: "application/pdf",
+          },
+        ],
       };
 
       await this.transporter.sendMail(mailOptions);
@@ -102,9 +114,9 @@ class DonationReceiptMailer {
   }
 
   private generateEmailTemplate(options: DonationMailOptions): string {
-    const formattedAmount = new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD'
+    const formattedAmount = new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
     }).format(options.amount);
 
     return `
@@ -178,6 +190,9 @@ class DonationReceiptMailer {
             border-top: 1px solid #eee;
             padding-top: 20px;
         }
+        .footer .img{
+            border-radius: 10px;
+        }
         .attachment-note {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -200,29 +215,31 @@ class DonationReceiptMailer {
         <div class="receipt-details">
             <h3 style="margin-top: 0; color: #1565c0;">Donation Details</h3>
             <div class="detail-row">
-                <span class="detail-label">Receipt Number:</span>
+                <span class="detail-label">Receipt Number : </span>
                 <span class="detail-value">${options.receiptNumber}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Transaction Number:</span>
+                <span class="detail-label">Transaction Number : </span>
                 <span class="detail-value">${options.transactionNumber}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Date:</span>
+                <span class="detail-label">Date : </span>
                 <span class="detail-value">${options.date}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Program:</span>
-                <span class="detail-value">${options.programName || "Generous Contribution Program"}</span>
+                <span class="detail-label">Program : </span>
+                <span class="detail-value"> ${
+                  options.programName || "Generous Contribution Program"
+                }</span>
             </div>
             <div class="detail-row" style="border-top: 2px solid #1565c0; margin-top: 15px; padding-top: 15px;">
-                <span class="detail-label">Donation Amount:</span>
-                <span class="detail-value amount-highlight">${formattedAmount}</span>
+                <span class="detail-label">Donation Amount : </span>
+                <span class="detail-value amount-highlight">AUD${formattedAmount}</span>
             </div>
         </div>
         
         <div class="attachment-note">
-            <strong>📎 Receipt Attached:</strong> Please find your official donation receipt attached as a PDF file for your tax records.
+            <strong>📎 Receipt Attached:</strong> Please find your official donation receipt attached as a PDF file .
         </div>
         
         <div class="thank-you">
@@ -234,7 +251,11 @@ class DonationReceiptMailer {
         
         <div class="footer">
             <p><strong>The Shanthibhavan Team</strong></p>
-            <p>This is an automated email. Please keep this receipt for your tax records.</p>
+            <img
+        crossorigin="anonymous"
+        src="https://palliativeinternational.com/assets/images/resources/logo-1.png"
+        alt="Logo"
+      />
         </div>
     </div>
 </body>
