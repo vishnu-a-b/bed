@@ -84,7 +84,8 @@ class GenerousContributionPaymentService {
                             given_name: contributor.name.split(" ")[0],
                             surname: contributor.name.split(" ").slice(1).join(" ") ||
                                 "",
-                        }
+                        },
+                        email_address: contributor.email
                     },
                     application_context: {
                         brand_name: "Generous Contributions",
@@ -104,7 +105,7 @@ class GenerousContributionPaymentService {
                     name: contributor.name,
                     phNo: contributor.phone,
                     email: contributor.email,
-                    address: contributor.address,
+                    address: contributor.address || "",
                     paymentDate: new Date(),
                     source,
                     isApproved: true,
@@ -181,7 +182,7 @@ class GenerousContributionPaymentService {
                                 name: payerName,
                                 phoneNo: payment.phNo,
                                 amount: payment.amount,
-                                addres: address,
+                                address: address,
                                 transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
                                 receiptNumber: payment.receiptNumber,
                                 date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {

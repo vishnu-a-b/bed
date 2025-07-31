@@ -42,7 +42,7 @@ class DonationReceiptMailer {
     programName: string;
   }): Promise<Buffer> {
     console.log(receiptData)
-    const htmlTemplatePath = path.join(__dirname, "./receipt-template.ejs");
+    const htmlTemplatePath = path.join(__dirname, '../../views/receipt-template.ejs');
 
     const html = await ejs.renderFile(htmlTemplatePath, {
       name: receiptData.name,
