@@ -14,14 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.whatsappHelper = void 0;
 const axios_1 = __importDefault(require("axios"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const OMNI_API_URL = "https://wb.omni.tatatelebusiness.com/whatsapp-cloud/messages";
 const OMNI_API_KEY = process.env.OMNI_API_KEY || "your_api_key_here";
 exports.whatsappHelper = {
     /**
      * Send a simple "Hi" WhatsApp message
-     * @param phoneNumber Recipient phone number with country code
-     * @returns Promise with message ID
-     * @throws Error if message fails to send
      */
     sendHiMessage: (phoneNumber) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c;
@@ -59,10 +58,46 @@ exports.whatsappHelper = {
             throw new Error("Unexpected error occurred");
         }
     }),
-    sendDonationReceipt: (phoneNumber, pdfBuffer) => __awaiter(void 0, void 0, void 0, function* () {
+    /**
+     * Upload PDF buffer to temporary storage and get URL
+     */
+    uploadPDFToStorage: (pdfBuffer, filename) => __awaiter(void 0, void 0, void 0, function* () {
+        // Option 1: Save to local temp directory (for development)
+        const tempDir = path_1.default.join(process.cwd(), `public/temp`);
+        if (!fs_1.default.existsSync(tempDir)) {
+            fs_1.default.mkdirSync(tempDir, { recursive: true });
+        }
+        const filePath = path_1.default.join(tempDir, filename);
+        fs_1.default.writeFileSync(filePath, pdfBuffer);
+        // Return a publicly accessible URL - you'll need to serve this static directory
+        // or upload to a cloud storage service like AWS S3, Google Cloud Storage, etc.
+        return `${process.env.DOMAIN}/temp/${filename}`;
+        // Option 2: Upload to cloud storage (uncomment and configure as needed)
+        /*
+        // Example for AWS S3
+        const AWS = require('aws-sdk');
+        const s3 = new AWS.S3();
+        
+        const uploadParams = {
+          Bucket: 'your-bucket-name',
+          Key: `receipts/${filename}`,
+          Body: pdfBuffer,
+          ContentType: 'application/pdf',
+          ACL: 'public-read'
+        };
+        
+        const result = await s3.upload(uploadParams).promise();
+        return result.Location;
+        */
+    }),
+    /**
+     * Send donation receipt PDF via WhatsApp
+     */
+    sendDonationReceipt: (phoneNumber_1, pdfBuffer_1, ...args_1) => __awaiter(void 0, [phoneNumber_1, pdfBuffer_1, ...args_1], void 0, function* (phoneNumber, pdfBuffer, filename = `receipt_${Date.now()}.pdf`) {
         var _a, _b, _c;
         try {
-            // First upload the PDF to a storage service to get a URL
+            // Upload PDF and get URL
+            const pdfUrl = yield exports.whatsappHelper.uploadPDFToStorage(pdfBuffer, filename);
             const components = [
                 {
                     type: "header",
@@ -70,7 +105,8 @@ exports.whatsappHelper = {
                         {
                             type: "document",
                             document: {
-                                pdfBuffer,
+                                link: pdfUrl,
+                                filename: filename
                             },
                         },
                     ],
@@ -81,7 +117,7 @@ exports.whatsappHelper = {
                 type: "template",
                 source: "external",
                 template: {
-                    name: "gc_donation_receipt_ac",
+                    name: "gc_donation_receipt_au",
                     language: {
                         code: "en",
                     },
@@ -98,6 +134,18 @@ exports.whatsappHelper = {
                 },
             });
             console.log("Donation receipt sent successfully!");
+            // Clean up temporary file after sending (optional)
+            setTimeout(() => {
+                try {
+                    const tempFilePath = path_1.default.join(process.cwd(), 'temp', filename);
+                    if (fs_1.default.existsSync(tempFilePath)) {
+                        fs_1.default.unlinkSync(tempFilePath);
+                    }
+                }
+                catch (cleanupError) {
+                    console.warn("Could not clean up temporary file:", cleanupError);
+                }
+            }, 60000); // Delete after 1 minute
             return response.data.messageId;
         }
         catch (error) {
@@ -110,5 +158,4 @@ exports.whatsappHelper = {
         }
     }),
 };
-// Explicitly declare as module
 exports.default = exports.whatsappHelper;

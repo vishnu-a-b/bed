@@ -5110,6 +5110,13 @@
     "/v1/generous-payments/payment-success": {
       "get": {
         "description": "",
+        "parameters": [
+          {
+            "name": "phoneNo",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "default": {
             "description": ""

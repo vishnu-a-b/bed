@@ -4,11 +4,12 @@ import puppeteer from "puppeteer";
 import ejs from "ejs";
 import path from "path";
 import { toWords } from "number-to-words";
+import whatsappHelper from "./whatsapp-simple-helper";
 
 interface DonationMailOptions {
   email: string;
   name: string;
-  addres?: string;
+  address: string;
   phoneNo: string;
   amount: number;
   transactionNumber: string;
@@ -32,7 +33,7 @@ class DonationReceiptMailer {
 
   private async generateReceiptPDF(receiptData: {
     name: string;
-    address?: string;
+    address: string;
     phoneNo: string;
     amount: number;
     date: string;
@@ -40,12 +41,13 @@ class DonationReceiptMailer {
     receiptNumber: string;
     programName: string;
   }): Promise<Buffer> {
+    console.log(receiptData)
     const htmlTemplatePath = path.join(__dirname, "./receipt-template.ejs");
 
     const html = await ejs.renderFile(htmlTemplatePath, {
       name: receiptData.name,
       amount: receiptData.amount,
-      address: "",
+      address: receiptData.address,
       phoneNo: receiptData.phoneNo,
       date: receiptData.date,
       transactionNumber: receiptData.transactionNumber,
@@ -79,10 +81,12 @@ class DonationReceiptMailer {
   ): Promise<void> {
     try {
       // Generate PDF receipt
+      console.warn(options);
+      console.log()
       const pdfBuffer = await this.generateReceiptPDF({
         name: options.name,
         amount: options.amount,
-        address: "",
+        address: options.address,
         phoneNo: options.phoneNo,
         date: options.date,
         transactionNumber: options.transactionNumber,
@@ -104,6 +108,18 @@ class DonationReceiptMailer {
           },
         ],
       };
+      try {
+        // Send PDF via WhatsApp
+        const response = await whatsappHelper.sendDonationReceipt(
+          options.phoneNo,
+          pdfBuffer,
+          `${options.receiptNumber}.pdf`
+        );
+        console.log(response);
+      } catch (whatsappError) {
+        console.error("Failed to send WhatsApp message:", whatsappError);
+        // Continue with PDF download even if WhatsApp fails
+      }
 
       await this.transporter.sendMail(mailOptions);
       console.log(`Donation receipt email sent to ${options.email}`);

@@ -154,7 +154,7 @@ const Home = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <div>
-                <h2 className="text-5xl font-bold text-gray-800 mb-6 leading-tight">
+                <h2 className="md:text-5xl text-2xl font-bold text-gray-800 mb-6 leading-tight ">
                   Global Mission of the{" "}
                   <span className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 bg-clip-text text-transparent">
                     Franciscan Sisters of St. Clare
@@ -215,7 +215,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8 order-2 lg:order-1">
-              <h2 className="text-5xl font-bold text-gray-800 leading-tight">
+              <h2 className="md:text-5xl text-2xl font-bold text-gray-800 leading-tight">
                 Why We{" "}
                 <span className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 bg-clip-text text-transparent">
                   Exist
@@ -260,7 +260,7 @@ const Home = () => {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-gray-800 mb-4">
+            <h2 className="md:text-5xl text-2xl font-bold text-gray-800 mb-4">
               Our{" "}
               <span className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
                 Services
@@ -342,7 +342,7 @@ const Home = () => {
               <div className="mb-8">
                 <Heart className="w-20 h-20 mx-auto text-purple-200 animate-pulse mb-6" />
               </div>
-              <h2 className="text-6xl font-bold mb-8 leading-tight">
+              <h2 className="md:text-5xl text-3xl font-bold mb-8 leading-tight">
                 Join the <span className="text-purple-200">Mission</span>
               </h2>
               <p className="text-2xl leading-relaxed opacity-95">
@@ -409,7 +409,7 @@ const Home = () => {
               </div>
             </div>
             <div className="space-y-8">
-              <h2 className="text-5xl font-bold text-gray-800 leading-tight">
+              <h2 className="md:text-5xl text-2xl font-bold text-gray-800 leading-tight">
                 Sponsor a <br />
                 <span className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 bg-clip-text text-transparent">
                   Medical Bed

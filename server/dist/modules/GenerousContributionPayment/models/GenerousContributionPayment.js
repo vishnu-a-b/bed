@@ -37,6 +37,7 @@ const generousContributionPaymentSchema = new mongoose_1.default.Schema({
     name: { type: String },
     phNo: { type: String },
     email: { type: String },
+    address: { type: String },
     payer: {
         email_address: { type: String },
         payer_id: { type: String },

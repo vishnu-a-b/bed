@@ -20,7 +20,7 @@ export const generateReceiptPDF = async (
   }
 ) => {
   const htmlTemplatePath = path.join(__dirname, "./receipt-template.ejs");
-
+  console.log(user)
   const html = await ejs.renderFile(htmlTemplatePath, {
     name: user.name,
     amount: user.amount,
@@ -40,13 +40,23 @@ export const generateReceiptPDF = async (
   await page.emulateMediaType("screen");
   
 
-  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-  // const response = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
-
+  const pdfBuffer= await page.pdf({ format: "A4", printBackground: true });
+  //const response:any = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
+  //console.log(response);
   await browser.close();
+  try {
+    // Send PDF via WhatsApp
+    const response = await whatsappHelper.sendDonationReceipt(
+      user.phoneNo, 
+      pdfBuffer, 
+      `${user.receiptNumber}.pdf`
+    );
+    console.log(response);
+  } catch (whatsappError) {
+    console.error("Failed to send WhatsApp message:", whatsappError);
+    // Continue with PDF download even if WhatsApp fails
+  }
 
-  // Optional: Save to debug
-  // fs.writeFileSync("debug-receipt.pdf", pdfBuffer);
 
   res.writeHead(200, {
     "Content-Type": "application/pdf",
