@@ -31,11 +31,12 @@ class DonationReceiptMailer {
     }
     generateReceiptPDF(receiptData) {
         return __awaiter(this, void 0, void 0, function* () {
-            const htmlTemplatePath = path_1.default.join(__dirname, "./receipt-template.ejs");
+            console.log(receiptData);
+            const htmlTemplatePath = path_1.default.join(__dirname, "views/receipt-template.ejs");
             const html = yield ejs_1.default.renderFile(htmlTemplatePath, {
                 name: receiptData.name,
                 amount: receiptData.amount,
-                address: "",
+                address: receiptData.address,
                 phoneNo: receiptData.phoneNo,
                 date: receiptData.date,
                 transactionNumber: receiptData.transactionNumber,
@@ -63,10 +64,12 @@ class DonationReceiptMailer {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Generate PDF receipt
+                console.warn(options);
+                console.log();
                 const pdfBuffer = yield this.generateReceiptPDF({
                     name: options.name,
                     amount: options.amount,
-                    address: "",
+                    address: options.address,
                     phoneNo: options.phoneNo,
                     date: options.date,
                     transactionNumber: options.transactionNumber,

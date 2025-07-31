@@ -19,7 +19,8 @@ const path_1 = __importDefault(require("path"));
 const number_to_words_1 = require("number-to-words");
 const whatsapp_simple_helper_1 = __importDefault(require("./whatsapp-simple-helper"));
 const generateReceiptPDF = (res, user) => __awaiter(void 0, void 0, void 0, function* () {
-    const htmlTemplatePath = path_1.default.join(__dirname, "./receipt-template.ejs");
+    const htmlTemplatePath = path_1.default.join(__dirname, "views/receipt-template.ejs");
+    console.log(user);
     const html = yield ejs_1.default.renderFile(htmlTemplatePath, {
         name: user.name,
         amount: user.amount,

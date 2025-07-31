@@ -19,8 +19,11 @@ export const generateReceiptPDF = async (
     programName: string;
   }
 ) => {
-  const htmlTemplatePath = path.join(__dirname, "./receipt-template.ejs");
-  console.log(user)
+  const htmlTemplatePath = path.join(
+    __dirname,
+    "../../views/receipt-template.ejs"
+  );
+  console.log(user);
   const html = await ejs.renderFile(htmlTemplatePath, {
     name: user.name,
     amount: user.amount,
@@ -30,7 +33,8 @@ export const generateReceiptPDF = async (
     transactionNumber: user.transactionNumber,
     receiptNumber: user.receiptNumber,
     programName: user.programName,
-    amountWords: toWords(user.amount).replace(/\b\w/g, (c) => c.toUpperCase()) + " Only",
+    amountWords:
+      toWords(user.amount).replace(/\b\w/g, (c) => c.toUpperCase()) + " Only",
   });
 
   const browser = await puppeteer.launch({ headless: true });
@@ -38,17 +42,16 @@ export const generateReceiptPDF = async (
 
   await page.setContent(html, { waitUntil: "networkidle0" });
   await page.emulateMediaType("screen");
-  
 
-  const pdfBuffer= await page.pdf({ format: "A4", printBackground: true });
+  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
   //const response:any = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
   //console.log(response);
   await browser.close();
   try {
     // Send PDF via WhatsApp
     const response = await whatsappHelper.sendDonationReceipt(
-      user.phoneNo, 
-      pdfBuffer, 
+      user.phoneNo,
+      pdfBuffer,
       `${user.receiptNumber}.pdf`
     );
     console.log(response);
@@ -56,7 +59,6 @@ export const generateReceiptPDF = async (
     console.error("Failed to send WhatsApp message:", whatsappError);
     // Continue with PDF download even if WhatsApp fails
   }
-
 
   res.writeHead(200, {
     "Content-Type": "application/pdf",
