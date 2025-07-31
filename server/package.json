@@ -13,7 +13,6 @@
   "devDependencies": {
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
-    "@types/html-pdf": "^3.0.3",
     "@types/nodemailer": "^6.4.17",
     "@types/number-to-words": "^1.2.3",
     "@types/paypal__checkout-server-sdk": "^1.0.8",
@@ -41,7 +40,6 @@
     "express-validator": "^7.2.0",
     "fs": "^0.0.1-security",
     "helmet": "^8.0.0",
-    "html-pdf": "^3.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0",
     "multer": "^1.4.5-lts.1",
@@ -51,9 +49,9 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "password-validator": "^5.3.0",
+    "puppeteer": "^24.15.0",
     "razorpay": "^2.9.6",
     "swagger-autogen": "^2.23.7",
-    "swagger-ui-express": "^5.0.1",
-    "wkhtmltopdf-installer": "^0.3.2"
+    "swagger-ui-express": "^5.0.1"
   }
 }
