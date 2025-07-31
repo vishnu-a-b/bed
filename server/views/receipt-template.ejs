@@ -5,6 +5,7 @@
     <title>Payment Receipt</title>
     <style>
       body {
+        zoom: 0.75;
         font-family: Arial, sans-serif;
         padding: 0;
         margin: 0;
@@ -13,8 +14,9 @@
       .header {
         display: flex;
         justify-content: space-between;
+        flex-wrap: nowrap;
         align-items: center;
-        padding: 20px 40px;
+        padding: 10px 30px;
       }
 
       .header img {
@@ -90,23 +92,34 @@
   </head>
   <body>
     <div class="header">
-      <div>
-        <h4>Shanthibhavan Palliative International Ltd</h4>
-        <h4>ΑΒΝ: 52 686 682 851</h4>
-        <h4>Public Benevolent Institution - DGR Endorsed</h4>
-      </div>
-      <img
-        crossorigin="anonymous"
-        src="http://localhost:3001/logo/logo.png"
-        alt="Logo"
-      />
+      <table style="width: 100%; border: none; border-collapse: collapse">
+        <tr>
+          <td style="vertical-align: center; text-align: left; border: none">
+            <div style="line-height: 0.25">
+              <h3>Shanthibhavan Palliative International Ltd</h3>
+              <h3>ΑΒΝ: 52 686 682 851</h3>
+              <h3>Public Benevolent Institution - DGR Endorsed</h3>
+            </div>
+          </td>
+          <td style="text-align: right; border: none">
+            <img
+              crossorigin="anonymous"
+              src="http://localhost:3001/logo/logo.png"
+              style="height: 100px; border-radius: 10px"
+              alt="Logo"
+            />
+          </td>
+        </tr>
+      </table>
     </div>
+
     <hr />
     <div class="container">
       <div>
         <div class="address">
           To 
-          <%= name %><div><%= address %></div><%= phoneNo %>
+          <%= name %>
+          <div><%= address %></div><%= phoneNo %>
         </div>
       </div>
       <p>Dear <strong><%= name %></strong>,</p>

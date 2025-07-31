@@ -1,10 +1,11 @@
 // server/src/services/DonationReceiptMailer.ts
 import nodemailer from "nodemailer";
-import puppeteer from "puppeteer";
+import * as pdf from "html-pdf";
 import ejs from "ejs";
 import path from "path";
 import { toWords } from "number-to-words";
 import whatsappHelper from "./whatsapp-simple-helper";
+import { promisify } from "util";
 
 interface DonationMailOptions {
   email: string;
@@ -41,39 +42,48 @@ class DonationReceiptMailer {
     receiptNumber: string;
     programName: string;
   }): Promise<Buffer> {
-    console.log(receiptData)
-    const htmlTemplatePath = path.join(__dirname, '../../views/receipt-template.ejs');
+    try {
+      console.log(receiptData);
+      const htmlTemplatePath = path.join(
+        __dirname,
+        "../../views/receipt-template.ejs"
+      );
 
-    const html = await ejs.renderFile(htmlTemplatePath, {
-      name: receiptData.name,
-      amount: receiptData.amount,
-      address: receiptData.address,
-      phoneNo: receiptData.phoneNo,
-      date: receiptData.date,
-      transactionNumber: receiptData.transactionNumber,
-      receiptNumber: receiptData.receiptNumber,
-      programName: receiptData.programName,
-      amountWords:
-        toWords(receiptData.amount).replace(/\b\w/g, (c) => c.toUpperCase()) +
-        " Only",
-    });
+      const html = await ejs.renderFile(htmlTemplatePath, {
+        name: receiptData.name,
+        amount: receiptData.amount,
+        address: receiptData.address,
+        phoneNo: receiptData.phoneNo,
+        date: receiptData.date,
+        transactionNumber: receiptData.transactionNumber,
+        receiptNumber: receiptData.receiptNumber,
+        programName: receiptData.programName,
+        amountWords:
+          toWords(receiptData.amount).replace(/\b\w/g, (c) => c.toUpperCase()) +
+          " Only",
+      });
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"], // For server deployment
-    });
-    const page = await browser.newPage();
+      // html-pdf options
+      const options: pdf.CreateOptions = {
+        format: "A4",
+        orientation: "portrait",
+        type: "pdf",
+        quality: "100",
+      };
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    await page.emulateMediaType("screen");
+      // Convert html-pdf.create to Promise
+      const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+        pdf.create(html, options).toBuffer((err, buffer) => {
+          if (err) return reject(err);
+          resolve(buffer);
+        });
+      });
 
-    const pdfBuffer: any = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
-
-    await browser.close();
-    return pdfBuffer;
+      return pdfBuffer;
+    } catch (error: any) {
+      console.error("Error generating PDF:", error);
+      throw new Error(`PDF generation failed: ${error.message}`);
+    }
   }
 
   public async sendDonationReceiptEmail(
@@ -82,7 +92,8 @@ class DonationReceiptMailer {
     try {
       // Generate PDF receipt
       console.warn(options);
-      console.log()
+      console.log();
+
       const pdfBuffer = await this.generateReceiptPDF({
         name: options.name,
         amount: options.amount,
@@ -108,6 +119,7 @@ class DonationReceiptMailer {
           },
         ],
       };
+
       try {
         // Send PDF via WhatsApp
         const response = await whatsappHelper.sendDonationReceipt(
@@ -115,10 +127,10 @@ class DonationReceiptMailer {
           pdfBuffer,
           `${options.receiptNumber}.pdf`
         );
-        console.log(response);
+        console.log("WhatsApp response:", response);
       } catch (whatsappError) {
         console.error("Failed to send WhatsApp message:", whatsappError);
-        // Continue with PDF download even if WhatsApp fails
+        // Continue with email sending even if WhatsApp fails
       }
 
       await this.transporter.sendMail(mailOptions);
