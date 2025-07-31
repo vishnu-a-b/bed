@@ -14,7 +14,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 30px 40px;
+        padding: 20px 40px;
       }
 
       .header img {
@@ -43,7 +43,7 @@
       } */
 
       .container {
-        padding: 30px 40px;
+        padding: 0px 40px;
         line-height: 1.15;
       }
 
@@ -68,7 +68,8 @@
       }
       .address {
         width: 50%;
-        line-height: 1.25;
+        line-height: 1.15;
+        white-space: pre-line;
       }
 
       .foot {
@@ -103,12 +104,10 @@
     <hr />
     <div class="container">
       <div>
-        <p class="address">
-          To <br />
-          <%= name %> <br />
-          <%= address %> <br />
-          <%= phoneNo %>
-        </p>
+        <div class="address">
+          To 
+          <%= name %><div><%= address %></div><%= phoneNo %>
+        </div>
       </div>
       <p>Dear <strong><%= name %></strong>,</p>
       <p>
@@ -142,11 +141,16 @@
           <td>Shanthibhavan palliative international LTD</td>
         </tr>
       </table>
-
       <p>
-        <br>
         <strong>Description</strong> : This is a gift received to support the
         free treatment of bedridden patients.
+      </p>
+      <hr />
+      <p>
+        <strong>Declaration</strong> : This receipt acknowledges that the above
+        amount was donated to Shanthibhavan Palliative International Ltd. No
+        goods or services were received in return for this donation. This
+        donation is tax-deductible under Australian law.
       </p>
       <hr />
       <p>
@@ -154,15 +158,19 @@
         international LTD, Office 3261, Ground Floor, 470 St Kilda Rd, MELBOURNE
         VIC 3004, Australia
       </p>
-
       <hr />
-
       <p class="foot">
         This receipt can be used for claiming a tax deduction under Australian
         tax law. <br />For any enquiries, please contact us at: <br />Email:
         operationssbau@palliativeinternational.com<br />
         Phone: +61 3 9111 2473<br />
         Website: www.palliativeinternational.com
+      </p>
+      <hr />
+      <p>
+        Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+        Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
+        Assessment Act 1997. Donations of $2 or more are taxdeduce
       </p>
 
       <div class="footer">

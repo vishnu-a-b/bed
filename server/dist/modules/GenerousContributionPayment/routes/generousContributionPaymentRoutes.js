@@ -27,10 +27,11 @@ router.get("/public/:id", controller.getPaymentById);
 router.post("/verify", controller.verifyPayment);
 router.get("/payment-success", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Example input (replace with actual values from payment)
+    const { phoneNo = "918848196653" } = req.query;
     const paymentDetails = {
         name: "Well Wisher",
         amount: 3000,
-        phoneNo: "8848196653",
+        phoneNo,
         address: `test sgdhsadkjgkasdgjhsa hshdghsagdhhhdas,
 irinjalakuda VIC 3004,
 Australia`,

@@ -68,7 +68,7 @@ const Slider: React.FC = () => {
   return (
     <>
       <section className="main-slider main-slider-one style3">
-        <div className="main-slider-one__inner">
+        <div className="main-slider-one__inner ">
           <Swiper
             spaceBetween={0}
             centeredSlides={true}
@@ -96,7 +96,7 @@ const Slider: React.FC = () => {
           >
             {slideData.map((slide: SlideData, index: number) => (
               <SwiperSlide key={index}>
-                <div className="main-slider-one__single">
+                <div className="main-slider-one__single md:h-[80vh] h-[50vh]">
                   <div
                     className="image-layer"
                     style={{
@@ -104,7 +104,7 @@ const Slider: React.FC = () => {
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       backgroundRepeat: 'no-repeat',
-                      minHeight: '100vh',
+
                     }}
                   />
                   <div className="container">
@@ -114,7 +114,7 @@ const Slider: React.FC = () => {
                       </div>
                       <div className="btn-box">
                         <a className="thm-btn" href={slide.link}>
-                          <span className="txt">Donate Now</span>
+                          <span className="txt text-xl">Donate Now</span>
                         </a>
                       </div>
                     </div>
@@ -145,7 +145,6 @@ const Slider: React.FC = () => {
       <style jsx>{`
         .main-slider-one__single {
           position: relative;
-          height: 80vh;
           display: flex;
           align-items: center;
         }

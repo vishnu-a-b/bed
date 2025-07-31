@@ -23,6 +23,8 @@ type Contributor = {
   email: string;
   name: string;
   phone?: string;
+  address?: string;
+  
 };
 
 type ContributionPurpose =
@@ -173,7 +175,8 @@ export default class GenerousContributionPaymentService {
             surname:
               contributor.name.split(" ").slice(1).join(" ") ||
               "",
-          }
+          },
+          email_address: contributor.email
         },
         application_context: {
           brand_name: "Generous Contributions",
@@ -194,6 +197,7 @@ export default class GenerousContributionPaymentService {
         name:contributor.name,
         phNo:contributor.phone,
         email:contributor.email,
+        address:contributor.address || "",
         paymentDate: new Date(),
         source,
         isApproved: true,
@@ -228,7 +232,7 @@ verifyPayment = async (
   const payment: any = await GenerousContributionPayment.findOne({
     paypal_order_id,
   });
-  
+  console.warn(payment)
   if (!payment) {
     throw new Error("Payment record not found");
   }
@@ -246,7 +250,7 @@ verifyPayment = async (
       payment.paypal_payment_id = paypal_payment_id || capture.result.id;
       payment.paypal_payer_id = capture.result.payer?.payer_id;
       payment.paypal_capture_id =
-        capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+      capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
       payment.status = "completed";
       payment.isApproved = true;
       payment.paypal_capture_response = capture.result; // Store complete capture response
@@ -263,13 +267,14 @@ verifyPayment = async (
         };
         
         // Also set the top-level fields for easier access
-        payment.email = capture.result.payer.email_address;
-        if (capture.result.payer.name) {
-          payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
-        }
-        if (capture.result.payer.phone?.phone_number?.national_number) {
-          payment.phNo = capture.result.payer.phone.phone_number.national_number;
-        }
+
+        // payment.email = capture.result.payer.email_address;
+        // if (capture.result.payer.name) {
+        //   payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
+        // }
+        // if (capture.result.payer.phone?.phone_number?.national_number) {
+        //   payment.phNo = capture.result.payer.phone.phone_number.national_number;
+        // }
       }
       
       await payment.save();
@@ -278,6 +283,7 @@ verifyPayment = async (
       try {
         const payerEmail = payment.email ;
         const payerName = payment.name ;
+        const address = payment.address || "";
         
 
         if (payerEmail) {
@@ -286,6 +292,7 @@ verifyPayment = async (
             name: payerName,
             phoneNo: payment.phNo,
             amount: payment.amount,
+            address: address,
             transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
             receiptNumber: payment.receiptNumber,
             date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {

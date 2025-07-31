@@ -104,6 +104,7 @@ class GenerousContributionPaymentService {
                     name: contributor.name,
                     phNo: contributor.phone,
                     email: contributor.email,
+                    address: contributor.address,
                     paymentDate: new Date(),
                     source,
                     isApproved: true,
@@ -127,11 +128,12 @@ class GenerousContributionPaymentService {
             }
         });
         this.verifyPayment = (params) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            var _a, _b, _c, _d, _e, _f, _g;
             const { paypal_order_id, paypal_payment_id } = params;
             const payment = yield GenerousContributionPayment_1.GenerousContributionPayment.findOne({
                 paypal_order_id,
             });
+            console.warn(payment);
             if (!payment) {
                 throw new Error("Payment record not found");
             }
@@ -159,25 +161,27 @@ class GenerousContributionPaymentService {
                             address: capture.result.payer.address
                         };
                         // Also set the top-level fields for easier access
-                        payment.email = capture.result.payer.email_address;
-                        if (capture.result.payer.name) {
-                            payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
-                        }
-                        if ((_h = (_g = capture.result.payer.phone) === null || _g === void 0 ? void 0 : _g.phone_number) === null || _h === void 0 ? void 0 : _h.national_number) {
-                            payment.phNo = capture.result.payer.phone.phone_number.national_number;
-                        }
+                        // payment.email = capture.result.payer.email_address;
+                        // if (capture.result.payer.name) {
+                        //   payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
+                        // }
+                        // if (capture.result.payer.phone?.phone_number?.national_number) {
+                        //   payment.phNo = capture.result.payer.phone.phone_number.national_number;
+                        // }
                     }
                     yield payment.save();
                     // Send receipt email after successful payment verification
                     try {
                         const payerEmail = payment.email;
                         const payerName = payment.name;
+                        const address = payment.address || "";
                         if (payerEmail) {
                             yield DonationReceiptMailer_1.default.sendDonationReceiptEmail({
                                 email: payerEmail,
                                 name: payerName,
                                 phoneNo: payment.phNo,
                                 amount: payment.amount,
+                                addres: address,
                                 transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
                                 receiptNumber: payment.receiptNumber,
                                 date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {
@@ -185,7 +189,7 @@ class GenerousContributionPaymentService {
                                     month: 'long',
                                     day: 'numeric'
                                 }),
-                                programName: ((_j = payment.contribution) === null || _j === void 0 ? void 0 : _j.description) || "Generous Contribution Program"
+                                programName: ((_g = payment.contribution) === null || _g === void 0 ? void 0 : _g.description) || "Generous Contribution Program"
                             });
                             console.log(`Donation receipt email sent successfully to ${payerEmail}`);
                         }

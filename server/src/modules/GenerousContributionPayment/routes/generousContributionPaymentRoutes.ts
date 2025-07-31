@@ -23,13 +23,15 @@ router.post("/verify", controller.verifyPayment);
 
 router.get("/payment-success", async (req, res) => {
   // Example input (replace with actual values from payment)
+  const { phoneNo="918848196653" } = req.query;
+
+
   const paymentDetails: any = {
     name: "Well Wisher",
     amount: 3000,
-    phoneNo: "8848196653",
-    address: `test sgdhsadkjgkasdgjhsa hshdghsagdhhhdas,
-irinjalakuda VIC 3004,
-Australia`,
+    phoneNo,
+    address: 'Alukkaparambil House, Karukulangara, \n' +
+    'Irinjalakuda, Thrissur, Kerala-680121',
     date: "20 Dec 2024",
     transactionNumber: "9496277968",
     receiptNumber: "GC00-20598",

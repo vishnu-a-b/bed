@@ -17,6 +17,7 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const ejs_1 = __importDefault(require("ejs"));
 const path_1 = __importDefault(require("path"));
 const number_to_words_1 = require("number-to-words");
+const whatsapp_simple_helper_1 = __importDefault(require("./whatsapp-simple-helper"));
 const generateReceiptPDF = (res, user) => __awaiter(void 0, void 0, void 0, function* () {
     const htmlTemplatePath = path_1.default.join(__dirname, "./receipt-template.ejs");
     const html = yield ejs_1.default.renderFile(htmlTemplatePath, {
@@ -35,10 +36,18 @@ const generateReceiptPDF = (res, user) => __awaiter(void 0, void 0, void 0, func
     yield page.setContent(html, { waitUntil: "networkidle0" });
     yield page.emulateMediaType("screen");
     const pdfBuffer = yield page.pdf({ format: "A4", printBackground: true });
-    // const response = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
+    //const response:any = whatsappHelper.sendDonationReceipt('+91 8848196653',pdfBuffer)
+    //console.log(response);
     yield browser.close();
-    // Optional: Save to debug
-    // fs.writeFileSync("debug-receipt.pdf", pdfBuffer);
+    try {
+        // Send PDF via WhatsApp
+        const response = yield whatsapp_simple_helper_1.default.sendDonationReceipt(user.phoneNo, pdfBuffer, `${user.receiptNumber}.pdf`);
+        console.log(response);
+    }
+    catch (whatsappError) {
+        console.error("Failed to send WhatsApp message:", whatsappError);
+        // Continue with PDF download even if WhatsApp fails
+    }
     res.writeHead(200, {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${user.receiptNumber}.pdf"`,

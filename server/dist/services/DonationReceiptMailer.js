@@ -18,6 +18,7 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const ejs_1 = __importDefault(require("ejs"));
 const path_1 = __importDefault(require("path"));
 const number_to_words_1 = require("number-to-words");
+const whatsapp_simple_helper_1 = __importDefault(require("./whatsapp-simple-helper"));
 class DonationReceiptMailer {
     constructor() {
         this.transporter = nodemailer_1.default.createTransport({
@@ -86,6 +87,15 @@ class DonationReceiptMailer {
                         },
                     ],
                 };
+                try {
+                    // Send PDF via WhatsApp
+                    const response = yield whatsapp_simple_helper_1.default.sendDonationReceipt(options.phoneNo, pdfBuffer, `${options.receiptNumber}.pdf`);
+                    console.log(response);
+                }
+                catch (whatsappError) {
+                    console.error("Failed to send WhatsApp message:", whatsappError);
+                    // Continue with PDF download even if WhatsApp fails
+                }
                 yield this.transporter.sendMail(mailOptions);
                 console.log(`Donation receipt email sent to ${options.email}`);
             }
