@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { Supporter } from "../modules/supporter/models/Supporter"; // Adjust path as needed
+import whatsappHelper from "./whatsapp-simple-helper";
 
 interface MailOptions {
   supporterId: string; // We'll fetch details from DB
@@ -37,7 +38,7 @@ class SupporterMailer {
       }
 
       const supportLink = `${baseUrl}supporter?supporter=${supporter._id.toString()}`;
-
+      
       // 3. Send email
       const mailOptions = {
         from: `"Shanthibhavan Bed Donation" <${process.env.EMAIL_FROM}>`,
@@ -48,6 +49,7 @@ class SupporterMailer {
       console.log(mailOptions);
       await this.transporter.sendMail(mailOptions);
       console.log(`Welcome email sent to ${supporter.email}`);
+      whatsappHelper.sendSupporterWelcomeMessage(supporter.user.mobileNo,supportLink)
     } catch (error) {
       console.error("Error in sendWelcomeEmail:", error);
       throw error;

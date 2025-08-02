@@ -2,23 +2,8 @@
 import Footer from "@/components/donation/footer";
 import Header from "@/components/donation/header";
 import Slider from "@/components/donation/slider";
-import {
-  Heart,
-  Users,
-  Gift,
-  HandHeart,
-  Globe,
-  Shield,
-  Stethoscope,
-  Camera,
-  Users2,
-  PartyPopper,
-  UserPlus,
-  Clock,
-  HeartHandshake,
-  Truck,
-  Bed,
-} from "lucide-react";
+import YouTubePlayer from "@/components/donation/YoutubePlayer";
+import { Heart, Users, Gift, HandHeart, Shield, Bed } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -39,7 +24,7 @@ const Home = () => {
 
       {/* Slider placeholder */}
       <Slider />
-
+      <YouTubePlayer />
       {/* Feature Section with Modern Cards */}
       <div className="relative z-10 py-20 bg-gradient-to-b from-white via-purple-50 to-white">
         <div className="container mx-auto px-4">
@@ -364,16 +349,18 @@ const Home = () => {
               className="object-cover object-center w-full h-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 to-purple-800/20"></div>
-            <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
+            {/* <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
               <button className="bg-white text-purple-600 px-8 py-3 rounded-full font-bold text-lg hover:bg-purple-600 hover:text-white transition-all duration-300 shadow-lg flex items-center justify-center gap-2 mx-auto" >
                 <Heart className="w-5 h-5" />
                 Become a Volunteer
               </button>
-            </div>
+            </div> */}
           </div>
           <div className="relative z-10 py-24 text-center">
-            
-            <button className="group relative bg-white text-purple-600 px-12 py-4 rounded-full font-bold text-lg hover:bg-purple-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl" onClick={() => router.push('/payment')}>
+            <button
+              className="group relative bg-white text-purple-600 px-12 py-4 rounded-full font-bold text-lg hover:bg-purple-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              onClick={() => router.push("/payment")}
+            >
               <span className="relative z-10 flex items-center gap-2">
                 <Heart className="w-5 h-5" />
                 Donate Now
@@ -391,7 +378,7 @@ const Home = () => {
       </div>
 
       {/* Sponsor a Bed Section */}
-      <div className="py-20 bg-white">
+      {/* <div className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="text-center lg:text-left">
@@ -427,7 +414,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Footer placeholder */}
       <Footer />
