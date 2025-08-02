@@ -29,6 +29,6 @@ router.use("/v1/supporter/", SupporterRouter);
 router.use("/v1/bed/", BedRouter);
 router.use("/v1/payment/", PaymentRouter);
 router.use("/v1/generous-payments/",GenerousContributionPaymentRouter )
-
+router.use("/v1/bed-payments/",GenerousContributionPaymentRouter )
 
 export default router;

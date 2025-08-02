@@ -1,19 +1,20 @@
-'use client';
+"use client";
 
-import { useRef, ReactNode } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, Pagination, EffectFade } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
+import { useRef, ReactNode } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination, EffectFade } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-fade";
 
 interface SlideData {
   image: string;
   title: ReactNode;
+  text: string;
   link: string;
 }
 
@@ -21,9 +22,16 @@ const Slider: React.FC = () => {
   const progressCircle = useRef<SVGSVGElement>(null);
   const progressContent = useRef<HTMLSpanElement>(null);
 
-  const onAutoplayTimeLeft = (s: SwiperType, time: number, progress: number): void => {
+  const onAutoplayTimeLeft = (
+    s: SwiperType,
+    time: number,
+    progress: number
+  ): void => {
     if (progressCircle.current) {
-      progressCircle.current.style.setProperty('--progress', String(1 - progress));
+      progressCircle.current.style.setProperty(
+        "--progress",
+        String(1 - progress)
+      );
     }
     if (progressContent.current) {
       progressContent.current.textContent = `${Math.ceil(time / 1000)}s`;
@@ -32,17 +40,20 @@ const Slider: React.FC = () => {
 
   const slideData: SlideData[] = [
     {
-      image: '/assets/images/slides/slider-v3-img1.jpg',
+      image: "/assets/images/slides/slider-v3-img1.jpg",
       title: (
         <>
           Welcome to <br />
           Palliative <br /> International
         </>
       ),
-      link: '/payment'
+      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+          Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
+          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+      link: "/payment",
     },
     {
-      image: '/assets/images/slides/slider-v3-img2.jpg',
+      image: "/assets/images/slides/slider-v3-img2.jpg",
       title: (
         <>
           A Global Pioneer <br />
@@ -50,10 +61,13 @@ const Slider: React.FC = () => {
           Hospital Care
         </>
       ),
-      link: '/payment'
+      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+          Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
+          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+      link: "/payment",
     },
     {
-      image: '/assets/images/slides/slider-v3-img3.jpg',
+      image: "/assets/images/slides/slider-v3-img3.jpg",
       title: (
         <>
           Making a <br />
@@ -61,14 +75,32 @@ const Slider: React.FC = () => {
           Here
         </>
       ),
-      link: '/payment'
-    }
+      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+          Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
+          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+      link: "/payment",
+    },
   ];
 
   return (
     <>
       <section className="main-slider main-slider-one style3">
         <div className="main-slider-one__inner ">
+          <div className="absolute top-[50vh] md:top-[68vh] right-24 md:right-48 z-10 bg-white rounded-full">
+            <img
+              src="/assets/images/dgr1.webp"
+              alt="Logo 1"
+              className="w-16 h-16 md:w-40 md:h-40 object-contain"
+            />
+          </div>
+
+          <div className="absolute top-[50vh] md:top-[68vh] right-2 z-10 bg-white rounded-full">
+            <img
+              src="/assets/images/dgr2.webp"
+              alt="Logo 1"
+              className="w-16 h-16 md:w-40 md:h-40 object-contain"
+            />
+          </div>
           <Swiper
             spaceBetween={0}
             centeredSlides={true}
@@ -78,15 +110,15 @@ const Slider: React.FC = () => {
             }}
             pagination={{
               clickable: true,
-              el: '.swiper-pagination',
+              el: ".swiper-pagination",
             }}
             navigation={{
-              nextEl: '.custom-nav-btn.swiper-button-next',
-              prevEl: '.custom-nav-btn.swiper-button-prev',
+              nextEl: ".custom-nav-btn.swiper-button-next",
+              prevEl: ".custom-nav-btn.swiper-button-prev",
             }}
             effect="fade"
             fadeEffect={{
-              crossFade: true
+              crossFade: true,
             }}
             modules={[Autoplay, Pagination, Navigation, EffectFade]}
             onAutoplayTimeLeft={onAutoplayTimeLeft}
@@ -101,10 +133,9 @@ const Slider: React.FC = () => {
                     className="image-layer"
                     style={{
                       backgroundImage: `url(${slide.image})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
                     }}
                   />
                   <div className="container">
@@ -112,7 +143,9 @@ const Slider: React.FC = () => {
                       <div className="title">
                         <h2>{slide.title}</h2>
                       </div>
-                      <div className="btn-box">
+                      
+                      <p className=" font-semibold text-xm md:text-sm ">{slide.text}</p>
+                      <div className=" pt-4 ">
                         <a className="thm-btn" href={slide.link}>
                           <span className="txt text-xl">Donate Now</span>
                         </a>
@@ -128,8 +161,6 @@ const Slider: React.FC = () => {
 
             {/* Custom Navigation and Progress Controls */}
             <div className="navigation-controls">
-              
-              
               {/* Autoplay Progress */}
               <div className="autoplay-progress">
                 <svg viewBox="0 0 48 48" ref={progressCircle}>
@@ -159,7 +190,7 @@ const Slider: React.FC = () => {
         }
 
         .image-layer::before {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
           left: 0;
@@ -353,7 +384,10 @@ const Slider: React.FC = () => {
         }
 
         /* Reset animations on slide change */
-        .swiper-slide:not(.swiper-slide-active) .main-slider-one__content .title h2,
+        .swiper-slide:not(.swiper-slide-active)
+          .main-slider-one__content
+          .title
+          h2,
         .swiper-slide:not(.swiper-slide-active) .btn-box {
           opacity: 0;
           transform: translateX(-50px);
@@ -371,18 +405,18 @@ const Slider: React.FC = () => {
           .main-slider-one__content .title h2 {
             font-size: 2.5rem;
           }
-          
+
           .navigation-controls {
             right: 50px;
             bottom: 20px;
           }
-          
+
           .custom-nav-btn {
             width: 40px;
             height: 40px;
             font-size: 16px;
           }
-          
+
           .autoplay-progress {
             width: 36px;
             height: 36px;
@@ -393,7 +427,7 @@ const Slider: React.FC = () => {
           .main-slider-one__content .title h2 {
             font-size: 2rem;
           }
-          
+
           .thm-btn {
             padding: 12px 24px;
             font-size: 14px;

@@ -4,6 +4,7 @@ export default class Configs {
   static port = process.env.PORT;
   static domain = process.env.DOMAIN;
   static serverUrl = process.env.SERVER_URL;
+  
 
   // mongo
   static mongoHost = process.env.MONGO_HOST;

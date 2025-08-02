@@ -60,7 +60,7 @@ export const generateReceiptPDF = async (
 
   // Logo (if you have a logo file)
   try {
-    const logoPath = path.join(__dirname, "https://api.donatebed.shanthibhavan.in/logo/logo.png");
+    const logoPath = path.join(__dirname, "../../public/logo/logo.png");
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, doc.page.width - 140, 20, { width: 75, height: 75 });
     }
