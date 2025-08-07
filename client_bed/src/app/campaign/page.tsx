@@ -9,24 +9,40 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import DonationForm from "../donate/donationForm";
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, DollarSign, Users, Target, DollarSignIcon } from "lucide-react";
+import {
+  Share2,
+  Target,
+  DollarSignIcon,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import toastService from "@/utils/toastService";
+import BedSupporterForm from "@/components/payment/BedSupportForm";
 
 export default function BedDetailsPage() {
   const [bedData, setBedData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const bedId =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("id")
+      : null;
 
   useEffect(() => {
     const fetchBedData = async () => {
       try {
-        const response = await axios(
-          `${API_URL}/supporter/get-bed-data/688d9977dd733bb538f6eb73`
-        );
+        let response;
+        if (bedId) {
+          response = await axios(
+            `${API_URL}/supporter/get-bed-data/${bedId}`
+          );
+        } else {
+          response = await axios(
+            `${API_URL}/supporter/get-bed-data/688d9977dd733bb538f6eb73`
+          );
+        }
+
         console.log("Bed Data:", response?.data);
         setBedData(response?.data);
       } catch (err) {
@@ -50,7 +66,7 @@ export default function BedDetailsPage() {
 
     const shareData = {
       title: " ",
-      text: `Monthly Contribution : ${bedData?.currency} \n\nClick this link:`,
+      text: `Monthly Contribution : ${bedData?.currency} ${bedData?.fixedAmount}\n\nClick this link:`,
       url: window.location.href,
     };
 
@@ -156,8 +172,6 @@ export default function BedDetailsPage() {
           </div>
         </motion.div>
 
-
-
         {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -177,7 +191,7 @@ export default function BedDetailsPage() {
             <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
               <DialogHeader>
                 <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
-                  <DonationForm bed={bedData} />
+                  <BedSupporterForm bed={bedData} />
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>

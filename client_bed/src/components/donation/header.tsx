@@ -21,7 +21,7 @@ const Header = () => {
 
             {/* Hamburger Button - Mobile Only */}
             <button
-              className="md:hidden p-2 rounded-md text-gray-500 hover:text-purple-600 hover:bg-gray-100 focus:outline-none"
+              className="md:hidden p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-gray-100 focus:outline-none"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg
@@ -47,9 +47,9 @@ const Header = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 md:mt-0">
               {/* Address */}
               <div className="flex items-start p-2 bg-gray-50 rounded-lg">
-                <div className="bg-purple-100 p-2 rounded-full mr-3 mt-0.5">
+                <div className="bg-blue-100 p-2 rounded-full mr-3 mt-0.5">
                   <svg
-                    className="w-4 h-4 text-purple-600"
+                    className="w-4 h-4 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -69,7 +69,7 @@ const Header = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-purple-600">Address</p>
+                  <p className="text-xs font-medium text-blue-600">Address</p>
                   <p className="text-xs text-gray-600 text-wrap">
                     Office 3261, Ground Floor, 470 St Kilda Rd., MELBOURNE VIC
                     3004, Australia.
@@ -79,9 +79,9 @@ const Header = () => {
 
               {/* Combined Contact */}
               <div className="flex items-start p-2 bg-gray-50 rounded-lg">
-                <div className="bg-purple-100 p-2 rounded-full mr-3 mt-0.5">
+                <div className="bg-blue-100 p-2 rounded-full mr-3 mt-0.5">
                   <svg
-                    className="w-4 h-4 text-purple-600"
+                    className="w-4 h-4 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -95,16 +95,16 @@ const Header = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-purple-600">Contact</p>
+                  <p className="text-xs font-medium text-blue-600">Contact</p>
                   <a
                     href="tel:061391112473"
-                    className="block text-xs text-gray-600 hover:text-purple-600"
+                    className="block text-xs text-gray-600 hover:text-blue-600"
                   >
                     +61 391112473
                   </a>
                   <a
                     href="mailto:operationssbau@palliativeinternational.com"
-                    className="block text-xs text-gray-600 hover:text-purple-600 truncate text-wrap"
+                    className="block text-xs text-gray-600 hover:text-blue-600 truncate text-wrap"
                   >
                     operationssbau@palliativeinternational.com
                   </a>

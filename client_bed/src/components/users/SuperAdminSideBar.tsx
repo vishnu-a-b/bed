@@ -34,8 +34,13 @@ const items = [
     icon: User,
   },
   {
-    title: "Payments",
+    title: "BedPayments",
     url: "payment",
+    icon: HandCoins,
+  },
+    {
+    title: "Genaral Contribution AUD",
+    url: "gc_au",
     icon: HandCoins,
   },
   {

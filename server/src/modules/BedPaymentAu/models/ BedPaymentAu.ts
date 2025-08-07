@@ -2,12 +2,12 @@
 import mongoose from "mongoose";
 
 // Counter schema for auto-incrementing receipt numbers
-const counterSchema = new mongoose.Schema({
+const counterBedSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   seq: { type: Number, default: 0 },
 });
 
-const Counter = mongoose.model("Counter", counterSchema);
+const CounterBed = mongoose.model("CounterBed", counterBedSchema);
 
 const BedPaymentAuSchema = new mongoose.Schema(
   {
@@ -93,6 +93,7 @@ const BedPaymentAuSchema = new mongoose.Schema(
         type: String,
         default: "bed_donation",
         enum: [
+          "bed_donation",
           "general_donation",
           "medical_assistance",
           "education_support",
@@ -167,7 +168,7 @@ const BedPaymentAuSchema = new mongoose.Schema(
 BedPaymentAuSchema.pre("save", async function (next) {
   if (this.isNew && !this.receiptNumber) {
     try {
-      const counter = await Counter.findByIdAndUpdate(
+      const counterBed = await CounterBed.findByIdAndUpdate(
         "generous_contribution_receipt",
         { $inc: { seq: 1 } },
         { new: true, upsert: true }
@@ -175,13 +176,13 @@ BedPaymentAuSchema.pre("save", async function (next) {
 
       // Format: GC-YYYY-000001
       const currentYear = new Date().getFullYear();
-      this.receiptNumber = `GC-${currentYear}-${counter.seq
+      this.receiptNumber = `GC-${currentYear}-${counterBed.seq
         .toString()
         .padStart(6, "0")}`;
     } catch (error: any) {
       return next(error);
     }
-  }
+  } 
   next();
 });
 
@@ -229,4 +230,4 @@ export const BedPaymentAuFilterFields = {
   ],
 };
 
-export const BedPaymentAu = mongoose.model("BedPaymentAu", BedPaymentAuSchema);
+export const BedPaymentAu = mongoose.model("BedPaymentAu",BedPaymentAuSchema);

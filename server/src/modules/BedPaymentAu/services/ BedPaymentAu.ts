@@ -1,7 +1,7 @@
 // server/src/modules/payment/services/ BedPaymentAuService.ts
 import paypal from "@paypal/checkout-server-sdk";
 import { BedPaymentAu } from "../models/ BedPaymentAu";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import DonationReceiptMailer from "../../../services/DonationReceiptMailer";
 import { Supporter } from "../../supporter/models/Supporter";
 
@@ -205,7 +205,7 @@ export default class BedPaymentAuService {
           brand_name: "Generous Contributions",
           landing_page: "BILLING",
           user_action: "PAY_NOW",
-          return_url: `${frontendUrl}/success`,
+          return_url: `${frontendUrl}/payment/success`,
           cancel_url: `${frontendUrl}`,
         },
       });
@@ -243,7 +243,7 @@ export default class BedPaymentAuService {
           amount,
           currency,
           approvalUrl: approvalUrl || "",
-          paymentId: payment._id
+          paymentId: payment._id,
         },
       };
     } catch (error: any) {
@@ -258,7 +258,13 @@ export default class BedPaymentAuService {
 
     const payment: any = await BedPaymentAu.findOne({
       paypal_order_id,
+    }).populate({
+      path: "supporter",
+      populate: {
+        path: "user", // assuming supporter.user is a ref to the User model
+      },
     });
+
     console.warn(payment);
     if (!payment) {
       throw new Error("Payment record not found");
@@ -308,9 +314,9 @@ export default class BedPaymentAuService {
 
         // Send receipt email after successful payment verification
         try {
-          const payerEmail = payment.email;
-          const payerName = payment.name;
-          const address = payment.address || "";
+          const payerEmail = payment?.supporter?.user?.email;
+          const payerName = payment?.supporter?.user?.name;
+          const address = payment?.supporter?.user?.address || "";
 
           if (payerEmail) {
             await DonationReceiptMailer.sendDonationReceiptEmail({
@@ -617,5 +623,126 @@ export default class BedPaymentAuService {
       console.error("Error refunding payment:", error);
       throw error;
     }
+  };
+
+  findOneSupporterPayments = async (supporterId: string) => {
+    // Validate supporterId
+    if (!supporterId || !mongoose.Types.ObjectId.isValid(supporterId)) {
+      throw new Error("Invalid supporter ID");
+    }
+
+    // 1. Get basic supporter information
+    const supporterData = await Supporter.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(supporterId),
+        },
+      },
+      {
+        $lookup: {
+          from: "beds",
+          localField: "bed",
+          foreignField: "_id",
+          as: "bed",
+        },
+      },
+      { $unwind: "$bed" },
+      {
+        $lookup: {
+          from: "countries",
+          localField: "bed.country",
+          foreignField: "_id",
+          as: "country",
+        },
+      },
+      { $unwind: "$country" },
+    ]);
+
+    if (supporterData.length === 0) {
+      throw new Error("Supporter not found");
+    }
+
+    const supporter = supporterData[0];
+
+    // 2. Get all payments for this supporter
+    const paymentsData = await BedPaymentAu.aggregate([
+      {
+        $match: {
+          supporter: new mongoose.Types.ObjectId(supporterId),
+        },
+      },
+      {
+        $project: {
+          amount: 1,
+          status: 1,
+          paymentMode: 1,
+          method: 1,
+          createdAt: 1,
+          paymentDate: 1,
+          isApproved: 1,
+          paypal_payment_id: 1, // Changed from razorpay_payment_id
+          transactionReference: 1,
+          // Include any other payment fields you need
+        },
+      },
+      { $sort: { createdAt: -1 } }, // Sort by newest first
+    ]);
+
+    // 3. Calculate payment totals
+    const totals = await BedPaymentAu.aggregate([
+      {
+        $match: {
+          supporter: new mongoose.Types.ObjectId(supporterId),
+          status: "captured", // Only count successful payments
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalPayments: { $sum: 1 },
+          totalAmount: { $sum: "$amount" },
+          totalOnlinePayments: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMode", "online"] }, 1, 0],
+            },
+          },
+          totalOfflinePayments: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMode", "offline"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    return {
+      supporterId: supporter._id,
+      supporterName: supporter.nameVisible ? supporter.name : "Anonymous",
+      bedNo: supporter.bed.bedNo,
+      qrPhoto: supporter.bed.qrPhoto,
+      fixedAmount: supporter.bed.fixedAmount,
+      bedId: supporter.bed._id,
+      countryId: supporter.country._id,
+      countryName: supporter.country.name,
+      currency: supporter.country.currency,
+      totalPayments: totals[0]?.totalPayments || 0,
+      totalAmount: totals[0]?.totalAmount || 0,
+      totalOnlinePayments: totals[0]?.totalOnlinePayments || 0,
+      totalOfflinePayments: totals[0]?.totalOfflinePayments || 0,
+      payments: paymentsData.map((payment) => ({
+        amount: payment.amount,
+        status: payment.status,
+        paymentMode: payment.paymentMode,
+        method: payment.method,
+        date: payment.createdAt,
+        paymentDate: payment.paymentDate,
+        isVerified: payment.isVerified,
+        reference:
+          payment.paymentMode === "online"
+            ? payment.paypal_payment_id // Changed from razorpay_payment_id
+            : payment.transactionReference,
+        // Include any other payment fields you need
+      })),
+    };
   };
 }

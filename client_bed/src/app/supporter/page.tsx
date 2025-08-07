@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, DollarSign, Users, BedDouble } from "lucide-react";
+import { Heart, DollarSign, Users, BedDouble } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { Qr } from "@/components/payment/Qr";
+import BedAuPaymentButton from "@/components/payment/BedAuPaymentButton";
 
 export default function SupporterDetailsPage() {
   const supporterId =
@@ -32,7 +33,7 @@ export default function SupporterDetailsPage() {
       const fetchSupporterData = async () => {
         try {
           const response = await axios(
-            `${API_URL}/payment/get-supporter-data/${supporterId}`
+            `${API_URL}/bed-payments/get-supporter-data/${supporterId}`
           );
           console.log(response);
           setSupporterData(response?.data);
@@ -49,27 +50,6 @@ export default function SupporterDetailsPage() {
   if (loading) return <div>Loading</div>;
   if (error) return <div>Error: {error}</div>;
   if (!supporterData) return <div>Supporter not found</div>;
-
-  const handleShare = async () => {
-    const shareData = {
-      title: document.title,
-      text: "Check out this supporter's contributions to palliative care!",
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.error("Sharing failed:", err);
-      }
-    } else {
-      const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
-        shareData.text + " " + shareData.url
-      )}`;
-      window.open(whatsappURL, "_blank");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -232,24 +212,28 @@ export default function SupporterDetailsPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="flex flex-col sm:flex-row justify-center gap-4 mb-8"
         >
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                size="lg"
-                className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg transition-all hover:shadow-xl"
-              >
-                Make Payment
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogDescription>
-                  <Qr supporter={supporterData} />
-                  {/* <PaymentForm supporter={supporterData} /> */}
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
+          {supporterData.countryName === "Australia" ? (
+            <BedAuPaymentButton id={supporterId} />
+          ) : (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg transition-all hover:shadow-xl"
+                >
+                  Make Payment
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogDescription>
+                    <Qr supporter={supporterData} />
+                    {/* <PaymentForm supporter={supporterData} /> */}
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          )}
         </motion.div>
 
         {/* Supporter Details Section */}
@@ -273,7 +257,12 @@ export default function SupporterDetailsPage() {
                   <DetailRow label="Bed Number" value={supporterData.bedNo} />
                 )}
                 <DetailRow label="Country" value={supporterData.countryName} />
-                <DetailRow label="Monthily Support Amount" value={supporterData.currency+" "+supporterData.fixedAmount} />
+                <DetailRow
+                  label="Monthily Support Amount"
+                  value={
+                    supporterData.currency + " " + supporterData.fixedAmount
+                  }
+                />
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200">

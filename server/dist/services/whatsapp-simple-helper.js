@@ -58,6 +58,53 @@ exports.whatsappHelper = {
             throw new Error("Unexpected error occurred");
         }
     }),
+    sendSupporterWelcomeMessage: (phoneNumber, text) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c;
+        try {
+            const response = yield axios_1.default.post(OMNI_API_URL, {
+                to: phoneNumber,
+                type: "template",
+                source: "external",
+                template: {
+                    name: "supporter_welcome",
+                    language: {
+                        code: "en",
+                    },
+                    components: [
+                        {
+                            type: "body",
+                            parameters: [
+                                {
+                                    type: "text",
+                                    text: text,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                metaData: {
+                    custom_callback_data: "optional_callback_data",
+                },
+            }, {
+                headers: {
+                    accept: "application/json",
+                    Authorization: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaG9uZU51bWJlciI6Iis5MTQ4NzY2MTE2MDAiLCJwaG9uZU51bWJlcklkIjoiNTkyODgyNzUzOTE2NjExIiwiaWF0IjoxNzQ1NTg1OTAwfQ.qmjk1dJX9qkcWvshZYdrkN13Bowe74k9qch8w8gWMRA`,
+                    "Content-Type": "application/json",
+                },
+            });
+            console.log("Supporter welcome message sent successfully!");
+            return response.data.messageId;
+        }
+        catch (error) {
+            console.error("Error sending supporter welcome message:", error);
+            if (axios_1.default.isAxiosError(error)) {
+                console.error("Axios error details:", ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
+                throw new Error(((_c = (_b = error.response) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.message) ||
+                    "Failed to send supporter welcome message");
+            }
+            throw new Error("Unexpected error occurred");
+        }
+    }),
     /**
      * Upload PDF buffer to temporary storage and get URL
      */
@@ -106,7 +153,7 @@ exports.whatsappHelper = {
                             type: "document",
                             document: {
                                 link: pdfUrl,
-                                filename: filename
+                                filename: filename,
                             },
                         },
                     ],
@@ -137,7 +184,7 @@ exports.whatsappHelper = {
             // Clean up temporary file after sending (optional)
             setTimeout(() => {
                 try {
-                    const tempFilePath = path_1.default.join(process.cwd(), 'temp', filename);
+                    const tempFilePath = path_1.default.join(process.cwd(), "temp", filename);
                     if (fs_1.default.existsSync(tempFilePath)) {
                         fs_1.default.unlinkSync(tempFilePath);
                     }

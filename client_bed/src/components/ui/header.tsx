@@ -105,7 +105,7 @@ export default function Header() {
       <div className="max-w-7xl px-2 sm:px-6 lg:px-8 py-2 md:py-3 flex items-center justify-between mx-auto">
         <div className="flex justify-between items-center md:gap-4 gap-1 w-full">
           <img
-            src={displayInfo?.organizationName==="Shanthibhavan Palliative International" ? "/logo.png" : "/father.png"}
+            src={isPalliativeInternational? "/logo.png" : "/father.png"}
             alt="Shanthibhavan Logo"
             className="md:h-32 h-20 w-auto rounded-lg"
             loading="lazy"

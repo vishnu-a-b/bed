@@ -32,10 +32,10 @@ const Footer = () => {
 
           {/* Address Section */}
           <div className="text-center md:text-left">
-            <h3 className="text-xl font-bold mb-4 text-purple-600">Our Location</h3>
+            <h3 className="text-xl font-bold mb-4 text-blue-600">Our Location</h3>
             <div className="space-y-3">
               <div className="flex items-start justify-center md:justify-start">
-                <span className="text-purple-600 mt-1 mr-3">
+                <span className="text-blue-600 mt-1 mr-3">
                   <i className="fas fa-map-marker-alt"></i>
                 </span>
                 <p>
@@ -46,10 +46,10 @@ const Footer = () => {
                 </p>
               </div>
               <div className="flex items-center justify-center md:justify-start">
-                <span className="text-purple-600 mr-3">
+                <span className="text-blue-600 mr-3">
                   <i className="fas fa-phone-alt"></i>
                 </span>
-                <a href="tel:+61391112473" className="hover:text-purple-600 transition">
+                <a href="tel:+61391112473" className="hover:text-blue-600 transition">
                   +61 391112473
                 </a>
               </div>
@@ -58,12 +58,12 @@ const Footer = () => {
 
           {/* Quick Links Section */}
           <div className="text-center md:text-left">
-            <h3 className="text-xl font-bold mb-4 text-purple-600">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-4 text-blue-600">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-purple-600 transition">Home</a></li>
-              <li><a href="#" className="hover:text-purple-600 transition">About Us</a></li>
-              <li><a href="#" className="hover:text-purple-600 transition">Services</a></li>
-              <li><a href="#" className="hover:text-purple-600 transition">Contact</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Home</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">About Us</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Services</a></li>
+              <li><a href="#" className="hover:text-blue-600 transition">Contact</a></li>
             </ul>
           </div>
         </div>
@@ -74,7 +74,7 @@ const Footer = () => {
         {/* Copyright Section */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            ©2025 <a href="#" className="text-purple-600 hover:text-white">Shanthibhavan</a> All Rights Reserved
+            ©2025 <a href="#" className="text-blue-600 hover:text-white">Shanthibhavan</a> All Rights Reserved
           </p>
           <div className="flex space-x-6">
             <a href="#" className="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
