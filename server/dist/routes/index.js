@@ -17,6 +17,7 @@ const Organization_1 = __importDefault(require("../modules/organization/routes/O
 const SupporterRouter_1 = __importDefault(require("../modules/supporter/routes/SupporterRouter"));
 const PaymentRouter_1 = __importDefault(require("../modules/payment/routes/PaymentRouter"));
 const generousContributionPaymentRoutes_1 = __importDefault(require("../modules/GenerousContributionPayment/routes/generousContributionPaymentRoutes"));
+const _BedPaymentAu_1 = __importDefault(require("../modules/BedPaymentAu/routes/ BedPaymentAu"));
 const router = express_1.default.Router();
 router.use("/", IndexRouter_1.default);
 router.use("/v1/auth/", AuthenticationRouter_1.default);
@@ -31,4 +32,5 @@ router.use("/v1/supporter/", SupporterRouter_1.default);
 router.use("/v1/bed/", BedRouter_1.default);
 router.use("/v1/payment/", PaymentRouter_1.default);
 router.use("/v1/generous-payments/", generousContributionPaymentRoutes_1.default);
+router.use("/v1/bed-payments/", _BedPaymentAu_1.default);
 exports.default = router;

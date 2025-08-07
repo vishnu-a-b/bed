@@ -88,6 +88,7 @@ const DonationForm = ({ bed }: { bed?: any }) => {
           amount: bed?.fixedAmount > 0 ? bed.fixedAmount : data.amount,
           type: data.type,
           role: "regular-supporter",
+          ...(data.address && {address: data.address}),
           nameVisible: data.nameVisible,
           ...(data.panNo && { panNo: data.panNo }),
         };

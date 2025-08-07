@@ -6,8 +6,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { columns, Employee } from "./ColumnsSupport";
 import AsyncSelect from "react-select/async";
-import { loadBedOptions } from "@/utils/api/loadSelectData";
+import { loadBedOptions, loadCountryOptions } from "@/utils/api/loadSelectData";
 import { selectRole } from "@/lib/slice/authSlice";
+import { Label } from "../ui/label";
 
 interface BedData {
   country: any;
@@ -65,6 +66,7 @@ export default function ViewSupporter() {
   const [bedData, setBedData] = useState<BedData | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [country, setCountry] = useState<any>();
   const [startDate, setStartDate] = useState<string>(() => {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 2);
@@ -84,6 +86,14 @@ export default function ViewSupporter() {
     (state: RootState) => state.supporter.id
   );
   const role = useSelector(selectRole);
+
+  const handleCountryChange = (selectedOption: any) => {
+    if (!selectedOption) {
+      setCountry(null);
+    } else {
+      setCountry({ value: selectedOption.id, label: selectedOption.label });
+    }
+  };
 
   // Reusable Stat Card Component
   type StatCardColor = "blue" | "green" | "purple" | "yellow";
@@ -311,59 +321,71 @@ export default function ViewSupporter() {
   };
 
   // Fetch data from API
-// Fetch data from API
-async function getData() {
-  try {
-    let isActiveFilter = "";
-    if (supporterId) {
-      const response = await Axios.get(`/supporter/${supporterId}`);
-      let items = [];
-      items[0] = response.data.data;
-      setTotalRows(1);
-      return items;
-    }
-    if (statusFilter === "Active") {
-      isActiveFilter = "isActive__eq=true&";
-    } else if (statusFilter === "InActive") {
-      isActiveFilter = "isActive__eq=false&";
-    }
-    const searchParam =
-      debouncedSearch && !bed ? `search=${debouncedSearch}&` : "";
-    let bedFilter = "";
-    if (bed && bed.id) {
-      bedFilter = `bed__eq=${bed.id}&`;
-    }
-    const limit = bed && bed.id ? "" : `limit=${pageSize}&`;
-    const skip = bed && bed.id ? "" : `skip=${pageIndex * pageSize}&`;
-
-    // Only include dates in filters if no bed is selected
-    const requestBody = {
-      filters: {
-        ...(!bed && {
-          startDate: startDate ? new Date(startDate).toISOString() : undefined,
-          endDate: endDate ? new Date(endDate).toISOString() : undefined,
-        }),
-      },
-    };
-
-    const response = await Axios.post(
-      `/supporter/get?limit=Infinity&${skip}${bedFilter}${isActiveFilter}${searchParam}sortBy=createdAt`,
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+  // Fetch data from API
+  async function getData() {
+    try {
+      let isActiveFilter = "";
+      if (supporterId) {
+        const response = await Axios.get(`/supporter/${supporterId}`);
+        let items = [];
+        items[0] = response.data.data;
+        setTotalRows(1);
+        return items;
       }
-    );
+      if (statusFilter === "Active") {
+        isActiveFilter = "isActive__eq=true&";
+      } else if (statusFilter === "InActive") {
+        isActiveFilter = "isActive__eq=false&";
+      }
+      const searchParam =
+        debouncedSearch && !bed ? `search=${debouncedSearch}&` : "";
+      let bedFilter = "";
+      if (bed && bed.id) {
+        bedFilter = `bed__eq=${bed.id}&`;
+      }
+      const limit = bed && bed.id ? "" : `limit=${pageSize}&`;
+      const skip = bed && bed.id ? "" : `skip=${pageIndex * pageSize}&`;
 
-    const items = response.data.data;
-    setTotalRows(items.total || items.length);
-    return items.items || items;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return [];
+      // Only include dates in filters if no bed is selected
+      const requestBody = {
+        filters: {
+          ...(!bed && {
+            startDate: startDate
+              ? new Date(startDate).toISOString()
+              : undefined,
+            endDate: endDate ? new Date(endDate).toISOString() : undefined,
+          }),
+        },
+      };
+
+      const response = await Axios.post(
+        `/supporter/get?limit=Infinity&${skip}${bedFilter}${isActiveFilter}${searchParam}sortBy=createdAt`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      let items = response.data.data.items || response.data.data;
+
+      // Apply country filter if country is selected
+      if (country && country.value) {
+        items = items.filter(
+          (supporter:any) =>
+            supporter.bed &&
+            supporter.bed.country &&
+            supporter.bed.country._id === country.value
+        );
+      }
+      setTotalRows(items.total || items.length);
+      return items.items || items;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      return [];
+    }
   }
-}
 
   // Calculate total contribution amount
   const totalContribution = data.reduce((sum, supporter) => {
@@ -388,6 +410,7 @@ async function getData() {
     bed,
     startDate,
     endDate,
+    country,
   ]);
 
   return (
@@ -515,9 +538,21 @@ async function getData() {
               </div>
             </div>
           )}
-
+          <div>
+            <Label htmlFor="country">Country</Label>
+            <AsyncSelect
+              cacheOptions
+              loadOptions={loadCountryOptions}
+              defaultOptions
+              value={country}
+              onChange={handleCountryChange}
+              classNamePrefix="select"
+              isClearable
+            />
+          </div>
           {/* Bed Selector */}
           <div className="w-full md:flex-1 min-w-[200px]">
+            <Label htmlFor="bed">Bed</Label>
             <AsyncSelect
               cacheOptions
               loadOptions={loadBedOptions}
@@ -534,6 +569,7 @@ async function getData() {
 
           {/* Status Filter */}
           <div className="w-full md:w-auto">
+            
             <select
               value={statusFilter}
               onChange={(e) => {

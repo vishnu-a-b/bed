@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const Supporter_1 = require("../modules/supporter/models/Supporter"); // Adjust path as needed
+const whatsapp_simple_helper_1 = __importDefault(require("./whatsapp-simple-helper"));
 class SupporterMailer {
     constructor() {
         this.transporter = nodemailer_1.default.createTransport({
@@ -50,6 +51,7 @@ class SupporterMailer {
                 console.log(mailOptions);
                 yield this.transporter.sendMail(mailOptions);
                 console.log(`Welcome email sent to ${supporter.email}`);
+                whatsapp_simple_helper_1.default.sendSupporterWelcomeMessage(supporter.user.mobileNo, supportLink);
             }
             catch (error) {
                 console.error("Error in sendWelcomeEmail:", error);

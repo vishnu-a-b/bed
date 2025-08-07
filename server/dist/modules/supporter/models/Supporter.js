@@ -43,6 +43,9 @@ const supporterSchema = new mongoose_1.default.Schema({
     verificationStatus: {
         type: String,
     },
+    address: {
+        type: String,
+    }
 }, { timestamps: true });
 exports.supporterFilterFields = {
     filterFields: [

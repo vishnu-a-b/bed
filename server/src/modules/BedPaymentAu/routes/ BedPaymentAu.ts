@@ -6,6 +6,7 @@ import { authenticateUser } from "../../authentication/middlewares/authenticateU
 import { paymentCreateDoc } from "../docs/paymentCreateDoc";
 import { paymentCreateValidator } from "../validators/paymentCreateValidator";
 import { generateReceiptPDF } from "../../../services/generatePdf";
+import { paymentListDoc } from "../docs/paymentListDoc";
 
 const router = express.Router();
 const controller: any = new  BedPaymentAuController();
@@ -18,6 +19,8 @@ router.post(
 );
 
 router.get("/public/:id", controller.getPaymentById);
+
+router.get("/get-supporter-data/:id", paymentListDoc, controller.getSupporterDetails);
 
 router.post("/verify", controller.verifyPayment);
 
@@ -39,6 +42,9 @@ router.get("/payment-success", async (req, res) => {
 
   generateReceiptPDF(res, paymentDetails);
 });
+
+
+
 
 
 
@@ -82,7 +88,7 @@ router.delete("/:id", authorization, controller.deletePayment);
  * @desc    Create manual/offline payment record
  * @access  Private (Admin/Staff)
  */
-router.post("/manual", authorization, controller.createManualPayment);
+//router.post("/manual", authorization, controller.createManualPayment);
 
 /**
  * @route   POST /api/generous-payments/:id/refund

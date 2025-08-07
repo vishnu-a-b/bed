@@ -237,6 +237,20 @@ export default class  BedPaymentAuController extends BaseController  {
     }
   };
 
+    getSupporterDetails = async (req: Request, res: Response) => {
+    try {
+      const supporterId = req.params.id; // Get from URL parameter
+      const result = await this.service.findOneSupporterPayments(supporterId);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(404).json({ message: "An unknown error occurred" });
+      }
+    }
+  };
+
   // Create manual/offline payment
   // createManualPayment = async (req: Request, res: Response) => {
   //   try {

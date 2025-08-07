@@ -42,6 +42,9 @@ const supporterSchema = new mongoose.Schema(
     verificationStatus: {
       type: String,
     },
+    address: {
+      type: String,
+    }
   },
   { timestamps: true }
 );
