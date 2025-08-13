@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import BedAuPaymentButton from "./BedAuPaymentButton";
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -61,7 +62,7 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
     defaultValues: {
       type: "Individual",
       nameVisible: true,
-      amount: bed?.fixedAmount > 0 ? bed.fixedAmount : 0,
+      amount: bed?.fixedAmount > 0 ? bed.fixedAmount : null,
     },
   });
 
@@ -137,6 +138,13 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <h2 className="text-2xl font-bold mb-4 text-center">Support Bed</h2>
+        {bed?.bedNo && bed?.bedNo < 1000 && (
+          <div>
+            <div className="text-lg font-semibold mb-2 border border-dotted border-blue-500 p-3 rounded">
+              Bed Number : {bed?.bedNo}
+            </div>
+          </div>
+        )}
 
         {bed?.fixedAmount && bed?.fixedAmount > 0 && (
           <div>
@@ -235,14 +243,13 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
 
         {(!bed?.fixedAmount || bed?.fixedAmount === 0) && (
           <div>
-            <Label htmlFor="amount" className="block font-medium">
+            <Label htmlFor="amount" className="block font-medium required">
               Donation Amount
             </Label>
             <Input
               id="amount"
               type="number"
               {...register("amount", { valueAsNumber: true })}
-              placeholder="0.00"
               className={errors.amount ? "border-red-500 w-full" : "w-full"}
               required
             />
@@ -318,12 +325,7 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
               <p>Your support has been successfully registered.</p>
             </div>
             <div className="flex flex-col space-y-3">
-              {/* <Button
-                onClick={handleMakePayment}
-                className="w-full py-3 bg-green-600 hover:bg-green-700"
-              >
-                Make This Month's Payment
-              </Button> */}
+              <BedAuPaymentButton id={supporterId} />
               <Button
                 onClick={handleGoToPortal}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white"

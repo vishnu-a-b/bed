@@ -42,19 +42,20 @@ router.get("/payment-success", async (req, res) => {
 
 
 
+router.post("/", controller.getPayments);
 router.use(authenticateUser);
 
 // Common authorization
 const authorization = authorizeUser({ allowedRoles: [] });
 
-router.get("/", authorization, controller.getAllPayments);
-
+router.get("/", authorization, controller.get);
+router.get("/stats", authorization, controller.getPaymentStats1);
 /**
  * @route   GET /api/generous-payments/stats
  * @desc    Get payment statistics
  * @access  Private (Admin/Staff)
  */
-router.get("/stats", authorization, controller.getPaymentStats);
+
 
 /**
  * @route   GET /api/generous-payments/:id
@@ -83,6 +84,7 @@ router.delete("/:id", authorization, controller.deletePayment);
  * @access  Private (Admin/Staff)
  */
 router.post("/manual", authorization, controller.createManualPayment);
+
 
 /**
  * @route   POST /api/generous-payments/:id/refund

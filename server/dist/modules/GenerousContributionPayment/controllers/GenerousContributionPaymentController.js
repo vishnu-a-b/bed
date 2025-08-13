@@ -33,18 +33,18 @@ class GenerousContributionPaymentController extends BaseController_1.default {
         this.createPayment = (req, res) => __awaiter(this, void 0, void 0, function* () {
             console.log(req.body);
             try {
-                const { amount, currency, contributor, contribution, source, } = req.body;
+                const { amount, currency, contributor, contribution, source } = req.body;
                 // Validation
                 if (!amount || !contributor) {
                     return res.status(400).json({
                         success: false,
-                        error: "Amount, contributor, and contribution details are required"
+                        error: "Amount, contributor, and contribution details are required",
                     });
                 }
                 if (!contributor.name || !contributor.phone) {
                     return res.status(400).json({
                         success: false,
-                        error: "Contributor name and email are required"
+                        error: "Contributor name and email are required",
                     });
                 }
                 const result = yield this.service.createPayment({
@@ -82,7 +82,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 if (!paypal_order_id) {
                     return res.status(400).json({
                         success: false,
-                        error: "PayPal order ID is required"
+                        error: "PayPal order ID is required",
                     });
                 }
                 const result = yield this.service.verifyPayment({
@@ -130,7 +130,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                     page: page ? parseInt(page) : 1,
                     limit: limit ? parseInt(limit) : 10,
                     sort: sort || "-createdAt",
-                    populate: true
+                    populate: true,
                 };
                 const result = yield this.service.getAllPayments(query);
                 return res.json(result);
@@ -139,7 +139,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 console.error("Error in getAllPayments controller:", error);
                 return res.status(500).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
             }
         });
@@ -150,7 +150,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 if (!id) {
                     return res.status(400).json({
                         success: false,
-                        error: "Payment ID is required"
+                        error: "Payment ID is required",
                     });
                 }
                 const result = yield this.service.getPaymentById(id);
@@ -158,10 +158,12 @@ class GenerousContributionPaymentController extends BaseController_1.default {
             }
             catch (error) {
                 console.error("Error in getPaymentById controller:", error);
-                const statusCode = error instanceof Error && error.message.includes("not found") ? 404 : 500;
+                const statusCode = error instanceof Error && error.message.includes("not found")
+                    ? 404
+                    : 500;
                 return res.status(statusCode).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
             }
         });
@@ -173,23 +175,25 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 if (!id) {
                     return res.status(400).json({
                         success: false,
-                        error: "Payment ID is required"
+                        error: "Payment ID is required",
                     });
                 }
                 // Remove fields that shouldn't be updated directly
                 const { paypal_payment_id, paypal_order_id, status, isVerified } = updateData, allowedUpdates = __rest(updateData, ["paypal_payment_id", "paypal_order_id", "status", "isVerified"]);
                 const result = yield this.service.updatePayment({
                     id,
-                    updateData: allowedUpdates
+                    updateData: allowedUpdates,
                 });
                 return res.json(result);
             }
             catch (error) {
                 console.error("Error in updatePayment controller:", error);
-                const statusCode = error instanceof Error && error.message.includes("not found") ? 404 : 500;
+                const statusCode = error instanceof Error && error.message.includes("not found")
+                    ? 404
+                    : 500;
                 return res.status(statusCode).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
             }
         });
@@ -200,7 +204,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 if (!id) {
                     return res.status(400).json({
                         success: false,
-                        error: "Payment ID is required"
+                        error: "Payment ID is required",
                     });
                 }
                 const result = yield this.service.deletePayment(id);
@@ -208,18 +212,69 @@ class GenerousContributionPaymentController extends BaseController_1.default {
             }
             catch (error) {
                 console.error("Error in deletePayment controller:", error);
-                const statusCode = error instanceof Error && error.message.includes("not found") ? 404 : 500;
+                const statusCode = error instanceof Error && error.message.includes("not found")
+                    ? 404
+                    : 500;
                 return res.status(statusCode).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
+            }
+        });
+        this.getPaymentStats = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const stats = yield this.service.getPaymentStatistics();
+                this.sendSuccessResponse(res, 200, {
+                    message: "Payment statistics retrieved successfully",
+                    data: stats
+                });
+            }
+            catch (e) {
+                console.error("Error in getPaymentStats controller:", e);
+                next(e);
+            }
+        });
+        this.search = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const { limit, skip } = req.query;
+                const { filterQuery, sort } = req;
+                const filters = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.filters) || {};
+                const startDate = filters.startDate;
+                const endDate = filters.endDate;
+                const data = yield this.service.find({
+                    limit: Number(limit),
+                    skip: Number(skip),
+                    filterQuery,
+                    sort,
+                }, startDate, endDate);
+                this.sendSuccessResponseList(res, 200, { data });
+            }
+            catch (e) {
+                next(e);
+            }
+        });
+        this.get = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { limit, skip, startDate, endDate } = req.query;
+                const { filterQuery, sort } = req;
+                const data = yield this.service.find({
+                    limit: Number(limit),
+                    skip: Number(skip),
+                    filterQuery,
+                    sort,
+                }, startDate, endDate);
+                this.sendSuccessResponseList(res, 200, { data });
+            }
+            catch (e) {
+                next(e);
             }
         });
         // Create manual/offline payment
         this.createManualPayment = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const { amount, currency, contributor, contribution, manualMethod, transactionReference, remarks } = req.body;
+                const { amount, currency, contributor, contribution, manualMethod, transactionReference, remarks, } = req.body;
                 // Get recorded by user (from auth middleware)
                 const recordedBy = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const result = yield this.service.createManualPayment({
@@ -229,7 +284,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                     manualMethod,
                     transactionReference,
                     remarks,
-                    recordedBy
+                    recordedBy,
                 });
                 return res.status(201).json(result);
             }
@@ -237,7 +292,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 console.error("Error in createManualPayment controller:", error);
                 return res.status(500).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
             }
         });
@@ -249,26 +304,28 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 if (!id) {
                     return res.status(400).json({
                         success: false,
-                        error: "Payment ID is required"
+                        error: "Payment ID is required",
                     });
                 }
                 const result = yield this.service.refundPayment(id, {
                     amount,
-                    reason
+                    reason,
                 });
                 return res.json(result);
             }
             catch (error) {
                 console.error("Error in refundPayment controller:", error);
-                const statusCode = error instanceof Error && error.message.includes("not found") ? 404 : 500;
+                const statusCode = error instanceof Error && error.message.includes("not found")
+                    ? 404
+                    : 500;
                 return res.status(statusCode).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
             }
         });
         // Get payment statistics
-        this.getPaymentStats = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.getPaymentStats1 = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { startDate, endDate, groupBy = "day" } = req.query;
                 // Build date filter
@@ -283,15 +340,37 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 // You can add more complex aggregation logic here
                 return res.json({
                     success: true,
-                    data: stats
+                    data: stats,
                 });
             }
             catch (error) {
                 console.error("Error in getPaymentStats controller:", error);
                 return res.status(500).json({
                     success: false,
-                    error: error instanceof Error ? error.message : "An unknown error occurred"
+                    error: error instanceof Error ? error.message : "An unknown error occurred",
                 });
+            }
+        });
+        this.getPayments = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const { limit, skip } = req.query;
+                const { filterQuery, sort } = req;
+                console.log("Request body:", req.body);
+                const filters = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.filters) || {};
+                const startDate = filters.startDate;
+                const endDate = filters.endDate;
+                const data = yield this.service.findPayments({
+                    limit: Number(limit) || 10,
+                    skip: Number(skip) || 0,
+                    filterQuery: filterQuery || {},
+                    sort: sort || { paymentDate: -1 }, // Default sort by payment date descending
+                }, startDate, endDate);
+                this.sendSuccessResponseList(res, 200, { data });
+            }
+            catch (e) {
+                console.error("Error in getPayments controller:", e);
+                next(e);
             }
         });
     }

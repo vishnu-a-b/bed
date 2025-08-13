@@ -9,11 +9,13 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import DonationForm from "../donate/donationForm";
+
 import { Button } from "@/components/ui/button";
 import { Share2, Heart, DollarSign, Users, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import toastService from "@/utils/toastService";
+import BedSupportForm from "@/components/payment/BedSupportForm";
+
 
 export default function BedDetailsPage() {
   const bedId =
@@ -313,7 +315,7 @@ const showShareOptions = (shareData: { title: string; text: string; url: string 
             <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
               <DialogHeader>
                 <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
-                  <DonationForm bed={bedData} />
+                  <BedSupportForm bed={bedData} />
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>

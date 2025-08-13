@@ -5,6 +5,7 @@ import Slider from "@/components/donation/slider";
 import YouTubePlayer from "@/components/donation/YoutubePlayer";
 import BedSupportForm from "@/components/payment/BedSupportForm";
 import { Button } from "@/components/ui/button";
+import { initGA, logPageView } from "../utils/analytics";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,11 @@ const Home = () => {
       : null;
 
   useEffect(() => {
+    initGA();
+  }, []);
+
+
+  useEffect(() => {
     const fetchBedData = async () => {
       try {
         let response;
@@ -60,7 +66,9 @@ const Home = () => {
         }
 
         console.log("Bed Data:", response?.data);
+        logPageView(response.data?.bedNo);
         setBedData(response?.data);
+
       } catch (err) {
       } finally {
       }
@@ -80,7 +88,7 @@ const Home = () => {
         <Header />
 
         {/* Slider placeholder */}
-        <Slider bed={bedData}/>
+        <Slider bed={bedData} />
         <YouTubePlayer />
 
         {/* New "Every Bed Counts" Section - Premium positioning */}
@@ -208,7 +216,7 @@ const Home = () => {
                     {/* Visual element with CTA */}
                     <div className="w-full md:w-1/3 flex flex-col items-center">
                       <div className="relative mb-6">
-                        <div className="w-48 h-48 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                        <div className="w-48 h-48 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl ">
                           <Hospital className="w-20 h-20 text-white" />
                         </div>
                         <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
@@ -230,7 +238,7 @@ const Home = () => {
                         <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
                           <DialogHeader>
                             <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
-                              <BedSupportForm bed={bedData}/>
+                              <BedSupportForm bed={bedData} />
                             </DialogDescription>
                           </DialogHeader>
                         </DialogContent>
@@ -606,7 +614,7 @@ const Home = () => {
                 <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
                   <DialogHeader>
                     <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
-                      <BedSupportForm bed={bedData}/>
+                      <BedSupportForm bed={bedData} />
                     </DialogDescription>
                   </DialogHeader>
                 </DialogContent>
@@ -666,7 +674,11 @@ const Home = () => {
       </div>
     );
   } else {
-    return <div><LoadingSpinner/></div>;
+    return (
+      <div>
+        <LoadingSpinner />
+      </div>
+    );
   }
 };
 

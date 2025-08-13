@@ -78,7 +78,7 @@ class SupporterMailer {
             margin: 25px 0;
         }
         .button {
-            background-color: #1565c0;
+            background-color: #04aa6d;
             color: white;
             padding: 12px 0;
             text-decoration: none;
@@ -90,9 +90,12 @@ class SupporterMailer {
             font-size: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .button:hover {
-            background-color: #0d47a1;
+        .button:link, , button:visited{
+            background-color: #04aa6d;
+            color: white;
+            text-decoration: none;
         }
+        
         p {
             margin-bottom: 15px;
         }
@@ -108,7 +111,7 @@ class SupporterMailer {
     
     <p>Thank you for registering as a supporter with Shanthibhavan!</p>
     
-    <p>You can now access your supporter portal using the button below:</p>
+    <p>You can now access your supporter portal using the button below to make and manage your monthly contributions:</p>
     
     <div class="button-container">
         <a href="${supportLink}" class="button">Access Your Supporter Portal</a>
@@ -119,7 +122,7 @@ class SupporterMailer {
     
     <div class="footer">
         <p>Best regards,<br>
-        <strong>The Shanthibhavan Team</strong></p>
+        <strong>Shanthibhavan Team</strong></p>
     </div>
 </body>
 </html>

@@ -94,8 +94,14 @@ const Slider = ({ bed }: any) => {
     }
 
     const shareData = {
-      title: " ",
-      text: `Monthly Contribution : ${bed?.currency} ${bed?.fixedAmount}\n\nClick this link:`,
+      title: "",
+      text: `Join our mission—help us reach our target of AUD 1200/month per bed\n\nMonthly Contribution: ${
+        bed?.fixedAmount && bed?.fixedAmount > 0
+          ? `${bed?.currency} ${bed?.fixedAmount}`
+          : "Your preferred amount"
+      }\n\nClick the below link to support${
+        bed?.bedNo && bed?.bedNo < 1000 ? ` Bed No- ${bed.bedNo}` : ""
+      } : `,
       url: window.location.href,
     };
 
@@ -239,32 +245,32 @@ const Slider = ({ bed }: any) => {
                         {slide.text}
                       </p>
                       <div className="pt-2 flex md:flex-row flex-col w-fit gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            size="lg"
-                            className="w-fit sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg transition-all hover:shadow-xl md:text-xl"
-                          >
-                            Commit to Care
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
-                          <DialogHeader>
-                            <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
-                              <BedSupportForm bed={bed} />
-                            </DialogDescription>
-                          </DialogHeader>
-                        </DialogContent>
-                      </Dialog>
-                      <Button
-                        onClick={handleShare}
-                        variant="outline"
-                        size="lg"
-                        className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all bg-white"
-                      >
-                        <Share2 className="mr-2 h-5 w-5" />
-                        Share
-                      </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="lg"
+                              className="w-fit sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg transition-all hover:shadow-xl md:text-xl"
+                            >
+                              Commit to Care
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-[95vw] sm:max-w-md rounded-lg mx-2">
+                            <DialogHeader>
+                              <DialogDescription className="max-h-[80vh] overflow-y-auto p-1">
+                                <BedSupportForm bed={bed} />
+                              </DialogDescription>
+                            </DialogHeader>
+                          </DialogContent>
+                        </Dialog>
+                        <Button
+                          onClick={handleShare}
+                          variant="outline"
+                          size="lg"
+                          className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl border-2 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all bg-white"
+                        >
+                          <Share2 className="mr-2 h-5 w-5" />
+                          Share
+                        </Button>
                       </div>
                     </div>
                   </div>

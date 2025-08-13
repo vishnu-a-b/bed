@@ -317,12 +317,13 @@ export default class BedPaymentAuService {
           const payerEmail = payment?.supporter?.user?.email;
           const payerName = payment?.supporter?.user?.name;
           const address = payment?.supporter?.user?.address || "";
+          const phone = payment?.supporter?.user?.mobileNo || "";
 
           if (payerEmail) {
             await DonationReceiptMailer.sendDonationReceiptEmail({
               email: payerEmail,
               name: payerName,
-              phoneNo: payment.phNo,
+              phoneNo: phone,
               amount: payment.amount,
               address: address,
               transactionNumber:

@@ -173,14 +173,9 @@ exports.generousContributionPaymentFilterFields = {
         "receiptNumber"
     ],
     searchFields: [
-        "paypal_payment_id",
-        "paypal_order_id",
-        "paypal_payer_id",
-        "payer.email_address",
-        "payer.name.given_name",
-        "payer.name.surname",
-        "transactionReference",
-        "receiptNumber"
+        "name",
+        "phNo",
+        "amount"
     ],
     sortFields: ["createdAt", "amount", "paymentDate", "payer.name.given_name", "receiptNumber"],
 };
