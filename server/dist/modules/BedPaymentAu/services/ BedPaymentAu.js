@@ -166,7 +166,7 @@ class BedPaymentAuService {
             }
         });
         this.verifyPayment = (params) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
             const { paypal_order_id, paypal_payment_id } = params;
             const payment = yield _BedPaymentAu_1.BedPaymentAu.findOne({
                 paypal_order_id,
@@ -218,11 +218,12 @@ class BedPaymentAuService {
                         const payerEmail = (_h = (_g = payment === null || payment === void 0 ? void 0 : payment.supporter) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.email;
                         const payerName = (_k = (_j = payment === null || payment === void 0 ? void 0 : payment.supporter) === null || _j === void 0 ? void 0 : _j.user) === null || _k === void 0 ? void 0 : _k.name;
                         const address = ((_m = (_l = payment === null || payment === void 0 ? void 0 : payment.supporter) === null || _l === void 0 ? void 0 : _l.user) === null || _m === void 0 ? void 0 : _m.address) || "";
+                        const phone = ((_p = (_o = payment === null || payment === void 0 ? void 0 : payment.supporter) === null || _o === void 0 ? void 0 : _o.user) === null || _p === void 0 ? void 0 : _p.mobileNo) || "";
                         if (payerEmail) {
                             yield DonationReceiptMailer_1.default.sendDonationReceiptEmail({
                                 email: payerEmail,
                                 name: payerName,
-                                phoneNo: payment.phNo,
+                                phoneNo: phone,
                                 amount: payment.amount,
                                 address: address,
                                 transactionNumber: payment.paypal_capture_id ||
@@ -234,7 +235,7 @@ class BedPaymentAuService {
                                     month: "long",
                                     day: "numeric",
                                 }),
-                                programName: ((_o = payment.contribution) === null || _o === void 0 ? void 0 : _o.description) ||
+                                programName: ((_q = payment.contribution) === null || _q === void 0 ? void 0 : _q.description) ||
                                     "Generous Contribution Program",
                             });
                             console.log(`Donation receipt email sent successfully to ${payerEmail}`);

@@ -67,7 +67,7 @@ export default function SupporterDetailsPage() {
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
             Viewing contributions and details
           </p>
-          {supporterData?.bedNo != 1000 && (
+          {supporterData?.bedNo < 1000 && (
             <div className="flex justify-center items-center gap-3">
               <span className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1">
                 <Heart className="w-4 h-4" /> {supporterData?.totalPayments}{" "}
@@ -79,7 +79,7 @@ export default function SupporterDetailsPage() {
             </div>
           )}
         </motion.div>
-        {supporterData?.bedNo != 1000 && (
+        {supporterData?.bedNo < 1000 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -253,7 +253,7 @@ export default function SupporterDetailsPage() {
               </h4>
               <div className="space-y-2">
                 <DetailRow label="Name" value={supporterData.supporterName} />
-                {supporterData?.bedNo != 1000 && (
+                {supporterData?.bedNo < 1000 && (
                   <DetailRow label="Bed Number" value={supporterData.bedNo} />
                 )}
                 <DetailRow label="Country" value={supporterData.countryName} />

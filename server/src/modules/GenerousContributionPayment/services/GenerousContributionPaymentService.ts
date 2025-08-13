@@ -24,7 +24,6 @@ type Contributor = {
   name: string;
   phone?: string;
   address?: string;
-  
 };
 
 type ContributionPurpose =
@@ -172,11 +171,9 @@ export default class GenerousContributionPaymentService {
         payer: {
           name: {
             given_name: contributor.name.split(" ")[0],
-            surname:
-              contributor.name.split(" ").slice(1).join(" ") ||
-              "",
+            surname: contributor.name.split(" ").slice(1).join(" ") || "",
           },
-          email_address: contributor.email
+          email_address: contributor.email,
         },
         application_context: {
           brand_name: "Generous Contributions",
@@ -194,10 +191,10 @@ export default class GenerousContributionPaymentService {
         currency,
         status: "pending",
         paymentMode: "online",
-        name:contributor.name,
-        phNo:contributor.phone,
-        email:contributor.email,
-        address:contributor.address || "",
+        name: contributor.name,
+        phNo: contributor.phone,
+        email: contributor.email,
+        address: contributor.address || "",
         paymentDate: new Date(),
         source,
         isApproved: true,
@@ -224,127 +221,414 @@ export default class GenerousContributionPaymentService {
     }
   };
 
-verifyPayment = async (
-  params: VerifyPaymentParams
-): Promise<{ success: boolean; data: PaymentVerificationResult }> => {
-  const { paypal_order_id, paypal_payment_id } = params;
+  verifyPayment = async (
+    params: VerifyPaymentParams
+  ): Promise<{ success: boolean; data: PaymentVerificationResult }> => {
+    const { paypal_order_id, paypal_payment_id } = params;
 
-  const payment: any = await GenerousContributionPayment.findOne({
-    paypal_order_id,
-  });
-  console.warn(payment)
-  if (!payment) {
-    throw new Error("Payment record not found");
-  }
+    const payment: any = await GenerousContributionPayment.findOne({
+      paypal_order_id,
+    });
+    console.warn(payment);
+    if (!payment) {
+      throw new Error("Payment record not found");
+    }
 
-  try {
-    const request: any = new paypal.orders.OrdersCaptureRequest(
-      paypal_order_id
-    );
-    request.requestBody({});
+    try {
+      const request: any = new paypal.orders.OrdersCaptureRequest(
+        paypal_order_id
+      );
+      request.requestBody({});
 
-    const capture = await client.execute(request);
-    
-    if (capture.result.status === "COMPLETED") {
-      // Update payment record
-      payment.paypal_payment_id = paypal_payment_id || capture.result.id;
-      payment.paypal_payer_id = capture.result.payer?.payer_id;
-      payment.paypal_capture_id =
-      capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-      payment.status = "completed";
-      payment.isApproved = true;
-      payment.paypal_capture_response = capture.result; // Store complete capture response
-      payment.notes = { ...payment.notes, paypal_capture: capture.result };
-      
-      // Extract payer information from PayPal response
-      if (capture.result.payer) {
-        payment.payer = {
-          email_address: capture.result.payer.email_address,
-          payer_id: capture.result.payer.payer_id,
-          name: capture.result.payer.name,
-          phone: capture.result.payer.phone,
-          address: capture.result.payer.address
-        };
-        
-        // Also set the top-level fields for easier access
+      const capture = await client.execute(request);
 
-        // payment.email = capture.result.payer.email_address;
-        // if (capture.result.payer.name) {
-        //   payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
-        // }
-        // if (capture.result.payer.phone?.phone_number?.national_number) {
-        //   payment.phNo = capture.result.payer.phone.phone_number.national_number;
-        // }
-      }
-      
-      await payment.save();
+      if (capture.result.status === "COMPLETED") {
+        // Update payment record
+        payment.paypal_payment_id = paypal_payment_id || capture.result.id;
+        payment.paypal_payer_id = capture.result.payer?.payer_id;
+        payment.paypal_capture_id =
+          capture.result.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+        payment.status = "completed";
+        payment.isApproved = true;
+        payment.paypal_capture_response = capture.result; // Store complete capture response
+        payment.notes = { ...payment.notes, paypal_capture: capture.result };
 
-      // Send receipt email after successful payment verification
-      try {
-        const payerEmail = payment.email ;
-        const payerName = payment.name ;
-        const address = payment.address || "";
-        
+        // Extract payer information from PayPal response
+        if (capture.result.payer) {
+          payment.payer = {
+            email_address: capture.result.payer.email_address,
+            payer_id: capture.result.payer.payer_id,
+            name: capture.result.payer.name,
+            phone: capture.result.payer.phone,
+            address: capture.result.payer.address,
+          };
 
-        if (payerEmail) {
-          await DonationReceiptMailer.sendDonationReceiptEmail({
-            email: payerEmail,
-            name: payerName,
-            phoneNo: payment.phNo,
-            amount: payment.amount,
-            address: address,
-            transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
-            receiptNumber: payment.receiptNumber,
-            date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }),
-            programName: payment.contribution?.description || "Generous Contribution Program"
-          });
-          
-          console.log(`Donation receipt email sent successfully to ${payerEmail}`);
-        } else {
-          console.warn(`No email address found for payment ${payment.receiptNumber}`);
+          // Also set the top-level fields for easier access
+
+          // payment.email = capture.result.payer.email_address;
+          // if (capture.result.payer.name) {
+          //   payment.name = `${capture.result.payer.name.given_name || ''} ${capture.result.payer.name.surname || ''}`.trim();
+          // }
+          // if (capture.result.payer.phone?.phone_number?.national_number) {
+          //   payment.phNo = capture.result.payer.phone.phone_number.national_number;
+          // }
         }
-      } catch (emailError:any) {
-        // Log email error but don't fail the payment verification
-        console.error("Failed to send donation receipt email:", emailError);
-        
-        // Optionally, you could add a flag to retry email sending later
-        payment.notes = {
-          ...payment.notes,
-          email_failed: true,
-          email_error: emailError.message,
-          email_retry_needed: true
-        };
+
         await payment.save();
+
+        // Send receipt email after successful payment verification
+        try {
+          const payerEmail = payment.email;
+          const payerName = payment.name;
+          const address = payment.address || "";
+
+          if (payerEmail) {
+            await DonationReceiptMailer.sendDonationReceiptEmail({
+              email: payerEmail,
+              name: payerName,
+              phoneNo: payment.phNo,
+              amount: payment.amount,
+              address: address,
+              transactionNumber:
+                payment.paypal_capture_id ||
+                payment.paypal_payment_id ||
+                payment.paypal_order_id,
+              receiptNumber: payment.receiptNumber,
+              date: new Date(payment.paymentDate).toLocaleDateString("en-AU", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+              programName:
+                payment.contribution?.description ||
+                "Generous Contribution Program",
+            });
+
+            console.log(
+              `Donation receipt email sent successfully to ${payerEmail}`
+            );
+          } else {
+            console.warn(
+              `No email address found for payment ${payment.receiptNumber}`
+            );
+          }
+        } catch (emailError: any) {
+          // Log email error but don't fail the payment verification
+          console.error("Failed to send donation receipt email:", emailError);
+
+          // Optionally, you could add a flag to retry email sending later
+          payment.notes = {
+            ...payment.notes,
+            email_failed: true,
+            email_error: emailError.message,
+            email_retry_needed: true,
+          };
+          await payment.save();
+        }
+
+        return {
+          success: true,
+          data: {
+            payment,
+            paypal_response: capture.result,
+          },
+        };
       }
+
+      throw new Error(
+        `Payment capture failed with status: ${capture.result.status}`
+      );
+    } catch (error: any) {
+      console.error("Error verifying payment:", error);
+      payment.status = "failed";
+      payment.error_details = {
+        error_code: error.code || "VERIFICATION_FAILED",
+        error_message: error.message,
+        debug_id: error.debug_id || null,
+      };
+      await payment.save();
+      throw error;
+    }
+  };
+
+  findPayments = async (
+    { limit, skip, filterQuery, sort }: any,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+    console.log("Service received filterQuery:", filterQuery);
+
+    try {
+      limit = limit || 10;
+      skip = skip || 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          paymentDate: {
+            ...(startDate && {
+              $gte: new Date(startDate),
+            }),
+            ...(endDate && {
+              $lte: new Date(endDate),
+            }),
+          },
+        };
+      }
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", JSON.stringify(finalFilter, null, 2));
+
+      // Updated to match the actual model structure
+      const payments = await GenerousContributionPayment.find(finalFilter)
+        .populate([
+          {
+            path: "recordedBy",
+            select: "name email", // Assuming User model has name and email fields
+          },
+          {
+            path: "approvedBy",
+            select: "name email",
+          },
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip)
+        .lean(); // Use lean() for better performance
+
+      const total = await GenerousContributionPayment.countDocuments(
+        finalFilter
+      );
+
+      console.log(`Found ${payments.length} payments out of ${total} total`);
 
       return {
-        success: true,
-        data: {
-          payment,
-          paypal_response: capture.result,
-        },
+        total,
+        limit,
+        skip,
+        items: payments,
       };
+    } catch (error) {
+      console.error("Error finding generous contribution payments:", error);
+      throw error;
     }
+  };
+
+
+
+// Payment Statistics Service
+getPaymentStatistics = async () => {
+  try {
+    const now = new Date();
     
-    throw new Error(
-      `Payment capture failed with status: ${capture.result.status}`
-    );
-  } catch (error:any) {
-    console.error("Error verifying payment:", error);
-    payment.status = "failed";
-    payment.error_details = {
-      error_code: error.code || "VERIFICATION_FAILED",
-      error_message: error.message,
-      debug_id: error.debug_id || null
+    // Calculate date ranges
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    console.log("Date ranges:", {
+      today: { start: todayStart, end: todayEnd },
+      week: { start: weekStart, end: weekEnd },
+      month: { start: monthStart, end: monthEnd }
+    });
+
+    // Aggregate queries
+    const [totalStats, todayStats, weekStats, monthStats] = await Promise.all([
+      // Total completed payments
+      GenerousContributionPayment.aggregate([
+        {
+          $match: {
+            status: "completed"
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$amount" },
+            totalCount: { $sum: 1 },
+            avgAmount: { $avg: "$amount" }
+          }
+        }
+      ]),
+
+      // Today's completed payments
+      GenerousContributionPayment.aggregate([
+        {
+          $match: {
+            status: "completed",
+            paymentDate: {
+              $gte: todayStart,
+              $lte: todayEnd
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$amount" },
+            totalCount: { $sum: 1 }
+          }
+        }
+      ]),
+
+      // This week's completed payments
+      GenerousContributionPayment.aggregate([
+        {
+          $match: {
+            status: "completed",
+            paymentDate: {
+              $gte: weekStart,
+              $lte: weekEnd
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$amount" },
+            totalCount: { $sum: 1 }
+          }
+        }
+      ]),
+
+      // This month's completed payments
+      GenerousContributionPayment.aggregate([
+        {
+          $match: {
+            status: "completed",
+            paymentDate: {
+              $gte: monthStart,
+              $lte: monthEnd
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$amount" },
+            totalCount: { $sum: 1 }
+          }
+        }
+      ])
+    ]);
+
+    // Format results
+    const formatStats = (stats: any[]) => ({
+      amount: stats[0]?.totalAmount || 0,
+      count: stats[0]?.totalCount || 0,
+      avgAmount: stats[0]?.avgAmount || 0
+    });
+
+    const result = {
+      total: formatStats(totalStats),
+      today: formatStats(todayStats),
+      week: formatStats(weekStats),
+      month: formatStats(monthStats),
+      dateRanges: {
+        today: { start: todayStart, end: todayEnd },
+        week: { start: weekStart, end: weekEnd },
+        month: { start: monthStart, end: monthEnd }
+      }
     };
-    await payment.save();
+
+    console.log("Payment statistics result:", result);
+    return result;
+
+  } catch (error) {
+    console.error("Error getting payment statistics:", error);
     throw error;
   }
 };
+
+// Route Definition (add this to your routes file)
+// router.get('/generous-payments/stats', controller.getPaymentStats);
+  
+
+  find = async (
+    { limit, skip, filterQuery, sort }: any,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+
+    try {
+      limit = limit ? limit : 10;
+      skip = skip ? skip : 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          paymentDate: {
+            ...(startDate && {
+              $gte: (() => {
+                const d = new Date(startDate);
+                d.setHours(0, 0, 0, 0);
+                return d;
+              })(),
+            }),
+            ...(endDate && {
+              $lte: (() => {
+                const d = new Date(endDate!);
+                d.setHours(23, 59, 59, 999);
+                return d;
+              })(),
+            }),
+          },
+        };
+      }
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", finalFilter);
+
+      // Updated to match the actual model structure
+      const payment = await GenerousContributionPayment.find(finalFilter)
+        .populate([
+          {
+            path: "recordedBy",
+            select: "name email", // Assuming User model has name and email fields
+          },
+          {
+            path: "approvedBy",
+            select: "name email",
+          },
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+
+      const total = await GenerousContributionPayment.countDocuments(
+        finalFilter
+      );
+
+      return {
+        total,
+        limit,
+        skip,
+        items: payment,
+      };
+    } catch (error) {
+      console.error("Error finding generous contribution payments:", error);
+      throw error;
+    }
+  };
 
   getAllPayments = async (
     query: Record<string, any> = {},

@@ -82,10 +82,9 @@ class GenerousContributionPaymentService {
                     payer: {
                         name: {
                             given_name: contributor.name.split(" ")[0],
-                            surname: contributor.name.split(" ").slice(1).join(" ") ||
-                                "",
+                            surname: contributor.name.split(" ").slice(1).join(" ") || "",
                         },
-                        email_address: contributor.email
+                        email_address: contributor.email,
                     },
                     application_context: {
                         brand_name: "Generous Contributions",
@@ -159,7 +158,7 @@ class GenerousContributionPaymentService {
                             payer_id: capture.result.payer.payer_id,
                             name: capture.result.payer.name,
                             phone: capture.result.payer.phone,
-                            address: capture.result.payer.address
+                            address: capture.result.payer.address,
                         };
                         // Also set the top-level fields for easier access
                         // payment.email = capture.result.payer.email_address;
@@ -183,14 +182,17 @@ class GenerousContributionPaymentService {
                                 phoneNo: payment.phNo,
                                 amount: payment.amount,
                                 address: address,
-                                transactionNumber: payment.paypal_capture_id || payment.paypal_payment_id || payment.paypal_order_id,
+                                transactionNumber: payment.paypal_capture_id ||
+                                    payment.paypal_payment_id ||
+                                    payment.paypal_order_id,
                                 receiptNumber: payment.receiptNumber,
-                                date: new Date(payment.paymentDate).toLocaleDateString('en-AU', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
+                                date: new Date(payment.paymentDate).toLocaleDateString("en-AU", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
                                 }),
-                                programName: ((_g = payment.contribution) === null || _g === void 0 ? void 0 : _g.description) || "Generous Contribution Program"
+                                programName: ((_g = payment.contribution) === null || _g === void 0 ? void 0 : _g.description) ||
+                                    "Generous Contribution Program",
                             });
                             console.log(`Donation receipt email sent successfully to ${payerEmail}`);
                         }
@@ -221,9 +223,236 @@ class GenerousContributionPaymentService {
                 payment.error_details = {
                     error_code: error.code || "VERIFICATION_FAILED",
                     error_message: error.message,
-                    debug_id: error.debug_id || null
+                    debug_id: error.debug_id || null,
                 };
                 yield payment.save();
+                throw error;
+            }
+        });
+        this.findPayments = (_a, startDate_1, endDate_1) => __awaiter(this, [_a, startDate_1, endDate_1], void 0, function* ({ limit, skip, filterQuery, sort }, startDate, endDate) {
+            console.log("Service received dates:", startDate, endDate);
+            console.log("Service received filterQuery:", filterQuery);
+            try {
+                limit = limit || 10;
+                skip = skip || 0;
+                let dateFilter = {};
+                if (startDate || endDate) {
+                    dateFilter = {
+                        paymentDate: Object.assign(Object.assign({}, (startDate && {
+                            $gte: new Date(startDate),
+                        })), (endDate && {
+                            $lte: new Date(endDate),
+                        })),
+                    };
+                }
+                const finalFilter = Object.assign(Object.assign({}, filterQuery), dateFilter);
+                console.log("Final filter query:", JSON.stringify(finalFilter, null, 2));
+                // Updated to match the actual model structure
+                const payments = yield GenerousContributionPayment_1.GenerousContributionPayment.find(finalFilter)
+                    .populate([
+                    {
+                        path: "recordedBy",
+                        select: "name email", // Assuming User model has name and email fields
+                    },
+                    {
+                        path: "approvedBy",
+                        select: "name email",
+                    },
+                ])
+                    .sort(sort)
+                    .limit(limit)
+                    .skip(skip)
+                    .lean(); // Use lean() for better performance
+                const total = yield GenerousContributionPayment_1.GenerousContributionPayment.countDocuments(finalFilter);
+                console.log(`Found ${payments.length} payments out of ${total} total`);
+                return {
+                    total,
+                    limit,
+                    skip,
+                    items: payments,
+                };
+            }
+            catch (error) {
+                console.error("Error finding generous contribution payments:", error);
+                throw error;
+            }
+        });
+        // Payment Statistics Service
+        this.getPaymentStatistics = () => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const now = new Date();
+                // Calculate date ranges
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+                weekStart.setHours(0, 0, 0, 0);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                weekEnd.setHours(23, 59, 59, 999);
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                console.log("Date ranges:", {
+                    today: { start: todayStart, end: todayEnd },
+                    week: { start: weekStart, end: weekEnd },
+                    month: { start: monthStart, end: monthEnd }
+                });
+                // Aggregate queries
+                const [totalStats, todayStats, weekStats, monthStats] = yield Promise.all([
+                    // Total completed payments
+                    GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
+                        {
+                            $match: {
+                                status: "completed"
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 },
+                                avgAmount: { $avg: "$amount" }
+                            }
+                        }
+                    ]),
+                    // Today's completed payments
+                    GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: todayStart,
+                                    $lte: todayEnd
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 }
+                            }
+                        }
+                    ]),
+                    // This week's completed payments
+                    GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: weekStart,
+                                    $lte: weekEnd
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 }
+                            }
+                        }
+                    ]),
+                    // This month's completed payments
+                    GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: monthStart,
+                                    $lte: monthEnd
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 }
+                            }
+                        }
+                    ])
+                ]);
+                // Format results
+                const formatStats = (stats) => {
+                    var _a, _b, _c;
+                    return ({
+                        amount: ((_a = stats[0]) === null || _a === void 0 ? void 0 : _a.totalAmount) || 0,
+                        count: ((_b = stats[0]) === null || _b === void 0 ? void 0 : _b.totalCount) || 0,
+                        avgAmount: ((_c = stats[0]) === null || _c === void 0 ? void 0 : _c.avgAmount) || 0
+                    });
+                };
+                const result = {
+                    total: formatStats(totalStats),
+                    today: formatStats(todayStats),
+                    week: formatStats(weekStats),
+                    month: formatStats(monthStats),
+                    dateRanges: {
+                        today: { start: todayStart, end: todayEnd },
+                        week: { start: weekStart, end: weekEnd },
+                        month: { start: monthStart, end: monthEnd }
+                    }
+                };
+                console.log("Payment statistics result:", result);
+                return result;
+            }
+            catch (error) {
+                console.error("Error getting payment statistics:", error);
+                throw error;
+            }
+        });
+        // Route Definition (add this to your routes file)
+        // router.get('/generous-payments/stats', controller.getPaymentStats);
+        this.find = (_a, startDate_1, endDate_1) => __awaiter(this, [_a, startDate_1, endDate_1], void 0, function* ({ limit, skip, filterQuery, sort }, startDate, endDate) {
+            console.log("Service received dates:", startDate, endDate);
+            try {
+                limit = limit ? limit : 10;
+                skip = skip ? skip : 0;
+                let dateFilter = {};
+                if (startDate || endDate) {
+                    dateFilter = {
+                        paymentDate: Object.assign(Object.assign({}, (startDate && {
+                            $gte: (() => {
+                                const d = new Date(startDate);
+                                d.setHours(0, 0, 0, 0);
+                                return d;
+                            })(),
+                        })), (endDate && {
+                            $lte: (() => {
+                                const d = new Date(endDate);
+                                d.setHours(23, 59, 59, 999);
+                                return d;
+                            })(),
+                        })),
+                    };
+                }
+                const finalFilter = Object.assign(Object.assign({}, filterQuery), dateFilter);
+                console.log("Final filter query:", finalFilter);
+                // Updated to match the actual model structure
+                const payment = yield GenerousContributionPayment_1.GenerousContributionPayment.find(finalFilter)
+                    .populate([
+                    {
+                        path: "recordedBy",
+                        select: "name email", // Assuming User model has name and email fields
+                    },
+                    {
+                        path: "approvedBy",
+                        select: "name email",
+                    },
+                ])
+                    .sort(sort)
+                    .limit(limit)
+                    .skip(skip);
+                const total = yield GenerousContributionPayment_1.GenerousContributionPayment.countDocuments(finalFilter);
+                return {
+                    total,
+                    limit,
+                    skip,
+                    items: payment,
+                };
+            }
+            catch (error) {
+                console.error("Error finding generous contribution payments:", error);
                 throw error;
             }
         });

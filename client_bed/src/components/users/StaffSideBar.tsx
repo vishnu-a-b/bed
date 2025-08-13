@@ -24,6 +24,11 @@ const items = [
     url: "supporter",
     icon: User,
   },
+  {
+    title: "Genaral Contribution AUD",
+    url: "gc_au",
+    icon: HandCoins,
+  },
   
 ];
 export default function StaffSideBar() {

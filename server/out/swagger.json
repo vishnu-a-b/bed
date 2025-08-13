@@ -5129,47 +5129,12 @@
         "description": "",
         "parameters": [
           {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
             "name": "limit",
             "in": "query",
             "type": "string"
           },
           {
-            "name": "sort",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "currency",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "purpose",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "source",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "campaign",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "email",
+            "name": "skip",
             "in": "query",
             "type": "string"
           },
@@ -5182,19 +5147,31 @@
             "name": "endDate",
             "in": "query",
             "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
           },
           {
-            "name": "otherFilters",
+            "name": "skip",
             "in": "query",
             "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
+          "default": {
+            "description": ""
           }
         }
       }

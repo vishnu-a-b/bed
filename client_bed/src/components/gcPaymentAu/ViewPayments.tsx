@@ -14,15 +14,21 @@ export default function ViewPayments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentModeFilter, setPaymentModeFilter] = useState("all");
+  const [startDate, setStartDate] = useState<string>(() => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 2);
+    return firstDayOfMonth.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  
+
   const refresh: boolean = useSelector(
     (state: RootState) => state.update.refresh
   );
   const paymentId: any = useSelector((state: RootState) => state.payment.id);
-  const organizationId: any = useSelector(
-    (state: RootState) => state.organization.id
-  );
 
   // Debounce the search input
   const debounce = (func: Function, delay: number) => {
@@ -53,16 +59,17 @@ export default function ViewPayments() {
   async function getData() {
     try {
       if (paymentId) {
-        const response = await Axios.get(`/payment/${paymentId}`);
+        const response = await Axios.get(`/generous-payments/${paymentId}&sort=-paymentDate`);
         let items = [];
         items[0] = response.data.data;
         setTotalRows(1);
         return items;
       }
 
+      // Build filter parameters
       let statusParam = "";
       if (statusFilter !== "all") {
-        statusParam = `status__eq=${statusFilter.toLowerCase()}&`;
+        statusParam = `status__eq=${statusFilter}&`;
       }
 
       let paymentModeParam = "";
@@ -71,15 +78,37 @@ export default function ViewPayments() {
       }
 
       const searchParam = debouncedSearch ? `search=${debouncedSearch}&` : "";
-      const response = await Axios.get(
-        `/payment?limit=${pageSize}&skip=${
-          pageIndex * pageSize
-        }&${statusParam}${paymentModeParam}${searchParam}`
+      
+      const limit = `limit=${pageSize}&`;
+      const skip = `skip=${pageIndex * pageSize}&`;
+
+      // Prepare request body for date filters
+      const requestBody = {
+        filters: {
+          startDate: startDate
+            ? new Date(startDate).toISOString()
+            : undefined,
+          endDate: endDate 
+            ? new Date(endDate).toISOString() 
+            : undefined,
+        },
+      };
+
+      const response = await Axios.post(
+        `/generous-payments?${limit}${skip}${statusParam}${paymentModeParam}${searchParam}sort=-paymentDate`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
+
+      console.log(response);
       const items = response.data.data;
 
-      setTotalRows(items.total);
-      return items.items;
+      setTotalRows(items.total || items.length);
+      return items.items || items;
     } catch (error) {
       console.error("Error fetching payment data:", error);
       return [];
@@ -95,53 +124,104 @@ export default function ViewPayments() {
       }
     }
     fetchData();
-  }, [pageIndex, pageSize, debouncedSearch, statusFilter, paymentModeFilter, refresh, paymentId]);
+  }, [
+    pageIndex,
+    pageSize,
+    debouncedSearch,
+    statusFilter,
+    paymentModeFilter,
+    startDate,
+    endDate,
+    refresh,
+    paymentId,
+  ]);
 
   return (
     <div className="flex flex-col items-center p-4">
       <div className="container mx-auto py-10">
         {/* Search and Filter Controls */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            placeholder="Search payments..."
-            className="p-2 border rounded flex-grow max-w-md"
-          />
-          
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPageIndex(0);
-              }}
-              className="p-2 border border-gray-300 rounded"
-            >
-              <option value="all">All Statuses</option>
-              <option value="captured">Captured</option>
-              <option value="failed">Failed</option>
-              <option value="pending">Pending</option>
-            </select>
+        <div className="flex flex-col gap-4 mb-4">
+          {/* Search Input */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4"></div>
 
-            <select
-              value={paymentModeFilter}
-              onChange={(e) => {
-                setPaymentModeFilter(e.target.value);
-                setPageIndex(0);
-              }}
-              className="p-2 border border-gray-300 rounded"
-            >
-              <option value="all">All Modes</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
+          {/* Date Range Filters */}
+          <div className="flex gap-4">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium mb-1">Search</label>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleInputChange}
+                placeholder="Search by name, phone number..."
+                className="p-2 border rounded flex-grow max-w-md"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium mb-1">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setPageIndex(0);
+                }}
+                className="p-2 border border-gray-300 rounded"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium mb-1">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setPageIndex(0);
+                }}
+                className="p-2 border border-gray-300 rounded"
+              />
+            </div>
+{/* 
+            <div className="flex flex-col">
+              <label className="text-sm font-medium mb-1">Statuses</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPageIndex(0);
+                }}
+                className="p-2 border border-gray-300 rounded"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="refunded">Refunded</option>
+                <option value="partially_refunded">Partially Refunded</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium mb-1">Payment Modes</label>
+              <select
+                value={paymentModeFilter}
+                onChange={(e) => {
+                  setPaymentModeFilter(e.target.value);
+                  setPageIndex(0);
+                }}
+                className="p-2 border border-gray-300 rounded"
+              >
+                <option value="all">All Payment Modes</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+              </select>
+            </div> */}
           </div>
         </div>
 
         <DataTable
-          url="payment"
+          url="generous-payments"
           columns={paymentColumns}
           data={data}
           totalRows={totalRows}
@@ -149,7 +229,7 @@ export default function ViewPayments() {
           pageSize={pageSize}
           onPageChange={setPageIndex}
           onPageSizeChange={setPageSize}
-          actions={{ delete: true, edit: true }}
+          actions={{ delete: false, edit: false }}
         />
       </div>
     </div>
