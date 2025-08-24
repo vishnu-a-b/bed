@@ -36,7 +36,7 @@ const PaymentStatsComponent: React.FC<PaymentStatsComponentProps> = ({
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await Axios.get("/generous-payments/stats");
+      const response = await Axios.get("/bed-payments/stats");
       const mockData = response.data.data;
     //   const mockData: PaymentStats = {
     //     total: { amount: 125480.5, count: 342, avgAmount: 366.9 },

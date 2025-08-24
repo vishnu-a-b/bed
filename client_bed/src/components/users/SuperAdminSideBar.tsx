@@ -44,6 +44,11 @@ const items = [
     icon: HandCoins,
   },
   {
+    title: "Follow Up",
+    url: "follow_up",
+    icon: HandCoins,
+  },
+  {
     title: "Staff",
     url: "staff",
     icon: User,

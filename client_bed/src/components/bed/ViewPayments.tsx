@@ -60,7 +60,7 @@ export default function ViewPayments() {
   async function getData() {
     try {
       if (paymentId) {
-        const response = await Axios.get(`/generous-payments/${paymentId}&sort=-paymentDate`);
+        const response = await Axios.get(`/bed-payments/${paymentId}&sort=-paymentDate`);
         let items = [];
         items[0] = response.data.data;
         setTotalRows(1);
@@ -96,7 +96,7 @@ export default function ViewPayments() {
       };
 
       const response = await Axios.post(
-        `/generous-payments?${limit}${skip}${statusParam}${paymentModeParam}${searchParam}sort=-paymentDate`,
+        `/bed-payments?${limit}${skip}${statusParam}${paymentModeParam}${searchParam}sort=-paymentDate`,
         requestBody,
         {
           headers: {

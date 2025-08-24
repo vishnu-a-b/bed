@@ -369,7 +369,12 @@ export default function ViewSupporter() {
       );
 
       let items = response.data.data.items || response.data.data;
-
+      let bedI = items.map((i:any)=>{
+       return {name:i.name,
+        bedNo:i.bed.bedNo,
+        amount:i.amount}
+      })
+      console.log(bedI)
       // Apply country filter if country is selected
       if (country && country.value) {
         items = items.filter(

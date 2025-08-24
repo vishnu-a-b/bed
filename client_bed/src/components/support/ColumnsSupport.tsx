@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
 import UpdatePasswordForm from "./ChangePassword";
 import toastService from "@/utils/toastService";
+import { Axios } from "@/utils/api/apiAuth";
+import axios from "axios";
 
 export interface Employee {
   createdAt: string | number | Date;
@@ -18,6 +20,7 @@ export interface Employee {
     email?: string;
   };
   bed: {
+    bedNo: string;
     organization: {
       name: string;
       vcLink?: string;
@@ -57,6 +60,14 @@ export const columns: ColumnDef<Employee>[] = [
     },
   },
   {
+    accessorKey: "createdAt",
+    header: "Date",
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Date",
+  },
+  {
     accessorKey: "amount",
     header: "Amount",
     cell: ({ row }) => {
@@ -85,6 +96,143 @@ export const columns: ColumnDef<Employee>[] = [
     },
   },
 
+  {
+    accessorKey: "sendReminder",
+    header: "Send Reminder",
+    cell: ({ row }) => {
+      const data = row.original;
+      const org = data.bed?.organization;
+      const id = data._id;
+      console.log(data);
+
+      // build link exactly like handleCopy
+      const link =
+        org?.vcLink && id
+          ? `${org.vcLink.replace(/\/$/, "")}/supporter?supporter=${id}`
+          : "";
+
+      const handleSend = async () => {
+        if (!link) {
+          toastService.error("Link not available.");
+          return;
+        }
+
+        try {
+          
+          const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+          // Verify payment with backend
+          const response = await fetch(
+            `${API_URL}/bed-payments/payment-followup`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: data.name,
+                amount: data.amount,
+                bedNo: String(data.bed?.bedNo || ""), // Convert number to string
+                supportLink: link,
+                email: data.user?.email || undefined,
+                phoneNumber: data.user?.mobileNo || undefined,
+              }),
+            }
+          );
+
+          const result:any = response.json();
+
+          if (result.success) {
+            toastService.success("Reminder sent successfully!");
+          } else {
+            toastService.error(result.message || "Failed to send reminder.");
+          }
+        } catch (error: any) {
+          console.error("Send reminder error:", error);
+          toastService.error(
+            error.response?.data?.message || "Error sending reminder."
+          );
+        }
+      };
+
+      return (
+        <Button variant="outline" size="sm" onClick={handleSend}>
+          Send
+        </Button>
+      );
+    },
+  },
+  // Add this new column to your existing columns array
+
+{
+  accessorKey: "sendWhatsApp",
+  header: "Send WhatsApp",
+  cell: ({ row }) => {
+    const data = row.original;
+    const org = data.bed?.organization;
+    const id = data._id;
+    
+    // Build the supporter link
+    const supporterLink =
+      org?.vcLink && id
+        ? `${org.vcLink.replace(/\/$/, "")}/supporter?supporter=${id}`
+        : "";
+
+    const handleWhatsAppSend = () => {
+      if (!supporterLink) {
+        toastService.error("Link not available.");
+        return;
+      }
+
+      // Create dynamic WhatsApp message
+      const message = `Dear ${data.name},
+
+On behalf of ${org?.name || 'Shanthibhavan Palliative Hospital'}, heartfelt thanks for your support to our mission. Your monthly donation of ${data.bed?.country?.currency || ''} ${data.amount} to the Hands of Grace program helps us provide free palliative hospital care.
+
+We've built a new ICU-standard medical ward, to be inaugurated on the 26th by His Grace Mar Andrews Thazhath. Your sponsorship enables a needy patient to access this ward free of cost, along with full medical and bystander care.
+
+Your sponsored bed number is ${data.bed?.bedNo}.
+
+To help us prepare the ward for its inauguration, we kindly invite you to make your first monthly contribution at your convenience.
+
+If you know someone in need of your supporting bed, please feel free to connect them with us — we are here to help.
+
+Kindly click the link below to access your dashboard and proceed with your contribution:
+${supporterLink}
+
+Gratefully,
+Fr. Joy Koothur
+Co-Founder
+${org?.name || 'Shanthibhavan Palliative Hospital'}`;
+
+      // Create WhatsApp Web URL
+      const phoneNumber = data.user?.mobileNo || "";
+      let whatsappURL;
+      
+      if (phoneNumber) {
+        // Send to specific number
+        whatsappURL = `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+      } else {
+        // Open WhatsApp with message ready to send
+        whatsappURL = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      }
+
+      // Open WhatsApp Web in new tab
+      window.open(whatsappURL, "_blank");
+    };
+
+    return (
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleWhatsAppSend}
+        className="bg-green-500 hover:bg-green-600 text-white border-green-500"
+      >
+        WhatsApp
+      </Button>
+    );
+  },
+},
   {
     accessorKey: "link",
     header: "Link",
