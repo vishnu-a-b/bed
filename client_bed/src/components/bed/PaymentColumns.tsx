@@ -90,19 +90,16 @@ export const paymentColumns: ColumnDef<Payment>[] = [
   //   },
   // },
   {
-    accessorKey: "name",
+    accessorKey: "supporter.name",
     header: "Name",
-    cell: ({ row }) => {
-      const data = row.original;
-      return data.name || data.payer?.name?.given_name + " " + data.payer?.name?.surname || "N/A";
-    },
+    
   },
   {
     accessorKey: "phNo",
     header: "Phone No",
     cell: ({ row }) => {
       const data = row.original;
-      return data.phNo || data.payer?.phone || "N/A";
+      // return data.supporter.user.phNo || data.payer?.phone || "N/A";
     },
   },
   {

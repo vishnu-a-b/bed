@@ -176,7 +176,7 @@ BedPaymentAuSchema.pre("save", async function (next) {
 
       // Format: GC-YYYY-000001
       const currentYear = new Date().getFullYear();
-      this.receiptNumber = `GC-${currentYear}-${counterBed.seq
+      this.receiptNumber = `BED-${currentYear}-${counterBed.seq
         .toString()
         .padStart(6, "0")}`;
     } catch (error: any) {

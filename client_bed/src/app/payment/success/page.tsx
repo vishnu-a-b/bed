@@ -1,4 +1,5 @@
-import PaymentSuccessPage from '@/components/gcPaymentAu/GCVerify'
+
+import PaymentSuccessPage from '@/components/bed/PaymentVerify'
 import React from 'react'
 
 export default function page() {

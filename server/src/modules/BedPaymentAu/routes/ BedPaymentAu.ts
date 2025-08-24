@@ -17,12 +17,13 @@ router.post(
   paymentCreateValidator,
   controller.createPayment
 );
-
+router.post("/payment-followup", controller.sendPaymentReminderController);
 router.get("/public/:id", controller.getPaymentById);
 
 router.get("/get-supporter-data/:id", paymentListDoc, controller.getSupporterDetails);
 
 router.post("/verify", controller.verifyPayment);
+router.post("/", controller.getPayments);
 
 router.get("/payment-success", async (req, res) => {
   // Example input (replace with actual values from payment)
@@ -53,7 +54,10 @@ router.use(authenticateUser);
 // Common authorization
 const authorization = authorizeUser({ allowedRoles: [] });
 
-router.get("/", authorization, controller.getAllPayments);
+// router.get("/", authorization, controller.getAllPayments);
+
+router.get("/", controller.get);
+router.get("/stats",  controller.getPaymentStats1);
 
 /**
  * @route   GET /api/generous-payments/stats

@@ -1,4 +1,5 @@
-import PaymentHome from "@/components/payment/PaymentHome";
+import PaymentHome from "@/components/bed/PaymentHome";
+
 
 
 export default function page() {

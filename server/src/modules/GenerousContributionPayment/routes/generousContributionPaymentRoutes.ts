@@ -48,8 +48,8 @@ router.use(authenticateUser);
 // Common authorization
 const authorization = authorizeUser({ allowedRoles: [] });
 
-router.get("/", authorization, controller.get);
-router.get("/stats", authorization, controller.getPaymentStats1);
+router.get("/", controller.get);
+router.get("/stats",  controller.getPaymentStats1);
 /**
  * @route   GET /api/generous-payments/stats
  * @desc    Get payment statistics

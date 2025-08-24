@@ -7,8 +7,38 @@ import { RootState } from "@/lib/store";
 import { paymentColumns, Payment } from "./PaymentColumns";
 import PaymentStatsComponent from "./PaymentStatsComponent";
 
-export default function ViewPayments() {
-  const [data, setData] = useState<Payment[]>([]);
+// Define the supporter type with payments array
+interface SupporterWithPayments {
+  _id: string;
+  user: {
+    _id: string;
+    name: string;
+    mobileNo: string;
+    email: string;
+    roles: any[];
+    isActive: boolean;
+    isSuperAdmin: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+  name: string;
+  nameVisible: boolean;
+  bed: any;
+  role: string;
+  type: string;
+  isActive: boolean;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  payments: Payment[];
+  completedPayments: number;
+  totalPayments: number;
+}
+
+export default function PaymentFollowUp() {
+  const [data, setData] = useState<SupporterWithPayments[]>([]);
   const [totalRows, setTotalRows] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -56,17 +86,31 @@ export default function ViewPayments() {
     handleSearch(value);
   };
 
+  // Function to merge supporters with their payments
+  const mergeSupportersWithPayments = (supporters: any[], payments: Payment[]) => {
+    return supporters.map(supporter => {
+      // Find all payments for this supporter
+      const supporterPayments = payments.filter(payment => 
+        payment.supporter._id === supporter._id
+      );
+
+      // Count completed payments
+      const completedPayments = supporterPayments.filter(payment => 
+        payment.status === 'completed'
+      ).length;
+
+      return {
+        ...supporter,
+        payments: supporterPayments,
+        completedPayments: completedPayments,
+        totalPayments: supporterPayments.length
+      };
+    });
+  };
+
   // Fetch data from API
   async function getData() {
     try {
-      if (paymentId) {
-        const response = await Axios.get(`/generous-payments/${paymentId}&sort=-paymentDate`);
-        let items = [];
-        items[0] = response.data.data;
-        setTotalRows(1);
-        return items;
-      }
-
       // Build filter parameters
       let statusParam = "";
       if (statusFilter !== "all") {
@@ -80,8 +124,8 @@ export default function ViewPayments() {
 
       const searchParam = debouncedSearch ? `search=${debouncedSearch}&` : "";
       
-      const limit = `limit=${pageSize}&`;
-      const skip = `skip=${pageIndex * pageSize}&`;
+      const limit = `limit=Infinity&`;
+     
 
       // Prepare request body for date filters
       const requestBody = {
@@ -95,8 +139,9 @@ export default function ViewPayments() {
         },
       };
 
+      // Fetch payments data
       const response = await Axios.post(
-        `/generous-payments?${limit}${skip}${statusParam}${paymentModeParam}${searchParam}sort=-paymentDate`,
+        `/bed-payments?${limit}${statusParam}${paymentModeParam}${searchParam}sort=-paymentDate`,
         requestBody,
         {
           headers: {
@@ -105,11 +150,49 @@ export default function ViewPayments() {
         }
       );
 
-      console.log(response);
-      const items = response.data.data;
+      // Fetch supporters data
+      const responseSupporter = await Axios.post(
+        `/supporter/get?limit=Infinity&`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      setTotalRows(items.total || items.length);
-      return items.items || items;
+      console.log("Payments:", response.data.data);
+      console.log("Supporters:", responseSupporter.data.data);
+
+      const paymentsData = response.data.data;
+      const supportersData = responseSupporter.data.data;
+
+      // Extract payments array from the response
+      const payments = paymentsData.items || paymentsData;
+      const supporters = supportersData.items || supportersData;
+
+      // Merge supporters with their payments
+      const mergedData = mergeSupportersWithPayments(supporters, payments);
+
+      // Filter merged data based on search and other criteria if needed
+      let filteredData = mergedData;
+
+      // Apply search filter to supporter data
+      if (debouncedSearch) {
+        filteredData = mergedData.filter(supporter =>
+          supporter.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          supporter.user.mobileNo.includes(debouncedSearch) ||
+          supporter.user.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+        );
+      }
+
+      // Apply pagination to the filtered data
+      const startIndex = pageIndex * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+      console.log(paginatedData)
+      setTotalRows(filteredData.length);
+      return paginatedData;
     } catch (error) {
       console.error("Error fetching payment data:", error);
       return [];
@@ -139,7 +222,7 @@ export default function ViewPayments() {
 
   return (
     <div className="flex flex-col items-center p-4">
-      <PaymentStatsComponent />
+      
       <div className="container mx-auto py-10">
         {/* Search and Filter Controls */}
         <div className="flex flex-col gap-4 mb-4">
@@ -183,46 +266,10 @@ export default function ViewPayments() {
                 className="p-2 border border-gray-300 rounded"
               />
             </div>
-{/* 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Statuses</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPageIndex(0);
-                }}
-                className="p-2 border border-gray-300 rounded"
-              >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="refunded">Refunded</option>
-                <option value="partially_refunded">Partially Refunded</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Payment Modes</label>
-              <select
-                value={paymentModeFilter}
-                onChange={(e) => {
-                  setPaymentModeFilter(e.target.value);
-                  setPageIndex(0);
-                }}
-                className="p-2 border border-gray-300 rounded"
-              >
-                <option value="all">All Payment Modes</option>
-                <option value="online">Online</option>
-                <option value="offline">Offline</option>
-              </select>
-            </div> */}
           </div>
         </div>
 
-        <DataTable
+        {/* <DataTable
           url="generous-payments"
           columns={paymentColumns}
           data={data}
@@ -232,7 +279,7 @@ export default function ViewPayments() {
           onPageChange={setPageIndex}
           onPageSizeChange={setPageSize}
           actions={{ delete: false, edit: false }}
-        />
+        /> */}
       </div>
     </div>
   );

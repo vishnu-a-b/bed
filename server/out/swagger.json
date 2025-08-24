@@ -5125,36 +5125,6 @@
       }
     },
     "/v1/generous-payments/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "startDate",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
       "post": {
         "description": "",
         "parameters": [
@@ -5174,12 +5144,20 @@
             "description": ""
           }
         }
-      }
-    },
-    "/v1/generous-payments/stats": {
+      },
       "get": {
         "description": "",
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "type": "string"
+          },
           {
             "name": "startDate",
             "in": "query",
@@ -5189,19 +5167,21 @@
             "name": "endDate",
             "in": "query",
             "type": "string"
-          },
-          {
-            "name": "groupBy",
-            "in": "query",
-            "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/generous-payments/stats": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
           }
         }
       }

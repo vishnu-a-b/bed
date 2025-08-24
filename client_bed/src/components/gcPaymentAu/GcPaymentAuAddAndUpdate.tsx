@@ -279,7 +279,7 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
       };
 
       if (paymentId) {
-        const response = await update(paymentData, "generous-contribution", paymentId);
+        const response = await update(paymentData, "generous-payments", paymentId);
         if (response._id) {
           toastService.success("Contribution updated successfully");
         } else {
@@ -287,7 +287,7 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
           toastService.error("Error updating contribution");
         }
       } else {
-        const response = await create("generous-contribution", paymentData);
+        const response = await create("generous-payments/manual", paymentData);
         if (response._id) {
           toastService.success("Contribution created successfully");
           clear();
