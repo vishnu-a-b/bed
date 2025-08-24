@@ -419,144 +419,162 @@ export default class GenerousContributionPaymentService {
     }
   };
 
+  // Payment Statistics Service
+  getPaymentStatistics = async () => {
+    try {
+      const now = new Date();
 
+      // Calculate date ranges
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const todayEnd = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999
+      );
 
-// Payment Statistics Service
-getPaymentStatistics = async () => {
-  try {
-    const now = new Date();
-    
-    // Calculate date ranges
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
-    weekStart.setHours(0, 0, 0, 0);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-    
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
 
-    console.log("Date ranges:", {
-      today: { start: todayStart, end: todayEnd },
-      week: { start: weekStart, end: weekEnd },
-      month: { start: monthStart, end: monthEnd }
-    });
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
 
-    // Aggregate queries
-    const [totalStats, todayStats, weekStats, monthStats] = await Promise.all([
-      // Total completed payments
-      GenerousContributionPayment.aggregate([
-        {
-          $match: {
-            status: "completed"
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: "$amount" },
-            totalCount: { $sum: 1 },
-            avgAmount: { $avg: "$amount" }
-          }
-        }
-      ]),
-
-      // Today's completed payments
-      GenerousContributionPayment.aggregate([
-        {
-          $match: {
-            status: "completed",
-            paymentDate: {
-              $gte: todayStart,
-              $lte: todayEnd
-            }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: "$amount" },
-            totalCount: { $sum: 1 }
-          }
-        }
-      ]),
-
-      // This week's completed payments
-      GenerousContributionPayment.aggregate([
-        {
-          $match: {
-            status: "completed",
-            paymentDate: {
-              $gte: weekStart,
-              $lte: weekEnd
-            }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: "$amount" },
-            totalCount: { $sum: 1 }
-          }
-        }
-      ]),
-
-      // This month's completed payments
-      GenerousContributionPayment.aggregate([
-        {
-          $match: {
-            status: "completed",
-            paymentDate: {
-              $gte: monthStart,
-              $lte: monthEnd
-            }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalAmount: { $sum: "$amount" },
-            totalCount: { $sum: 1 }
-          }
-        }
-      ])
-    ]);
-
-    // Format results
-    const formatStats = (stats: any[]) => ({
-      amount: stats[0]?.totalAmount || 0,
-      count: stats[0]?.totalCount || 0,
-      avgAmount: stats[0]?.avgAmount || 0
-    });
-
-    const result = {
-      total: formatStats(totalStats),
-      today: formatStats(todayStats),
-      week: formatStats(weekStats),
-      month: formatStats(monthStats),
-      dateRanges: {
+      console.log("Date ranges:", {
         today: { start: todayStart, end: todayEnd },
         week: { start: weekStart, end: weekEnd },
-        month: { start: monthStart, end: monthEnd }
-      }
-    };
+        month: { start: monthStart, end: monthEnd },
+      });
 
-    console.log("Payment statistics result:", result);
-    return result;
+      // Aggregate queries
+      const [totalStats, todayStats, weekStats, monthStats] = await Promise.all(
+        [
+          // Total completed payments
+          GenerousContributionPayment.aggregate([
+            {
+              $match: {
+                status: "completed",
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+                avgAmount: { $avg: "$amount" },
+              },
+            },
+          ]),
 
-  } catch (error) {
-    console.error("Error getting payment statistics:", error);
-    throw error;
-  }
-};
+          // Today's completed payments
+          GenerousContributionPayment.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: todayStart,
+                  $lte: todayEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
 
-// Route Definition (add this to your routes file)
-// router.get('/generous-payments/stats', controller.getPaymentStats);
-  
+          // This week's completed payments
+          GenerousContributionPayment.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: weekStart,
+                  $lte: weekEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
+
+          // This month's completed payments
+          GenerousContributionPayment.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: monthStart,
+                  $lte: monthEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
+        ]
+      );
+
+      // Format results
+      const formatStats = (stats: any[]) => ({
+        amount: stats[0]?.totalAmount || 0,
+        count: stats[0]?.totalCount || 0,
+        avgAmount: stats[0]?.avgAmount || 0,
+      });
+
+      const result = {
+        total: formatStats(totalStats),
+        today: formatStats(todayStats),
+        week: formatStats(weekStats),
+        month: formatStats(monthStats),
+        dateRanges: {
+          today: { start: todayStart, end: todayEnd },
+          week: { start: weekStart, end: weekEnd },
+          month: { start: monthStart, end: monthEnd },
+        },
+      };
+
+      console.log("Payment statistics result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error getting payment statistics:", error);
+      throw error;
+    }
+  };
+
+  // Route Definition (add this to your routes file)
+  // router.get('/generous-payments/stats', controller.getPaymentStats);
 
   find = async (
     { limit, skip, filterQuery, sort }: any,
@@ -760,14 +778,6 @@ getPaymentStatistics = async () => {
     if (!amount || amount <= 0) {
       throw new Error("Amount must be greater than 0");
     }
-
-    // if (!contributor.name || !contributor.email) {
-    //   throw new Error("Contributor name and email are required");
-    // }
-
-    // if (!contribution.purpose) {
-    //   throw new Error("Contribution purpose is required");
-    // }
 
     const payment: any = await GenerousContributionPayment.create({
       amount,

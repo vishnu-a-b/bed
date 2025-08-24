@@ -5,6 +5,13 @@ import whatsappHelper from "./whatsapp-simple-helper";
 interface MailOptions {
   supporterId: string; // We'll fetch details from DB
 }
+interface EmailOptions {
+  to: string;
+  name: string;
+  amount: string; // e.g. "120 AUD"
+  bedNo: string;
+  supportLink: string;
+}
 
 class SupporterMailer {
   private transporter: nodemailer.Transporter;
@@ -125,6 +132,87 @@ class SupporterMailer {
     </div>
 </body>
 </html>
+    `;
+  }
+
+  public async sendPaymentReminderEmail(options: EmailOptions) {
+    const mailOptions = {
+      from: `"Shanthibhavan Palliative International" <${process.env.EMAIL_FROM}>`,
+      to: options.to,
+      subject: `Your Contribution to Hands of Grace`,
+      html: this.generateTemplate(options),
+    };
+
+    const result = await this.transporter.sendMail(mailOptions);
+    return result.messageId;
+  }
+
+  private generateTemplate({
+    name,
+    amount,
+    bedNo,
+    supportLink,
+  }: EmailOptions): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+              }
+              .button {
+                  background-color: #04aa6d;
+                  color: white;
+                  padding: 12px;
+                  text-decoration: none;
+                  border-radius: 4px;
+                  display: inline-block;
+                  margin-top: 20px;
+                  font-weight: bold;
+              }
+              .footer {
+                  margin-top: 30px;
+                  font-size: 14px;
+                  color: #666;
+              }
+          </style>
+      </head>
+      <body>
+          <p>Dear ${name},</p>
+          <p>
+            On behalf of <strong>Shanthibhavan Palliative Hospital</strong>, heartfelt thanks for your support to our mission. 
+            Your monthly donation of <strong>${amount}</strong> to the <strong>Hands of Grace</strong> program helps us provide free palliative hospital care.
+          </p>
+          <p>
+            We’ve built a new ICU-standard medical ward, to be inaugurated on the 26th by His Grace Mar Andrews Thazhath.Your sponsorship enables a needy patient to access this ward free of cost, along with full medical and bystander care.
+          </p>
+          <p>Your sponsored bed number is <strong>${bedNo}</strong></p>
+          <p>
+            To help us prepare the ward for its inauguration, we kindly invite you to make your first monthly contribution at your convenience.
+          </p>
+          <p>
+            If you know someone in need of your supporting bed, please feel free to connect them with us — we are here to help.
+          </p>
+          <p>
+            Kindly click the link below to access your dashboard and proceed with your contribution:
+          </p>
+          <a href="${supportLink}" class="button">Go to Your Dashboard</a>
+          <p>If the button above doesn't work, you can also copy and paste this link into your browser:<br>
+          <small>${supportLink}</small></p>
+          <div class="footer">
+              <p>Gratefully,<br>
+              Fr. Joy Koothur<br>
+              Co-Founder<br>
+              Shanthibhavan Palliative Hospital</p>
+          </div>
+      </body>
+      </html>
     `;
   }
 }

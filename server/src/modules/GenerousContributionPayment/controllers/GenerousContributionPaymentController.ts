@@ -253,65 +253,69 @@ export default class GenerousContributionPaymentController extends BaseControlle
     }
   };
 
-  getPaymentStats = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const stats = await this.service.getPaymentStatistics();
-    
-    this.sendSuccessResponse(res, 200, {
-      message: "Payment statistics retrieved successfully",
-      data: stats
-    });
-  } catch (e: any) {
-    console.error("Error in getPaymentStats controller:", e);
-    next(e);
-  }
-};
+  getPaymentStats1 = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const stats = await this.service.getPaymentStatistics();
+
+      this.sendSuccessResponse(res, 200, {
+        message: "Payment statistics retrieved successfully",
+        data: stats,
+      });
+    } catch (e: any) {
+      console.error("Error in getPaymentStats controller:", e);
+      next(e);
+    }
+  };
 
   search = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { limit, skip } = req.query;
-    const { filterQuery, sort } = req;
-    const filters = req.body?.filters || {};
-    const startDate = filters.startDate;
-    const endDate = filters.endDate;
-    
-    const data = await this.service.find(
-      {
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      },
-      startDate,
-      endDate
-    );
+    try {
+      const { limit, skip } = req.query;
+      const { filterQuery, sort } = req;
+      const filters = req.body?.filters || {};
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
 
-    this.sendSuccessResponseList(res, 200, { data });
-  } catch (e: any) {
-    next(e);
-  }
-};
+      const data = await this.service.find(
+        {
+          limit: Number(limit),
+          skip: Number(skip),
+          filterQuery,
+          sort,
+        },
+        startDate,
+        endDate
+      );
 
-get = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { limit, skip, startDate, endDate } = req.query;
-    const { filterQuery, sort } = req;
-    const data = await this.service.find(
-      {
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      },
-      startDate as string,
-      endDate as string
-    );
+      this.sendSuccessResponseList(res, 200, { data });
+    } catch (e: any) {
+      next(e);
+    }
+  };
 
-    this.sendSuccessResponseList(res, 200, { data });
-  } catch (e: any) {
-    next(e);
-  }
-};
+  get = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { limit, skip, startDate, endDate } = req.query;
+      const { filterQuery, sort } = req;
+      const data = await this.service.find(
+        {
+          limit: Number(limit),
+          skip: Number(skip),
+          filterQuery,
+          sort,
+        },
+        startDate as string,
+        endDate as string
+      );
+
+      this.sendSuccessResponseList(res, 200, { data });
+    } catch (e: any) {
+      next(e);
+    }
+  };
 
   // Create manual/offline payment
   createManualPayment = async (req: Request, res: Response) => {
@@ -320,7 +324,6 @@ get = async (req: Request, res: Response, next: NextFunction) => {
         amount,
         currency,
         contributor,
-        contribution,
         manualMethod,
         transactionReference,
         remarks,
@@ -387,7 +390,7 @@ get = async (req: Request, res: Response, next: NextFunction) => {
   };
 
   // Get payment statistics
-  getPaymentStats1 = async (req: Request, res: Response) => {
+  getPaymentStats = async (req: Request, res: Response) => {
     try {
       const { startDate, endDate, groupBy = "day" } = req.query;
 
@@ -418,31 +421,30 @@ get = async (req: Request, res: Response, next: NextFunction) => {
     }
   };
 
-
   getPayments = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { limit, skip } = req.query;
-    const { filterQuery, sort } = req;
-    console.log("Request body:", req.body);
-    const filters = req.body?.filters || {};
-    const startDate = filters.startDate;
-    const endDate = filters.endDate;
-    
-    const data = await this.service.findPayments(
-      {
-        limit: Number(limit) || 10,
-        skip: Number(skip) || 0,
-        filterQuery: filterQuery || {},
-        sort: sort || { paymentDate: -1 }, // Default sort by payment date descending
-      },
-      startDate,
-      endDate
-    );
+    try {
+      const { limit, skip } = req.query;
+      const { filterQuery, sort } = req;
+      console.log("Request body:", req.body);
+      const filters = req.body?.filters || {};
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
 
-    this.sendSuccessResponseList(res, 200, { data });
-  } catch (e: any) {
-    console.error("Error in getPayments controller:", e);
-    next(e);
-  }
-};
+      const data = await this.service.findPayments(
+        {
+          limit: Number(limit) || 10,
+          skip: Number(skip) || 0,
+          filterQuery: filterQuery || {},
+          sort: sort || { paymentDate: -1 }, // Default sort by payment date descending
+        },
+        startDate,
+        endDate
+      );
+
+      this.sendSuccessResponseList(res, 200, { data });
+    } catch (e: any) {
+      console.error("Error in getPayments controller:", e);
+      next(e);
+    }
+  };
 }

@@ -4,8 +4,19 @@ import { BedPaymentAu } from "../models/ BedPaymentAu";
 import mongoose, { Types } from "mongoose";
 import DonationReceiptMailer from "../../../services/DonationReceiptMailer";
 import { Supporter } from "../../supporter/models/Supporter";
-
+import whatsappHelper from "../../../services/whatsapp-simple-helper";
+import supporterMailer from "../../../services/mailService"
 // PayPal SDK Configuration
+interface ReminderOptions {
+  phoneNumber: string;
+  email: string;
+  name: string;
+  amount: string; // e.g. "120 AUD"
+  bedNo: string;
+  supportLink: string;
+
+}
+
 const environment =
   process.env.NODE_ENV === "production"
     ? new paypal.core.LiveEnvironment(
@@ -498,6 +509,231 @@ export default class BedPaymentAuService {
     };
   };
 
+  getPaymentStatistics = async () => {
+    try {
+      const now = new Date();
+
+      // Calculate date ranges
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const todayEnd = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999
+      );
+
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
+
+      console.log("Date ranges:", {
+        today: { start: todayStart, end: todayEnd },
+        week: { start: weekStart, end: weekEnd },
+        month: { start: monthStart, end: monthEnd },
+      });
+
+      // Aggregate queries
+      const [totalStats, todayStats, weekStats, monthStats] = await Promise.all(
+        [
+          // Total completed payments
+          BedPaymentAu.aggregate([
+            {
+              $match: {
+                status: "completed",
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+                avgAmount: { $avg: "$amount" },
+              },
+            },
+          ]),
+
+          // Today's completed payments
+          BedPaymentAu.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: todayStart,
+                  $lte: todayEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
+
+          // This week's completed payments
+          BedPaymentAu.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: weekStart,
+                  $lte: weekEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
+
+          // This month's completed payments
+          BedPaymentAu.aggregate([
+            {
+              $match: {
+                status: "completed",
+                paymentDate: {
+                  $gte: monthStart,
+                  $lte: monthEnd,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                totalCount: { $sum: 1 },
+              },
+            },
+          ]),
+        ]
+      );
+
+      // Format results
+      const formatStats = (stats: any[]) => ({
+        amount: stats[0]?.totalAmount || 0,
+        count: stats[0]?.totalCount || 0,
+        avgAmount: stats[0]?.avgAmount || 0,
+      });
+
+      const result = {
+        total: formatStats(totalStats),
+        today: formatStats(todayStats),
+        week: formatStats(weekStats),
+        month: formatStats(monthStats),
+        dateRanges: {
+          today: { start: todayStart, end: todayEnd },
+          week: { start: weekStart, end: weekEnd },
+          month: { start: monthStart, end: monthEnd },
+        },
+      };
+
+      console.log("Payment statistics result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error getting payment statistics:", error);
+      throw error;
+    }
+  };
+
+  // Route Definition (add this to your routes file)
+  // router.get('/generous-payments/stats', controller.getPaymentStats);
+
+  find = async (
+    { limit, skip, filterQuery, sort }: any,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+
+    try {
+      limit = limit ? limit : 10;
+      skip = skip ? skip : 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          paymentDate: {
+            ...(startDate && {
+              $gte: (() => {
+                const d = new Date(startDate);
+                d.setHours(0, 0, 0, 0);
+                return d;
+              })(),
+            }),
+            ...(endDate && {
+              $lte: (() => {
+                const d = new Date(endDate!);
+                d.setHours(23, 59, 59, 999);
+                return d;
+              })(),
+            }),
+          },
+        };
+      }
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", finalFilter);
+
+      // Updated to match the actual model structure
+      const payment = await BedPaymentAu.find(finalFilter)
+        .populate([
+          {
+            path: "recordedBy",
+            select: "name email", // Assuming User model has name and email fields
+          },
+          {
+            path: "approvedBy",
+            select: "name email",
+          },
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip);
+
+      const total = await BedPaymentAu.countDocuments(finalFilter);
+
+      return {
+        total,
+        limit,
+        skip,
+        items: payment,
+      };
+    } catch (error) {
+      console.error("Error finding generous contribution payments:", error);
+      throw error;
+    }
+  };
   // createManualPayment = async (
   //   params: ManualPaymentParams
   // ): Promise<{
@@ -745,5 +981,121 @@ export default class BedPaymentAuService {
         // Include any other payment fields you need
       })),
     };
+  };
+
+
+  sendPaymentReminder = async (options: ReminderOptions) => {
+  const { phoneNumber, email, name,amount,bedNo, supportLink } = options;
+
+  if (!phoneNumber && !email) {
+    throw new Error("Either phoneNumber or email is required.");
+  }
+  if (!name || !supportLink) {
+    throw new Error("name and supportLink are required.");
+  }
+
+  // Default to current month/year
+  
+
+
+  // if (phoneNumber) {
+  //    await whatsappHelper.sendPaymentReminderMessage(
+  //     phoneNumber,
+  //     name,
+  //     amount,
+  //     bedNo,
+  //     supportLink,
+  //   );
+  // }
+
+  if (email) {
+     await supporterMailer.sendPaymentReminderEmail({
+      to: email,
+      name,
+      amount,
+      bedNo,
+      supportLink,
+    });
+  }
+
+  return { phoneNumber,
+        email,
+        name,
+        amount,
+        bedNo,
+        supportLink,};
+};
+
+
+
+  findPayments = async (
+    { limit, skip, filterQuery, sort }: any,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    console.log("Service received dates:", startDate, endDate);
+    console.log("Service received filterQuery:", filterQuery);
+
+    try {
+      limit = limit || 10;
+      skip = skip || 0;
+
+      let dateFilter = {};
+      if (startDate || endDate) {
+        dateFilter = {
+          paymentDate: {
+            ...(startDate && {
+              $gte: new Date(startDate),
+            }),
+            ...(endDate && {
+              $lte: new Date(endDate),
+            }),
+          },
+        };
+      }
+
+      const finalFilter = {
+        ...filterQuery,
+        ...dateFilter,
+      };
+
+      console.log("Final filter query:", JSON.stringify(finalFilter, null, 2));
+
+      // Updated to match the actual model structure
+      const payments = await BedPaymentAu.find(finalFilter)
+        .populate([
+          {
+            path: "recordedBy",
+            select: "name email", // Assuming User model has name and email fields
+          },
+          {
+            path: "approvedBy",
+            select: "name email",
+          },
+          {
+            path: "supporter",
+          },
+        ])
+        .sort(sort)
+        .limit(limit)
+        .skip(skip)
+        .lean(); // Use lean() for better performance
+
+      const total = await BedPaymentAu.countDocuments(
+        finalFilter
+      );
+
+      console.log(`Found ${payments.length} payments out of ${total} total`);
+
+      return {
+        total,
+        limit,
+        skip,
+        items: payments,
+      };
+    } catch (error) {
+      console.error("Error finding generous contribution payments:", error);
+      throw error;
+    }
   };
 }
