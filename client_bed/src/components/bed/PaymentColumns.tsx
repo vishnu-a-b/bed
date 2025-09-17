@@ -95,12 +95,9 @@ export const paymentColumns: ColumnDef<Payment>[] = [
     
   },
   {
-    accessorKey: "phNo",
+    accessorKey: "supporter.user.mobileNo",
     header: "Phone No",
-    cell: ({ row }) => {
-      const data = row.original;
-      // return data.supporter.user.phNo || data.payer?.phone || "N/A";
-    },
+    
   },
   {
     accessorKey: "paymentDate",
@@ -119,6 +116,10 @@ export const paymentColumns: ColumnDef<Payment>[] = [
       const currency = data.currency || "AUD";
       return `${currency} ${row.getValue("amount")}`;
     },
+  },
+  {
+    accessorKey: "supporter.bed.bedNo",
+    header: "Bed",
   },
   {
     accessorKey: "status",

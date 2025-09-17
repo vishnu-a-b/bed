@@ -135,7 +135,43 @@ const Slider = ({ bed }: any) => {
     }
   };
 
-  const slideData: SlideData[] = [
+  let slideData:any =bed?.organization?.name === "Shanthibhavan Palliative Hospital" ? [
+    {
+      image: "/assets/images/slides/slider-v3-img1.jpg",
+      title: (
+        <>
+          Welcome to <br />
+          Shanthibhavan<br /> 
+        </>
+      ),
+      text: ``,
+      link: "/bed_donation",
+    },
+    {
+      image: "/assets/images/slides/slider-v3-img2.jpg",
+      title: (
+        <>
+          A Global Pioneer <br />
+          in Long Term Palliative <br />
+          Hospital Care
+        </>
+      ),
+      text: ``,
+      link: "/bed_donation",
+    },
+    {
+      image: "/assets/images/slides/slider-v3-img3.jpg",
+      title: (
+        <>
+          Making a <br />
+          Difference Starts <br />
+          Here
+        </>
+      ),
+      text: ``,
+      link: "/bed_donation",
+    },
+  ]:[
     {
       image: "/assets/images/slides/slider-v3-img1.jpg",
       title: (
@@ -177,27 +213,33 @@ const Slider = ({ bed }: any) => {
           Assessment Act 1997. Donations of $2 or more are tax deductible`,
       link: "/bed_donation",
     },
-  ];
+  ]
 
   return (
     <>
       <section className="main-slider main-slider-one style3">
         <div className="main-slider-one__inner ">
-          <div className="absolute top-[50vh] md:top-[68vh] right-24 md:right-48 z-10 bg-white rounded-full">
-            <img
-              src="/assets/images/dgr1.webp"
-              alt="Logo 1"
-              className="w-16 h-16 md:w-40 md:h-40 object-contain"
-            />
-          </div>
+          {bed?.organization?.name === "Shanthibhavan Palliative Hospital" ? (
+            <></>
+          ) : (
+            <>
+              <div className="absolute top-[50vh] md:top-[68vh] right-24 md:right-48 z-10 bg-white rounded-full">
+                <img
+                  src="/assets/images/dgr1.webp"
+                  alt="Logo 1"
+                  className="w-16 h-16 md:w-40 md:h-40 object-contain"
+                />
+              </div>
 
-          <div className="absolute top-[50vh] md:top-[68vh] right-2 z-10 bg-white rounded-full">
-            <img
-              src="/assets/images/dgr2.webp"
-              alt="Logo 1"
-              className="w-16 h-16 md:w-40 md:h-40 object-contain"
-            />
-          </div>
+              <div className="absolute top-[50vh] md:top-[68vh] right-2 z-10 bg-white rounded-full">
+                <img
+                  src="/assets/images/dgr2.webp"
+                  alt="Logo 1"
+                  className="w-16 h-16 md:w-40 md:h-40 object-contain"
+                />
+              </div>
+            </>
+          )}
           <Swiper
             spaceBetween={0}
             centeredSlides={true}

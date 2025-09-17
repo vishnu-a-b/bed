@@ -96,7 +96,7 @@ export const generateReceiptPDF = async (
   yPosition += 20;
 
   // Thank you message
-  doc.text(`Thank you for your generous donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
+  doc.text(`Thank you for your donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
   yPosition += 30;
 
   // Receipt header

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-const Header = () => {
+const Header = ({ bed }: any) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -11,11 +11,20 @@ const Header = () => {
           <div className="flex items-center justify-between w-full md:w-auto">
             <div className="flex-shrink-0">
               <a href="/">
-                <img
-                  src="assets/images/logo-1.png"
-                  alt="Shanthibhavan Logo"
-                  className="h-12 w-auto"
-                />
+                {bed?.organization?.name ===
+                "Shanthibhavan Palliative Hospital" ? (
+                  <img
+                    src="father.png"
+                    alt="Shanthibhavan Logo"
+                    className="h-20 w-auto"
+                  />
+                ) : (
+                  <img
+                    src="assets/images/logo-1.png"
+                    alt="Shanthibhavan Logo"
+                    className="h-12 w-auto"
+                  />
+                )}
               </a>
             </div>
 
@@ -34,7 +43,11 @@ const Header = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                  d={
+                    isMenuOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
                 />
               </svg>
             </button>
@@ -42,7 +55,9 @@ const Header = () => {
 
           {/* Contact Info - Hidden on mobile unless menu is open, visible on desktop */}
           <div
-            className={`${isMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-1/2 transition-all duration-300 ease-in-out`}
+            className={`${
+              isMenuOpen ? "block" : "hidden"
+            } md:block w-full md:w-1/2 transition-all duration-300 ease-in-out`}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 md:mt-0">
               {/* Address */}
@@ -71,8 +86,7 @@ const Header = () => {
                 <div>
                   <p className="text-xs font-medium text-blue-600">Address</p>
                   <p className="text-xs text-gray-600 text-wrap">
-                    Office 3261, Ground Floor, 470 St Kilda Rd., MELBOURNE VIC
-                    3004, Australia.
+                    {bed?.country?.address}
                   </p>
                 </div>
               </div>
@@ -94,21 +108,40 @@ const Header = () => {
                     />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-blue-600">Contact</p>
-                  <a
-                    href="tel:061391112473"
-                    className="block text-xs text-gray-600 hover:text-blue-600"
-                  >
-                    +61 391112473
-                  </a>
-                  <a
-                    href="mailto:operationssbau@palliativeinternational.com"
-                    className="block text-xs text-gray-600 hover:text-blue-600 truncate text-wrap"
-                  >
-                    operationssbau@palliativeinternational.com
-                  </a>
-                </div>
+                {bed?.organization?.name ===
+                "Shanthibhavan Palliative Hospital" ? (
+                  <div>
+                    <p className="text-xs font-medium text-blue-600">Contact</p>
+                    <a
+                      href="tel:061391112473"
+                      className="block text-xs text-gray-600 hover:text-blue-600"
+                    >
+                      04876611600
+                    </a>
+                    <a
+                      href="mailto:office@shanthibhavan.in"
+                      className="block text-xs text-gray-600 hover:text-blue-600 truncate text-wrap"
+                    >
+                      office@shanthibhavan.in 
+                    </a>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xs font-medium text-blue-600">Contact</p>
+                    <a
+                      href="tel:061391112473"
+                      className="block text-xs text-gray-600 hover:text-blue-600"
+                    >
+                      +61 391112473
+                    </a>
+                    <a
+                      href="mailto:operationssbau@palliativeinternational.com"
+                      className="block text-xs text-gray-600 hover:text-blue-600 truncate text-wrap"
+                    >
+                      operationssbau@palliativeinternational.com
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

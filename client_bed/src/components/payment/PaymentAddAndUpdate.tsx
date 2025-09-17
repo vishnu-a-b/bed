@@ -13,7 +13,6 @@ import { create } from "@/utils/api/create";
 import AsyncSelect from "react-select/async";
 import { useDispatch } from "react-redux";
 import { clearUpdate } from "@/lib/slice/updateSlice";
-import { deleteData } from "@/utils/api/delete";
 
 const paymentSchema = z.object({
   razorpay_payment_id: z.string().optional(),

@@ -124,7 +124,7 @@ class DonationReceiptMailer {
 
     // Thank you message
     doc.text(
-      `Thank you for your generous donation of AUD ${user.amount}. Below are the details of your contribution.`,
+      `Thank you for your donation of AUD ${user.amount}. Below are the details of your contribution.`,
       40,
       yPosition,
       { width: 500 }

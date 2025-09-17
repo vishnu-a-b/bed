@@ -26,6 +26,16 @@ const BedPaymentAuSchema = new mongoose.Schema(
     paypal_refund_response: { type: Object }, // Full refund response (if applicable)
 
     // PayPal Payer Information (extracted from response)
+
+    // Denormalized search fields (ADD THESE)
+    searchFields: {
+      supporterName: { type: String }, // Copy from supporter.name
+      supporterMobile: { type: String }, // Copy from supporter.user.mobileNo  
+      bedNumber: { type: String }, // Copy from bed.bedNo
+      supporterEmail: { type: String }, // Copy from supporter.email for easier search
+    },
+
+
     supporter: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supporter",
@@ -212,13 +222,13 @@ export const BedPaymentAuFilterFields = {
     "receiptNumber",
   ],
   searchFields: [
+    "searchFields.supporterName",
+    "searchFields.supporterMobile", 
+    "searchFields.bedNumber",
+    "searchFields.supporterEmail",
     "paypal_payment_id",
     "paypal_order_id",
-    "paypal_payer_id",
     "payer.email_address",
-    "payer.name.given_name",
-    "payer.name.surname",
-    "transactionReference",
     "receiptNumber",
   ],
   sortFields: [
