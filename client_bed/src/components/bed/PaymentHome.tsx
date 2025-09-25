@@ -7,6 +7,7 @@ import { RootState } from "@/lib/store";
 import { clearPaymentId, setPaymentId } from "@/lib/slice/paymentSlice";
 
 import { clearUpdate } from "@/lib/slice/updateSlice";
+import PaymentForm from "./PaymentForm";
 // import PaymentForm from "./GcPaymentAuAddAndUpdate";
 
 
@@ -44,7 +45,7 @@ export default function PaymentHome() {
       ) : showViewPayments ? (
         <ViewPayments />
       ) : (
-        <div></div>
+        <PaymentForm />
       )}
     </div>
   );

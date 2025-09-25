@@ -42,6 +42,7 @@ export function AppSidebar(props: any) {
   const [isClick, setIsClick] = useState(false);
   const [click, setClick] = useState("");
   const userDetails = useSelector(selectUserDetails);
+  console.log(userDetails)
   const staffId: string | null = useSelector(
     (state: RootState) => state.staff.id
   );

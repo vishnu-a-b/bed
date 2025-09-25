@@ -1,11 +1,37 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { useDispatch } from "react-redux";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Alert, AlertDescription } from "../ui/alert";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
 import { formatDate1 } from "@/utils/formatDate";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useState } from "react";
+import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { selectUserDetails } from "@/lib/slice/userSlice";
+import { getAccessToken } from "@/utils/api/apiAuth";
+
+// Mock service - replace with your actual API service
+const approvePayment = async (paymentId: string, approved: boolean, remarks?: string) => {
+  const token= getAccessToken()
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bed-payments/${paymentId}/approve`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ approved, remarks })
+  });
+  return response.json();
+};
+
+const toastService = {
+  success: (message: string) => alert(`Success: ${message}`),
+  error: (message: string) => alert(`Error: ${message}`)
+};
 
 export interface Payment {
   supporter: any;
@@ -81,23 +107,13 @@ export interface Payment {
 }
 
 export const paymentColumns: ColumnDef<Payment>[] = [
-  // {
-  //   accessorKey: "receiptNumber",
-  //   header: "Receipt No",
-  //   cell: ({ row }) => {
-  //     const receiptNumber = row.getValue("receiptNumber") as string;
-  //     return receiptNumber || "N/A";
-  //   },
-  // },
   {
     accessorKey: "supporter.name",
     header: "Name",
-    
   },
   {
     accessorKey: "supporter.user.mobileNo",
     header: "Phone No",
-    
   },
   {
     accessorKey: "paymentDate",
@@ -126,6 +142,29 @@ export const paymentColumns: ColumnDef<Payment>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+      const data = row.original;
+      
+      // Show approval status for offline payments
+      if (data.paymentMode === "offline") {
+        if (data.isApproved === true) {
+          return (
+            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 flex items-center gap-1">
+              <CheckCircle className="w-3 h-3" />
+              Approved
+            </span>
+          );
+        
+        } else {
+          return (
+            <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Pending Approval
+            </span>
+          );
+        }
+      }
+      
+      // Regular status for online payments
       return (
         <span
           className={`px-2 py-1 rounded-full text-xs ${
@@ -186,9 +225,187 @@ export const paymentColumns: ColumnDef<Payment>[] = [
   },
 ];
 
+const PaymentApproval = ({ payment, onApprovalUpdate }: { 
+  payment: Payment, 
+  onApprovalUpdate: (paymentId: string, approved: boolean) => void 
+}) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [remarks, setRemarks] = useState("");
+  const [showRemarks, setShowRemarks] = useState(false);
+
+  const handleApproval = async (approved: boolean) => {
+    if (approved === false && !remarks.trim()) {
+      setShowRemarks(true);
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const result = await approvePayment(payment._id, approved, remarks);
+      if (result.success) {
+        onApprovalUpdate(payment._id, approved);
+        toastService.success(
+          `Payment ${approved ? 'approved' : 'rejected'} successfully${
+            approved ? '. Receipt email sent to donor.' : ''
+          }`
+        );
+        setShowRemarks(false);
+        setRemarks("");
+      } else {
+        toastService.error('Error processing approval');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toastService.error('Error processing approval');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  if (payment.paymentMode !== "offline") {
+    return null;
+  }
+
+  if (payment.isApproved === true) {
+    return (
+      <Alert>
+        <CheckCircle className="h-4 w-4" />
+        <AlertDescription>
+          Payment approved and receipt sent to donor.
+          {payment.approvedAt && (
+            <span className="block text-xs text-gray-500 mt-1">
+              Approved on {formatDate1(payment.approvedAt)}
+            </span>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (payment.isApproved === false) {
+    return (
+      <div className="space-y-4 border-t pt-4">
+        <Alert>
+          <XCircle className="h-4 w-4" />
+          <AlertDescription>
+            Payment has been rejected.
+          </AlertDescription>
+        </Alert>
+
+        {showRemarks && (
+          <div>
+            <Label htmlFor="approval-remarks" className="text-sm font-medium">
+              Remarks
+            </Label>
+            <textarea
+              id="approval-remarks"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Enter approval remarks..."
+              className="w-full mt-1 min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              rows={3}
+            />
+          </div>
+        )}
+
+        <div className="flex gap-3">
+          {!showRemarks && (
+            <Button
+              onClick={() => setShowRemarks(true)}
+              variant="outline"
+              size="sm"
+            >
+              Add Remarks
+            </Button>
+          )}
+
+          <Button
+            onClick={() => handleApproval(true)}
+            disabled={isProcessing}
+            className="bg-green-600 hover:bg-green-700 text-white"
+            size="sm"
+          >
+            {isProcessing ? "Processing..." : "Approve & Send Receipt"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 border-t pt-4">
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          This manual payment is pending approval. Once approved, a receipt will be automatically sent to the donor.
+        </AlertDescription>
+      </Alert>
+
+      {showRemarks && (
+        <div>
+          <Label htmlFor="approval-remarks" className="text-sm font-medium">
+            Remarks {!showRemarks && "(Required for rejection)"}
+          </Label>
+          <textarea
+            id="approval-remarks"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder="Enter approval/rejection remarks..."
+            className="w-full mt-1 min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            rows={3}
+          />
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {!showRemarks && (
+          <Button
+            onClick={() => setShowRemarks(true)}
+            variant="outline"
+            size="sm"
+          >
+            Add Remarks
+          </Button>
+        )}
+
+        <Button
+          onClick={() => handleApproval(true)}
+          disabled={isProcessing}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          size="sm"
+        >
+          {isProcessing ? "Processing..." : "Approve & Send Receipt"}
+        </Button>
+
+        <Button
+          onClick={() => handleApproval(false)}
+          disabled={isProcessing}
+          className="bg-red-600 hover:bg-red-700 text-white"
+          size="sm"
+        >
+          {isProcessing ? "Processing..." : "Reject"}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const ViewDetails = ({ data }: { data: Payment }) => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const userDetails:any = useSelector(selectUserDetails);
+  const [paymentData, setPaymentData] = useState(data);
+
+  const handleApprovalUpdate = (paymentId: string, approved: boolean) => {
+    // Update local state to reflect the approval change
+    setPaymentData(prev => ({
+      ...prev,
+      isApproved: approved,
+      approvedBy: { id: userDetails.id },
+      approvedAt: new Date().toISOString(),
+      status: approved ? "completed" : "cancelled"
+    }));
+  };
 
   return (
     <div className="flex flex-col space-y-6">
@@ -201,27 +418,27 @@ const ViewDetails = ({ data }: { data: Payment }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-500">Receipt Number</p>
-              <p className="font-mono">{data.receiptNumber || "N/A"}</p>
+              <p className="font-mono">{paymentData.receiptNumber || "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Amount</p>
-              <p className="font-semibold text-lg">{data.currency || "AUD"} {formatCurrency(data.amount)}</p>
+              <p className="font-semibold text-lg">{paymentData.currency || "AUD"} {formatCurrency(paymentData.amount)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Status</p>
-              <p className="capitalize font-medium">{data.status}</p>
+              <p className="capitalize font-medium">{paymentData.status}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Payment Mode</p>
-              <p className="capitalize">{data.paymentMode || "online"}</p>
+              <p className="capitalize">{paymentData.paymentMode || "online"}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Payment Date</p>
-              <p>{formatDate1(data.paymentDate || data.createdAt)}</p>
+              <p>{formatDate1(paymentData.paymentDate || paymentData.createdAt)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Source</p>
-              <p className="capitalize">{data.source || "website"}</p>
+              <p className="capitalize">{paymentData.source || "website"}</p>
             </div>
           </div>
         </div>
@@ -232,27 +449,27 @@ const ViewDetails = ({ data }: { data: Payment }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Name</p>
-              <p>{data.name || (data.payer?.name ? `${data.payer.name.given_name || ""} ${data.payer.name.surname || ""}`.trim() : "N/A")}</p>
+              <p>{paymentData.name || (paymentData.payer?.name ? `${paymentData.payer.name.given_name || ""} ${paymentData.payer.name.surname || ""}`.trim() : "N/A")}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Email</p>
-              <p>{data.email || data.payer?.email_address || "N/A"}</p>
+              <p>{paymentData.email || paymentData.payer?.email_address || "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Phone</p>
-              <p>{data.phNo || data.payer?.phone?.phone_number?.national_number || "N/A"}</p>
+              <p>{paymentData.phNo || paymentData.payer?.phone?.phone_number?.national_number || "N/A"}</p>
             </div>
-            {data.payer?.address && (
+            {paymentData.payer?.address && (
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-500">Address</p>
                 <p>
                   {[
-                    data.payer.address.address_line_1,
-                    data.payer.address.admin_area_2,
-                    data.payer.address.admin_area_1,
-                    data.payer.address.postal_code,
-                    data.payer.address.country_code
-                  ].filter(Boolean).join(", ") || data.address || "N/A"}
+                    paymentData.payer.address.address_line_1,
+                    paymentData.payer.address.admin_area_2,
+                    paymentData.payer.address.admin_area_1,
+                    paymentData.payer.address.postal_code,
+                    paymentData.payer.address.country_code
+                  ].filter(Boolean).join(", ") || paymentData.address || "N/A"}
                 </p>
               </div>
             )}
@@ -260,44 +477,44 @@ const ViewDetails = ({ data }: { data: Payment }) => {
         </div>
 
         {/* PayPal Information (for online payments) */}
-        {data.paymentMode === "online" && (
+        {paymentData.paymentMode === "online" && (
           <div className="bg-yellow-50 p-4 rounded-lg">
             <h4 className="font-medium mb-3">PayPal Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.paypal_order_id && (
+              {paymentData.paypal_order_id && (
                 <div>
                   <p className="text-sm text-gray-500">PayPal Order ID</p>
-                  <p className="text-xs font-mono break-all">{data.paypal_order_id}</p>
+                  <p className="text-xs font-mono break-all">{paymentData.paypal_order_id}</p>
                 </div>
               )}
-              {data.paypal_payment_id && (
+              {paymentData.paypal_payment_id && (
                 <div>
                   <p className="text-sm text-gray-500">PayPal Payment ID</p>
-                  <p className="text-xs font-mono break-all">{data.paypal_payment_id}</p>
+                  <p className="text-xs font-mono break-all">{paymentData.paypal_payment_id}</p>
                 </div>
               )}
-              {data.paypal_capture_id && (
+              {paymentData.paypal_capture_id && (
                 <div>
                   <p className="text-sm text-gray-500">PayPal Capture ID</p>
-                  <p className="text-xs font-mono break-all">{data.paypal_capture_id}</p>
+                  <p className="text-xs font-mono break-all">{paymentData.paypal_capture_id}</p>
                 </div>
               )}
-              {data.paypal_status && (
+              {paymentData.paypal_status && (
                 <div>
                   <p className="text-sm text-gray-500">PayPal Status</p>
-                  <p className="uppercase">{data.paypal_status}</p>
+                  <p className="uppercase">{paymentData.paypal_status}</p>
                 </div>
               )}
-              {data.paypal_fee && (
+              {paymentData.paypal_fee && (
                 <div>
                   <p className="text-sm text-gray-500">PayPal Fee</p>
-                  <p>{data.paypal_fee.currency} {data.paypal_fee.amount || 0}</p>
+                  <p>{paymentData.paypal_fee.currency} {paymentData.paypal_fee.amount || 0}</p>
                 </div>
               )}
-              {data.net_amount && (
+              {paymentData.net_amount && (
                 <div>
                   <p className="text-sm text-gray-500">Net Amount</p>
-                  <p className="font-medium">{data.currency} {formatCurrency(data.net_amount)}</p>
+                  <p className="font-medium">{paymentData.currency} {formatCurrency(paymentData.net_amount)}</p>
                 </div>
               )}
             </div>
@@ -305,32 +522,32 @@ const ViewDetails = ({ data }: { data: Payment }) => {
         )}
 
         {/* Manual Payment Information (for offline payments) */}
-        {data.paymentMode === "offline" && (
+        {paymentData.paymentMode === "offline" && (
           <div className="bg-purple-50 p-4 rounded-lg">
             <h4 className="font-medium mb-3">Manual Payment Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.manualMethod && (
+              {paymentData.manualMethod && (
                 <div>
                   <p className="text-sm text-gray-500">Payment Method</p>
-                  <p className="capitalize">{data.manualMethod}</p>
+                  <p className="capitalize">{paymentData.manualMethod}</p>
                 </div>
               )}
-              {data.transactionReference && (
+              {paymentData.transactionReference && (
                 <div>
                   <p className="text-sm text-gray-500">Transaction Reference</p>
-                  <p>{data.transactionReference}</p>
+                  <p>{paymentData.transactionReference}</p>
                 </div>
               )}
-              {data.remarks && (
+              {paymentData.remarks && (
                 <div className="md:col-span-2">
                   <p className="text-sm text-gray-500">Remarks</p>
-                  <p>{data.remarks}</p>
+                  <p>{paymentData.remarks}</p>
                 </div>
               )}
-              {data.recordedBy && (
+              {paymentData.recordedBy && (
                 <div>
                   <p className="text-sm text-gray-500">Recorded By</p>
-                  <p>{data.recordedBy.name || data.recordedBy.email || "N/A"}</p>
+                  <p>{paymentData.recordedBy.name || paymentData.recordedBy.email || "N/A"}</p>
                 </div>
               )}
             </div>
@@ -338,18 +555,18 @@ const ViewDetails = ({ data }: { data: Payment }) => {
         )}
 
         {/* Contribution Details */}
-        {data.contribution && (
+        {paymentData.contribution && (
           <div className="bg-green-50 p-4 rounded-lg">
             <h4 className="font-medium mb-3">Contribution Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Purpose</p>
-                <p className="capitalize">{data.contribution.purpose?.replace("_", " ") || "General Donation"}</p>
+                <p className="capitalize">{paymentData.contribution.purpose?.replace("_", " ") || "General Donation"}</p>
               </div>
-              {data.contribution.description && (
+              {paymentData.contribution.description && (
                 <div className="md:col-span-2">
                   <p className="text-sm text-gray-500">Description</p>
-                  <p>{data.contribution.description}</p>
+                  <p>{paymentData.contribution.description}</p>
                 </div>
               )}
             </div>
@@ -362,46 +579,52 @@ const ViewDetails = ({ data }: { data: Payment }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-500">Approved</p>
-              <p className={data.isApproved ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                {data.isApproved ? "Yes" : "No"}
+              <p className={paymentData.isApproved ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                {paymentData.isApproved === true ? "Yes" : paymentData.isApproved === false ? "No" : "Pending"}
               </p>
             </div>
-            {data.approvedBy && (
+            {paymentData.approvedBy && (
               <div>
                 <p className="text-sm text-gray-500">Approved By</p>
-                <p>{data.approvedBy.name || data.approvedBy.email || "N/A"}</p>
+                <p>{paymentData.approvedBy.name || paymentData.approvedBy.email || "N/A"}</p>
               </div>
             )}
-            {data.approvedAt && (
+            {paymentData.approvedAt && (
               <div>
                 <p className="text-sm text-gray-500">Approved At</p>
-                <p>{formatDate1(data.approvedAt)}</p>
+                <p>{formatDate1(paymentData.approvedAt)}</p>
               </div>
             )}
           </div>
         </div>
 
+        {/* Payment Approval Component - Only for offline payments */}
+        <PaymentApproval 
+          payment={paymentData} 
+          onApprovalUpdate={handleApprovalUpdate}
+        />
+
         {/* Error Details (if any) */}
-        {data.error_details && (data.error_details.error_code || data.error_details.error_message) && (
+        {paymentData.error_details && (paymentData.error_details.error_code || paymentData.error_details.error_message) && (
           <div className="bg-red-50 p-4 rounded-lg">
             <h4 className="font-medium mb-3 text-red-800">Error Details</h4>
             <div className="grid grid-cols-1 gap-2">
-              {data.error_details.error_code && (
+              {paymentData.error_details.error_code && (
                 <div>
                   <p className="text-sm text-gray-500">Error Code</p>
-                  <p className="font-mono text-red-600">{data.error_details.error_code}</p>
+                  <p className="font-mono text-red-600">{paymentData.error_details.error_code}</p>
                 </div>
               )}
-              {data.error_details.error_message && (
+              {paymentData.error_details.error_message && (
                 <div>
                   <p className="text-sm text-gray-500">Error Message</p>
-                  <p className="text-red-600">{data.error_details.error_message}</p>
+                  <p className="text-red-600">{paymentData.error_details.error_message}</p>
                 </div>
               )}
-              {data.error_details.debug_id && (
+              {paymentData.error_details.debug_id && (
                 <div>
                   <p className="text-sm text-gray-500">Debug ID</p>
-                  <p className="font-mono text-xs">{data.error_details.debug_id}</p>
+                  <p className="font-mono text-xs">{paymentData.error_details.debug_id}</p>
                 </div>
               )}
             </div>
@@ -412,28 +635,28 @@ const ViewDetails = ({ data }: { data: Payment }) => {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h4 className="font-medium mb-3">Additional Information</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.createdAt && (
+            {paymentData.createdAt && (
               <div>
                 <p className="text-sm text-gray-500">Created At</p>
-                <p>{formatDate1(data.createdAt)}</p>
+                <p>{formatDate1(paymentData.createdAt)}</p>
               </div>
             )}
-            {data.updatedAt && (
+            {paymentData.updatedAt && (
               <div>
                 <p className="text-sm text-gray-500">Updated At</p>
-                <p>{formatDate1(data.updatedAt)}</p>
+                <p>{formatDate1(paymentData.updatedAt)}</p>
               </div>
             )}
-            {data.ip_address && (
+            {paymentData.ip_address && (
               <div>
                 <p className="text-sm text-gray-500">IP Address</p>
-                <p className="font-mono text-xs">{data.ip_address}</p>
+                <p className="font-mono text-xs">{paymentData.ip_address}</p>
               </div>
             )}
-            {data.user_agent && (
+            {paymentData.user_agent && (
               <div className="md:col-span-2">
                 <p className="text-sm text-gray-500">User Agent</p>
-                <p className="text-xs break-all">{data.user_agent}</p>
+                <p className="text-xs break-all">{paymentData.user_agent}</p>
               </div>
             )}
           </div>
@@ -445,7 +668,7 @@ const ViewDetails = ({ data }: { data: Payment }) => {
           className="text-sm"
           onClick={() => {
             dispatch(setUpdateUrl("generous-payments"));
-            dispatch(setUpdateId(data._id));
+            dispatch(setUpdateId(paymentData._id));
           }}
         >
           Edit Payment
