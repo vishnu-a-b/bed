@@ -35,44 +35,48 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { url } from "inspector";
 
 const Home = () => {
   const [bedData, setBedData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollY, setScrollY] = useState(0);
-  const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const bedId =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("id")
-      : null;
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     initGA();
   }, []);
 
-
   useEffect(() => {
     const fetchBedData = async () => {
       try {
+        if (typeof window === "undefined") return; // Ensure client side
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bedId = urlParams.get("id");
+        console.log(urlParams);
+        const isPalliativeInternational = window.location.hostname.includes(
+          "palliativeinternational.com"
+        );
+
         let response;
         if (bedId) {
-          response = await axios(`${API_URL}/supporter/get-bed-data/${bedId}`);
+          response = await axios(`${API_URL}/bed/${bedId}`);
+        } else if (!isPalliativeInternational) {
+          response = await axios(`${API_URL}/bed/68b52d819510cafb599cb75a`);
         } else {
-          response = await axios(
-            `${API_URL}/supporter/get-bed-data/688d9977dd733bb538f6eb73`
-          );
+          response = await axios(`${API_URL}/bed/688d9977dd733bb538f6eb73`);
         }
 
-        console.log("Bed Data:", response?.data);
-        logPageView(response.data?.bedNo);
-        setBedData(response?.data);
-
+        console.log("Bed Data:", response);
+        logPageView(response.data?.data?.bedNo);
+        setBedData(response?.data?.data);
       } catch (err) {
-      } finally {
+        console.error("Error fetching bed data:", err);
       }
     };
+
     fetchBedData();
   }, []);
 
@@ -85,7 +89,7 @@ const Home = () => {
     return (
       <div className="relative overflow-hidden">
         {/* Header placeholder */}
-        <Header />
+        <Header bed={bedData} />
 
         {/* Slider placeholder */}
         <Slider bed={bedData} />
@@ -670,7 +674,7 @@ const Home = () => {
         </div>
 
         {/* Footer placeholder */}
-        <Footer />
+        <Footer  bed={bedData} />
       </div>
     );
   } else {

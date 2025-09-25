@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BedAuPaymentButton from "./BedAuPaymentButton";
+import { Axios } from "@/utils/api/apiAuth";
 
 const supporterSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -70,7 +71,7 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
   const nameVisible = watch("nameVisible");
   const amount = watch("amount");
 
-
+  console.log(bed)
 
   const onSubmit = async (data: SupporterFormData) => {
     setIsSending(true);
@@ -87,7 +88,7 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
         const supporterData = {
           user: response1.data.data._id,
           name: data.name,
-          bed: bed?.bedId,
+          bed: bed?._id,
           amount: bed?.fixedAmount > 0 ? bed.fixedAmount : data.amount,
           type: data.type,
           role: "regular-supporter",
@@ -108,6 +109,7 @@ const BedSupportForm = ({ bed }: { bed?: any }) => {
           setShowSuccessModal(true);
         } else {
           toastService.error("Error creating supporter");
+          const response = await Axios.delete('user',response1.data.data._id)
         }
       }
     } catch (error: any) {

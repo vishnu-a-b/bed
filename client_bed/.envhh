@@ -1,0 +1,76 @@
+APP_NAME="Shanthi Bhavan"
+APP_ENV=local
+APP_KEY=base64:YmeRKcEljKCShtgpOkEKi87gn+jkP9/i/XbBedYQ5wU=
+APP_DEBUG=true
+APP_URL=https://fellowship.shanthibhavan.in
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=64.227.152.26
+DB_PORT=3306
+DB_DATABASE=qqkmqfrhgc
+DB_USERNAME=qqkmqfrhgc
+DB_PASSWORD=r5AM3vYSBT
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DRIVER=local
+QUEUE_CONNECTION=database
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.elasticemail.com
+MAIL_PORT=587
+MAIL_USERNAME=974C2D44F7D4B3F9F2AD4905B1065C4891F8F36BA1162F98DD179BB48D123B04F5CB73CB8EDC9425F0095257E0E90210
+MAIL_PASSWORD=974C2D44F7D4B3F9F2AD4905B1065C4891F8F36BA1162F98DD179BB48D123B04F5CB73CB8EDC9425F0095257E0E90210
+MAIL_ENCRYPTION=TLS
+MAIL_FROM_ADDRESS=noreply@shanthibhavanfellowship.info
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+SMS_URL=http://sms.moplet.com/api/sendhttp.php
+SMS_PROVIDER=SBNPHL
+
+BITLY_ACCESS_TOKEN=e6176ea8b773940b1b4c7318dec5b23161c26dc7
+
+
+
+
+[{"type":"HEADER","format":"DOCUMENT","example":{"header_handle":["https:\/\/scontent.whatsapp.net\/v\/t61.29466-34\/328150972_1520643461766067_244258145430339151_n.pdf?ccb=1-7&_nc_sid=57045b&_nc_ohc=z2DzxVvsgGAAX9tAMBE&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&oh=01_AdR8f1mSPZB1jhUKtNgmHo0SDTQt0jTUKY3eoSoCTL6FZQ&oe=6437CDD1"]}},{"type":"BODY","text":"Dear {{1}},\n\nThank you for your generous contribution.!! We appreciate your support and would like to thank you for helping us in making a difference in the lives of those who need it most. \n\nYour donation of {{2}} will help us continue to provide critical services and assistance to those in need.  \n\nSincerely, \n\nShanthiBhavan Palliative Hospital","example":{"body_text":[["Anton","1rs"]]}}]
+
+
+
+Dear {{1}},
+
+Thank you for your generous contribution.!! We appreciate your support and would like to thank you for helping us in making a difference in the lives of those who need it most. 
+
+Your donation of {{2}} will help us continue to provide critical services and assistance to those in need.  
+
+Sincerely, 
+
+ShanthiBhavan Palliative Hospital
+
+{"id":"6b9884bd-e4cc-4528-8d0c-f0232142ecc9"}

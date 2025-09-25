@@ -81,8 +81,9 @@ export default class BedPaymentAuController extends BaseController {
 
   sendPaymentReminderController = async (req: Request, res: Response) => {
     try {
-      const { phoneNumber, email, name, amount, bedNo, supportLink } = req.body;
-      console.log(phoneNumber, email, name, amount, bedNo, supportLink)
+      const { phoneNumber, email, name, amount, bedNo, supportLink, vcLink } =
+        req.body;
+      console.log(phoneNumber, email, name, amount, bedNo, supportLink);
       const result = await this.service.sendPaymentReminder({
         phoneNumber,
         email,
@@ -90,6 +91,7 @@ export default class BedPaymentAuController extends BaseController {
         amount,
         bedNo,
         supportLink,
+        vcLink,
       });
 
       res.status(200).json({
@@ -455,19 +457,38 @@ export default class BedPaymentAuController extends BaseController {
   };
   getPayments = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { limit, skip } = req.query;
+      const { limit, skip, search, status__eq, paymentMode__eq } = req.query;
       const { filterQuery, sort } = req;
+
       console.log("Request body:", req.body);
+      console.log("Query params:", req.query);
+
       const filters = req.body?.filters || {};
-      const startDate = filters.startDate;
-      const endDate = filters.endDate;
+
+      // Only use dates if they're provided and not empty
+      const startDate =
+        filters.startDate && filters.startDate.trim()
+          ? filters.startDate
+          : undefined;
+      const endDate =
+        filters.endDate && filters.endDate.trim() ? filters.endDate : undefined;
+
+      // Build additional filters from query params
+      let additionalFilters: any = {};
+      if (status__eq && status__eq !== "all") {
+        additionalFilters.status = status__eq;
+      }
+      if (paymentMode__eq && paymentMode__eq !== "all") {
+        additionalFilters.paymentMode = paymentMode__eq;
+      }
 
       const data = await this.service.findPayments(
         {
           limit: Number(limit) || 10,
           skip: Number(skip) || 0,
-          filterQuery: filterQuery || {},
-          sort: sort || { paymentDate: -1 }, // Default sort by payment date descending
+          filterQuery: { ...filterQuery, ...additionalFilters },
+          sort: sort || { paymentDate: -1 },
+          search: search as string,
         },
         startDate,
         endDate
@@ -477,6 +498,164 @@ export default class BedPaymentAuController extends BaseController {
     } catch (e: any) {
       console.error("Error in getPayments controller:", e);
       next(e);
+    }
+  };
+
+  // getPayments = async (req: Request, res: Response, next: NextFunction) => {
+  //   try {
+  //     const { limit, skip } = req.query;
+  //     const { filterQuery, sort } = req;
+  //     console.log("Request body:", req.body);
+  //     const filters = req.body?.filters || {};
+  //     const startDate = filters.startDate;
+  //     const endDate = filters.endDate;
+
+  //     const data = await this.service.findPayments(
+  //       {
+  //         limit: Number(limit) || 10,
+  //         skip: Number(skip) || 0,
+  //         filterQuery: filterQuery || {},
+  //         sort: sort || { paymentDate: -1 }, // Default sort by payment date descending
+  //       },
+  //       startDate,
+  //       endDate
+  //     );
+
+  //     this.sendSuccessResponseList(res, 200, { data });
+  //   } catch (e: any) {
+  //     console.error("Error in getPayments controller:", e);
+  //     next(e);
+  //   }
+  // };
+
+  // Add these methods to your BedPaymentAuController class
+
+  // Create manual/offline payment
+  createManualPayment = async (req: Request, res: Response) => {
+    try {
+      const {
+        amount,
+        currency = "AUD",
+        name,
+        email,
+        phNo,
+        address,
+        manualMethod,
+        transactionReference,
+        paymentDate,
+        remarks,
+        contribution,
+        source = "website",
+        supporter,
+        bed,
+      } = req.body;
+
+      // Get recorded by user (from auth middleware)
+      const recordedBy = (req as any).user?.id;
+
+      // Validation
+      if (!amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Amount must be greater than 0",
+        });
+      }
+
+      if (!manualMethod) {
+        return res.status(400).json({
+          success: false,
+          error: "Manual payment method is required",
+        });
+      }
+
+      const result = await this.service.createManualPayment({
+        amount,
+        currency,
+        name,
+        email,
+        phNo,
+        address,
+        manualMethod,
+        transactionReference,
+        paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
+        remarks,
+        contribution,
+        source,
+        recordedBy,
+        supporter,
+        bed,
+      });
+
+      return res.status(201).json(result);
+    } catch (error) {
+      console.error("Error in createManualPayment controller:", error);
+
+      let statusCode = 500;
+      let errorMessage = "An unknown error occurred";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes("not found")) {
+          statusCode = 404;
+        } else if (
+          error.message.includes("required") ||
+          error.message.includes("Invalid")
+        ) {
+          statusCode = 400;
+        }
+      }
+
+      return res.status(statusCode).json({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  };
+
+  // Manual approval for offline payments
+  approveManualPayment = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { approved = true, remarks } = req.body;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: "Payment ID is required",
+        });
+      }
+
+      // Get approver user (from auth middleware)
+      const approvedBy = (req as any).user?.id;
+
+      if (!approvedBy) {
+        return res.status(401).json({
+          success: false,
+          error: "User authentication required",
+        });
+      }
+
+      const result = await this.service.approveManualPayment({
+        id,
+        approved,
+        approvedBy,
+        remarks,
+      });
+
+      return res.json(result);
+    } catch (error) {
+      console.error("Error in approveManualPayment controller:", error);
+
+      const statusCode =
+        error instanceof Error && error.message.includes("not found")
+          ? 404
+          : 500;
+
+      return res.status(statusCode).json({
+        success: false,
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
     }
   };
 }

@@ -16,7 +16,6 @@ import { genderOptions } from "@/constants/selectOptions";
 import { clearUpdate } from "@/lib/slice/updateSlice";
 import { deleteData } from "@/utils/api/delete";
 import { RoleOption } from "@/types/api.interface";
-import { add } from "lodash";
 import { loadBedOptions } from "@/utils/api/loadSelectData";
 
 const supporterSchema = z.object({

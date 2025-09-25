@@ -5,10 +5,10 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
-  title: "Bed Donation program by ShanthiBhavan",
+  title: "Thanks for supporting Shanthibhavan's Hands of Grace Programme",
   description: "Make a lasting impact with ShanthiBhavan's Bed Donation Program — donate a bed and bring comfort to those who need it most.",
   openGraph: {
-    title: "Bed Donation Program by ShanthiBhavan",
+    title: "Thanks for supporting Shanthibhavan's Hands of Grace Programme",
     description:
       "Make a lasting impact with ShanthiBhavan's Bed Donation Program — donate a bed and bring comfort to those who need it most.",
     siteName: "ShanthiBhavan",

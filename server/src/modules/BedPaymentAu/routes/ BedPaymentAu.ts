@@ -92,7 +92,8 @@ router.delete("/:id", authorization, controller.deletePayment);
  * @desc    Create manual/offline payment record
  * @access  Private (Admin/Staff)
  */
-//router.post("/manual", authorization, controller.createManualPayment);
+router.post("/manual", authorization, controller.createManualPayment);
+router.patch("/:id/approve", authorization, controller.approveManualPayment);
 
 /**
  * @route   POST /api/generous-payments/:id/refund

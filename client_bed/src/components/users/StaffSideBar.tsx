@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import {
-  Settings,
-  Building2,
-  Flag,
   Bed,
   User,
   HandCoins,
-
 } from "lucide-react";
-import { fetchData } from "@/utils/api/fetchData";
 
 const rol = "staff";
 const items = [
@@ -29,7 +24,6 @@ const items = [
     url: "gc_au",
     icon: HandCoins,
   },
-  
 ];
 export default function StaffSideBar() {
 
