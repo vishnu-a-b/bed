@@ -1204,7 +1204,7 @@ createManualPayment = async (
     supporter,
     bed
   } = params;
-
+  console.log(params)
   if (!amount || amount <= 0) {
     throw new Error("Amount must be greater than 0");
   }
@@ -1269,7 +1269,7 @@ createManualPayment = async (
         }
       }
     });
-
+    console.log(payment)
     return {
       success: true,
       data: { payment },
@@ -1287,6 +1287,7 @@ approveManualPayment = async (
   success: boolean;
   data: { payment: typeof BedPaymentAu };
 }> => {
+  console.log(params)
   const { id, approved, approvedBy, remarks } = params;
 
   const payment: any = await BedPaymentAu.findById(id)

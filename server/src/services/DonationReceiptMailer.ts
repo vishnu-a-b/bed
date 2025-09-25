@@ -323,18 +323,18 @@ class DonationReceiptMailer {
           },
         ],
       };
-      try {
-        // Send PDF via WhatsApp
-        const response = await whatsappHelper.sendDonationReceipt(
-          options.phoneNo,
-          pdfBuffer,
-          `${options.receiptNumber}.pdf`
-        );
-        console.log(response);
-      } catch (whatsappError) {
-        console.error("Failed to send WhatsApp message:", whatsappError);
-        // Continue with PDF download even if WhatsApp fails
-      }
+      // try {
+      //   // Send PDF via WhatsApp
+      //   const response = await whatsappHelper.sendDonationReceipt(
+      //     options.phoneNo,
+      //     pdfBuffer,
+      //     `${options.receiptNumber}.pdf`
+      //   );
+      //   console.log(response);
+      // } catch (whatsappError) {
+      //   console.error("Failed to send WhatsApp message:", whatsappError);
+      //   // Continue with PDF download even if WhatsApp fails
+      // }
 
       await this.transporter.sendMail(mailOptions);
       console.log(`Donation receipt email sent to ${options.email}`);
@@ -457,12 +457,7 @@ class DonationReceiptMailer {
                 <span class="detail-label">Date : </span>
                 <span class="detail-value">${options.date}</span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">Program : </span>
-                <span class="detail-value"> ${
-                  options.programName || "Generous Contribution Program"
-                }</span>
-            </div>
+            
             <div class="detail-row" style="border-top: 2px solid #1565c0; margin-top: 15px; padding-top: 15px;">
                 <span class="detail-label">Donation Amount : </span>
                 <span class="detail-value amount-highlight">AUD${formattedAmount}</span>
