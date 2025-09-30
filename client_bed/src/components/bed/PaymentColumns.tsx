@@ -13,6 +13,7 @@ import { useState } from "react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { selectUserDetails } from "@/lib/slice/userSlice";
 import { getAccessToken } from "@/utils/api/apiAuth";
+import toastService from "@/utils/toastService";
 
 // Mock service - replace with your actual API service
 const approvePayment = async (paymentId: string, approved: boolean, remarks?: string) => {
@@ -28,10 +29,10 @@ const approvePayment = async (paymentId: string, approved: boolean, remarks?: st
   return response.json();
 };
 
-const toastService = {
-  success: (message: string) => alert(`Success: ${message}`),
-  error: (message: string) => alert(`Error: ${message}`)
-};
+// const toastService = {
+//   success: (message: string) => alert(`Success: ${message}`),
+//   error: (message: string) => alert(`Error: ${message}`)
+// };
 
 export interface Payment {
   supporter: any;
@@ -242,6 +243,7 @@ const PaymentApproval = ({ payment, onApprovalUpdate }: {
     setIsProcessing(true);
     try {
       const result = await approvePayment(payment._id, approved, remarks);
+      console.log(result)
       if (result.success) {
         onApprovalUpdate(payment._id, approved);
         toastService.success(
