@@ -4,6 +4,7 @@ import {
   fetchUsers,
   fetchCountry,
   fetchBed,
+  fetchSupporter,
 } from "./fetchData";
 
 export const loadOrganizationOptions = async (inputValue: string) => {
@@ -49,5 +50,15 @@ export const loadUsers = async (inputValue: string) => {
   return data.map((designation: any) => ({
     value: designation._id,
     label: designation.name,
+  }));
+};
+
+export const loadSupporter = async (inputValue: string) => {
+  const response = await fetchSupporter(inputValue);
+  const data: any[] = response.items;
+  return data.map((designation: any) => ({
+    value: designation._id,
+    label: designation.name,
+    bed: designation.bed._id
   }));
 };

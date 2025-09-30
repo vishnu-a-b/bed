@@ -2,31 +2,29 @@ import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema(
   {
-    // PayPal specific fields
-    paypal_payment_id: { type: String, unique: true, sparse: true },
-    paypal_order_id: { type: String },
-    paypal_payer_id: { type: String },
-    paypal_payment_status: { type: String }, // COMPLETED, PENDING, FAILED, etc.
+    razorpay_payment_id: { type: String, unique: true, sparse: true },
+    razorpay_order_id: { type: String },
+    razorpay_signature: { type: String },
 
-    amount: { type: Number, required: true }, // In actual currency units (not cents/paise)
-    currency: { type: String, default: "USD" }, // PayPal supports multiple currencies
+    amount: { type: Number, required: true }, // In paise
+    currency: { type: String, default: "INR" },
 
-    status: { type: String, required: true }, // captured, failed, pending
-    method: { type: String }, // online: paypal, offline: cash/cheque/etc.
+    status: { type: String, required: true }, // e.g. captured, failed, pending
+    method: { type: String }, // online: card/upi/etc., offline: cash/cheque/etc.
 
     email: { type: String },
     contact: { type: String },
-    created_at: { type: Number }, // Unix timestamp
-    notes: { type: Object }, // Custom notes object for metadata
+    created_at: { type: Number }, // Unix timestamp from Razorpay
+    notes: { type: Object }, // Razorpay notes object (can store metadata)
 
-    // Universal payment mode - online or offline
+    // NEW: Universal payment mode - online or offline
     paymentMode: {
       type: String,
       enum: ["online", "offline"],
       default: "online",
     },
 
-    // Offline method details (only if paymentMode === 'offline')
+    // NEW: Offline method details (only if paymentMode === 'offline')
     manualMethod: {
       type: String,
       enum: ["cash", "cheque", "upi", "bank_transfer"],
@@ -62,11 +60,6 @@ const paymentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
-    // PayPal specific additional fields
-    paypal_transaction_fee: { type: Number }, // PayPal transaction fee
-    paypal_net_amount: { type: Number }, // Amount after PayPal fees
-    paypal_exchange_rate: { type: Number }, // If currency conversion occurred
   },
   { timestamps: true }
 );
@@ -79,14 +72,11 @@ export const paymentFilterFields = {
     "currency",
     "paymentMode",
     "manualMethod",
-    "paymentDate",
     "recordedBy",
-    "paypal_payment_status",
   ],
   searchFields: [
-    "paypal_payment_id",
-    "paypal_order_id",
-    "paypal_payer_id",
+    "razorpay_payment_id",
+    "razorpay_order_id",
     "transactionReference",
   ],
   sortFields: ["createdAt", "amount", "paymentDate"],

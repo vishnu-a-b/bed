@@ -62,10 +62,8 @@ router.use(authenticateUser);
 // Common authorization
 const authorization = authorizeUser({ allowedRoles: [] });
 
-router.get("/payment-head", paymentListDoc, controller.getPaymentHead);
-
-router.post(
-  "/get",
+router.get(
+  "/",
   paymentListDoc,
   setFilterParams(paymentFilterFields),
   controller.get

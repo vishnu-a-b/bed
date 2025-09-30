@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 
 import { Qr } from "@/components/payment/Qr";
 import BedAuPaymentButton from "@/components/payment/BedAuPaymentButton";
+import { PaymentForm } from "@/components/payment/PaymentForm";
 
 export default function SupporterDetailsPage() {
   const supporterId =
@@ -227,7 +228,7 @@ export default function SupporterDetailsPage() {
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogDescription>
-                    <Qr supporter={supporterData} />
+                    <PaymentForm supporter={supporterData} />
                     {/* <PaymentForm supporter={supporterData} /> */}
                   </DialogDescription>
                 </DialogHeader>

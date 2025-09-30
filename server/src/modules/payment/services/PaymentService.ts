@@ -1,36 +1,24 @@
 import mongoose from "mongoose";
 import NotFoundError from "../../../errors/errorTypes/NotFoundError";
 import ListFilterData from "../../../interfaces/ListFilterData";
-
-
+import Razorpay from "razorpay";
+import crypto from "crypto";
 import { Payment } from "../models/Payment";
 import { Supporter } from "../../supporter/models/Supporter";
-import paypal from '@paypal/checkout-server-sdk';
 
-// PayPal client setup - moved to top and fixed
-const environment = process.env.NODE_ENV === 'production' 
-  ? new paypal.core.LiveEnvironment(
-      process.env.PAYPAL_CLIENT_ID!,
-      process.env.PAYPAL_CLIENT_SECRET!
-    )
-  : new paypal.core.SandboxEnvironment(
-      process.env.PAYPAL_CLIENT_ID!,
-      process.env.PAYPAL_CLIENT_SECRET!
-    );
-
-const paypalClient = new paypal.core.PayPalHttpClient(environment);
-
-// Keep Razorpay for backwards compatibility if needed
-
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
 
 interface CreateOrderParams {
   supporterId: string;
 }
 
 interface VerifyPaymentParams {
-  paypal_order_id: string;
-  paypal_payment_id: string;
-  paypal_payer_id: string;
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
 }
 
 export default class PaymentService {
@@ -43,212 +31,24 @@ export default class PaymentService {
     }
   };
 
-  findPaymentHeadingData = async () => {
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
+  find = async ({ limit, skip, filterQuery, sort }: ListFilterData) => {
+    limit = limit ? limit : 10;
+    skip = skip ? skip : 0;
 
-    return await Payment.aggregate([
-      // 1. Join with related collections
-      {
-        $lookup: {
-          from: "supporters",
-          localField: "supporter",
-          foreignField: "_id",
-          as: "supporter",
-        },
-      },
-      { $unwind: { path: "$supporter", preserveNullAndEmptyArrays: false } },
-      {
-        $lookup: {
-          from: "beds",
-          localField: "bed",
-          foreignField: "_id",
-          as: "bed",
-        },
-      },
-      { $unwind: { path: "$bed", preserveNullAndEmptyArrays: false } },
-      {
-        $lookup: {
-          from: "countries",
-          localField: "bed.country",
-          foreignField: "_id",
-          as: "country",
-        },
-      },
-      { $unwind: { path: "$country", preserveNullAndEmptyArrays: false } },
+    const payments = await Payment.find(filterQuery)
+      .populate(["supporter", "bed"])
+      .sort(sort)
+      .limit(limit)
+      .skip(skip);
 
-      // 2. Group by Organization and Country
-      {
-        $group: {
-          _id: {
-            organization: "$bed.organization",
-            country: "$country._id",
-            countryName: "$country.name",
-            currency: "$country.currency",
-            paymentMethod: "$paymentMethod",
-            status: "$status",
-          },
-          // Payment counts
-          totalPayments: { $sum: 1 },
-          thisDayPayments: {
-            $sum: {
-              $cond: [{ $gte: ["$paymentDate", startOfDay] }, 1, 0],
-            },
-          },
-          thisMonthPayments: {
-            $sum: {
-              $cond: [{ $gte: ["$paymentDate", startOfMonth] }, 1, 0],
-            },
-          },
-          thisWeekPayments: {
-            $sum: {
-              $cond: [{ $gte: ["paymentDate", startOfWeek] }, 1, 0],
-            },
-          },
-          // Amount calculations
-          totalAmount: { $sum: "$amount" },
-          thisDayAmount: {
-            $sum: {
-              $cond: [{ $gte: ["$paymentDate", startOfDay] }, "$amount", 0],
-            },
-          },
-          thisMonthAmount: {
-            $sum: {
-              $cond: [{ $gte: ["$paymentDate", startOfMonth] }, "$amount", 0],
-            },
-          },
-          thisWeekAmount: {
-            $sum: {
-              $cond: [{ $gte: ["$paymentDate", startOfWeek] }, "$amount", 0],
-            },
-          },
-        },
-      },
+    const total = await Payment.countDocuments(filterQuery);
 
-      // 3. Reshape into organization-centric format
-      {
-        $group: {
-          _id: "$_id.organization",
-          organizationId: { $first: "$_id.organization" },
-          data: {
-            $push: {
-              country: "$_id.countryName",
-              currency: "$_id.currency",
-              paymentMethod: "$_id.paymentMethod",
-              status: "$_id.status",
-              totalPayments: "$totalPayments",
-              thisDayPayments: "$thisDayPayments",
-              thisMonthPayments: "$thisMonthPayments",
-              thisWeekPayments: "$thisWeekPayments",
-              totalAmount: "$totalAmount",
-              thisDayAmount: "$thisDayAmount",
-              thisMonthAmount: "$thisMonthAmount",
-              thisWeekAmount: "$thisWeekAmount",
-            },
-          },
-          // Calculate organization-wide totals
-          totalPayments: { $sum: "$totalPayments" },
-          thisDayPayments: { $sum: "$thisDayPayments" },
-          thisMonthPayments: { $sum: "$thisMonthPayments" },
-          thisWeekPayments: { $sum: "$thisWeekPayments" },
-        },
-      },
-
-      // 4. Join organization details
-      {
-        $lookup: {
-          from: "organizations",
-          localField: "organizationId",
-          foreignField: "_id",
-          as: "organization",
-        },
-      },
-      { $unwind: "$organization" },
-      {
-        $project: {
-          organizationId: 1,
-          organizationName: "$organization.name",
-          data: 1,
-          totalPayments: 1,
-          thisDayPayments: 1,
-          thisMonthPayments: 1,
-          thisWeekPayments: 1,
-          totalAmount: 1,
-          thisDayAmount: 1,
-          thisMonthAmount: 1,
-          thisWeekAmount: 1,
-          _id: 0,
-        },
-      },
-    ]);
-  };
-
-  find = async (
-    { limit, skip, filterQuery, sort }: ListFilterData,
-    startDate?: string,
-    endDate?: string
-  ) => {
-    console.log("Service received dates:", startDate, endDate);
-
-    try {
-      limit = limit ? limit : 10;
-      skip = skip ? skip : 0;
-
-      let dateFilter = {};
-      if (startDate || endDate) {
-        dateFilter = {
-          paymentDate: {
-            ...(startDate && {
-              $gte: (() => {
-                const d = new Date(startDate);
-                d.setHours(0, 0, 0, 0);
-                return d;
-              })(),
-            }),
-            ...(endDate && {
-              $lte: (() => {
-                const d = new Date(endDate!);
-                d.setHours(23, 59, 59, 999);
-                return d;
-              })(),
-            }),
-          },
-        };
-      }
-
-      const finalFilter = {
-        ...filterQuery,
-        ...dateFilter,
-      };
-
-      console.log("Final filter query:", finalFilter);
-
-      const payment = await Payment.find(finalFilter)
-        .populate([
-          {
-            path: "bed",
-            populate: [{ path: "organization" }, { path: "country" }],
-          },
-          "supporter",
-        ])
-        .sort(sort)
-        .limit(limit)
-        .skip(skip);
-
-      const total = await Payment.countDocuments(finalFilter);
-      return {
-        total,
-        limit,
-        skip,
-        items: payment,
-      };
-    } catch (error) {
-      console.error("Error finding supporters:", error);
-      throw error;
-    }
+    return {
+      total,
+      limit,
+      skip,
+      items: payments,
+    };
   };
 
   countTotalDocuments = async () => {
@@ -322,7 +122,7 @@ export default class PaymentService {
           createdAt: 1,
           paymentDate: 1,
           isVerified: 1,
-          paypal_payment_id: 1, // Changed from razorpay_payment_id
+          razorpay_payment_id: 1,
           transactionReference: 1,
           // Include any other payment fields you need
         },
@@ -381,7 +181,7 @@ export default class PaymentService {
         isVerified: payment.isVerified,
         reference:
           payment.paymentMode === "online"
-            ? payment.paypal_payment_id // Changed from razorpay_payment_id
+            ? payment.razorpay_payment_id
             : payment.transactionReference,
         // Include any other payment fields you need
       })),
@@ -391,14 +191,15 @@ export default class PaymentService {
   async createOrder(params: CreateOrderParams) {
     const { supporterId } = params;
 
+    // Validate input
     if (!supporterId) {
       throw new Error("supporterId is required");
     }
 
-    console.log("Creating PayPal order for supporter:", supporterId);
+    console.log("Creating order for supporter:", supporterId);
 
     try {
-      // Get supporter details
+      // Get supporter details with proper typing
       const supporter = await Supporter.findById(supporterId).populate<{
         user: any;
         bed: { _id: any; country: any };
@@ -408,135 +209,80 @@ export default class PaymentService {
         throw new Error("Supporter not found");
       }
 
+      // Validate amount
       if (!supporter.amount || isNaN(Number(supporter.amount))) {
         throw new Error("Invalid amount specified for supporter");
       }
 
-      // Create PayPal order
-      const request = new paypal.orders.OrdersCreateRequest();
-      request.prefer("return=representation");
-      request.requestBody({
-        intent: "CAPTURE",
-        purchase_units: [
-          {
-            amount: {
-              currency_code: supporter.bed.country?.currency || "USD",
-              value: supporter.amount.toFixed(2), // PayPal expects string with 2 decimal places
-            },
-            description: `Payment for bed support - ${supporter.bed._id}`,
-            custom_id: supporterId.toString(),
-            reference_id: `supporter_${supporterId}_${Date.now()}`,
-          },
-        ],
-        application_context: {
-          brand_name: "Your App Name",
-          landing_page: "BILLING",
-          user_action: "PAY_NOW",
-          return_url: `${process.env.CLIENT_URL}/payment/success`,
-          cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
-        },
-      });
+      // Create Razorpay order
+      const options = {
+        amount: Math.round(Number(supporter.amount) * 100), // Convert to paise
+        currency: supporter.bed.country?.currency || "INR",
+        receipt: `receipt_${Date.now()}`,
+      };
 
-      // Use the properly declared paypalClient
-      const order = await paypalClient.execute(request);
+      const order = await razorpay.orders.create(options);
 
       // Create payment record
       const payment = new Payment({
-        paypal_order_id: order.result.id,
-        amount: Number(supporter.amount),
-        currency: supporter.bed.country?.currency || "USD",
+        razorpay_order_id: order.id,
+        amount: order.amount,
+        currency: order.currency,
         status: "pending",
-        method: "paypal",
+        method: "online",
         paymentMode: "online",
         supporter: supporterId,
         bed: supporter.bed._id,
         email: supporter.user?.email,
         contact: supporter.user?.phoneNumber,
         created_at: Math.floor(Date.now() / 1000),
-        paypal_payment_status: order.result.status,
-        notes: {
-          order_id: order.result.id,
-          supporter_id: supporterId,
-        },
+        notes: order.notes,
       });
 
       await payment.save();
 
-      // Get approval URL
-      const approvalUrl = order.result.links?.find(
-        (link: any) => link.rel === "approve"
-      )?.href;
-
       return {
         success: true,
         data: {
-          orderId: order.result.id,
-          amount: Number(supporter.amount),
-          currency: supporter.bed.country?.currency || "USD",
-          clientId: process.env.PAYPAL_CLIENT_ID,
-          approvalUrl: approvalUrl,
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          key: process.env.RAZORPAY_KEY_ID,
         },
       };
     } catch (error) {
       console.error("Error in createOrder service:", error);
-      throw error;
+      throw error; // Re-throw for controller to handle
     }
-  }
+  };
 
   async verifyPayment(params: VerifyPaymentParams) {
-    const { paypal_order_id, paypal_payment_id, paypal_payer_id } = params;
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+      params;
 
     // Find the payment record
-    const payment = await Payment.findOne({ paypal_order_id });
+    const payment = await Payment.findOne({ razorpay_order_id });
     if (!payment) {
       throw new Error("Payment record not found");
     }
 
-    try {
-      // Capture the PayPal order
-      const request:any = new paypal.orders.OrdersCaptureRequest(paypal_order_id);
-      request.requestBody({});
+    // Verify the signature
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
 
-      // Use the properly declared paypalClient
-      const capture = await paypalClient.execute(request);
-
-      if (capture.result.status === "COMPLETED") {
-        // Extract payment details from capture result
-        const captureDetails =
-          capture.result.purchase_units[0].payments.captures[0];
-
-        // Update payment record
-        payment.paypal_payment_id = captureDetails.id;
-        payment.paypal_payer_id = paypal_payer_id;
-        payment.status = "captured";
-        payment.paypal_payment_status = "COMPLETED";
-        payment.isVerified = true;
-
-        // Store PayPal fees and net amount if available
-        if (captureDetails.seller_receivable_breakdown) {
-          payment.paypal_transaction_fee = parseFloat(
-            captureDetails.seller_receivable_breakdown.paypal_fee?.value || "0"
-          );
-          payment.paypal_net_amount = parseFloat(
-            captureDetails.seller_receivable_breakdown.net_amount?.value || "0"
-          );
-        }
-
-        await payment.save();
-
-        return payment;
-      } else {
-        throw new Error(
-          `Payment capture failed with status: ${capture.result.status}`
-        );
-      }
-    } catch (error) {
-      // Update payment status to failed
-      payment.status = "failed";
-      payment.paypal_payment_status = "FAILED";
-      await payment.save();
-
-      throw error;
+    if (generatedSignature !== razorpay_signature) {
+      throw new Error("Invalid signature");
     }
+
+    // Update payment record
+    payment.razorpay_payment_id = razorpay_payment_id;
+    payment.razorpay_signature = razorpay_signature;
+    payment.status = "captured";
+    payment.isVerified = true;
+    await payment.save();
+
+    return payment;
   }
 }
