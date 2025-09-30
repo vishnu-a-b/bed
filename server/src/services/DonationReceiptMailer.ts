@@ -323,18 +323,18 @@ class DonationReceiptMailer {
           },
         ],
       };
-      // try {
-      //   // Send PDF via WhatsApp
-      //   const response = await whatsappHelper.sendDonationReceipt(
-      //     options.phoneNo,
-      //     pdfBuffer,
-      //     `${options.receiptNumber}.pdf`
-      //   );
-      //   console.log(response);
-      // } catch (whatsappError) {
-      //   console.error("Failed to send WhatsApp message:", whatsappError);
-      //   // Continue with PDF download even if WhatsApp fails
-      // }
+      try {
+        // Send PDF via WhatsApp
+        const response = await whatsappHelper.sendDonationReceipt(
+          options.phoneNo,
+          pdfBuffer,
+          `${options.receiptNumber}.pdf`
+        );
+        console.log(response);
+      } catch (whatsappError) {
+        console.error("Failed to send WhatsApp message:", whatsappError);
+        // Continue with PDF download even if WhatsApp fails
+      }
 
       await this.transporter.sendMail(mailOptions);
       console.log(`Donation receipt email sent to ${options.email}`);

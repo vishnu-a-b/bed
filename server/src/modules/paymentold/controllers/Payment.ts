@@ -29,12 +29,20 @@ export default class PaymentController extends BaseController {
     try {
       const { limit, skip } = req.query;
       const { filterQuery, sort } = req;
-      const data = await this.service.find({
-        limit: Number(limit),
-        skip: Number(skip),
-        filterQuery,
-        sort,
-      });
+      console.log(req.body);
+      const filters = req.body?.filters || {};
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      const data = await this.service.find(
+        {
+          limit: Number(limit),
+          skip: Number(skip),
+          filterQuery,
+          sort,
+        },
+        startDate,
+        endDate
+      );
 
       this.sendSuccessResponseList(res, 200, { data });
     } catch (e: any) {
@@ -50,6 +58,17 @@ export default class PaymentController extends BaseController {
     try {
       const count = await this.service.countTotalDocuments();
       this.sendSuccessResponse(res, 200, { data: { count } });
+    } catch (e: any) {
+      next(e);
+    }
+  };
+
+  getPaymentHead = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      console.log("getPaymentHead called");
+      const data: any = await this.service.findPaymentHeadingData();
+
+      this.sendSuccessResponseList(res, 200, { data });
     } catch (e: any) {
       next(e);
     }
@@ -130,25 +149,23 @@ export default class PaymentController extends BaseController {
   };
   createOrder = async (req: Request, res: Response) => {
     try {
-        const { supporterId } = req.body;
-        
-        const result = await this.service.createOrder({ supporterId });
+      const { supporterId } = req.body;
 
-        // Wrap the response in a data object
-        return res.json({
-            success: true,
-            data: {
-                orderId: result.data.orderId,
-                amount: result.data.amount,
-                currency: result.data.currency,
-                key: result.data.key
-            }
-        });
+      const result = await this.service.createOrder({ supporterId });
 
+      return res.json({
+        success: true,
+        data: {
+          orderId: result.data.orderId,
+          amount: result.data.amount,
+          currency: result.data.currency,
+          clientId: result.data.clientId,
+          approvalUrl: result.data.approvalUrl,
+        },
+      });
     } catch (error: unknown) {
       console.error("Error in createOrder controller:", error);
 
-      // Handle different error types
       let statusCode = 500;
       let errorMessage = "An unknown error occurred";
 
@@ -173,13 +190,12 @@ export default class PaymentController extends BaseController {
 
   verifyPayment = async (req: Request, res: Response) => {
     try {
-      const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
-        req.body;
+      const { paypal_order_id, paypal_payment_id, paypal_payer_id } = req.body;
 
       const payment = await this.service.verifyPayment({
-        razorpay_payment_id,
-        razorpay_order_id,
-        razorpay_signature,
+        paypal_order_id,
+        paypal_payment_id,
+        paypal_payer_id,
       });
 
       res.json(payment);
