@@ -10,7 +10,7 @@ import StaffRouter from "../modules/staff/routes/StaffRouter";
 import BedRouter from "../modules/bed/routes/BedRouter";
 import OrganizationRouter from "../modules/organization/routes/Organization";
 import SupporterRouter from "../modules/supporter/routes/SupporterRouter";
-import PaymentRouter from "../modules/payment/routes/PaymentRouter";
+import PaymentRouter from "../modules/BedPaymentIn/routes/PaymentRouter";
 import GenerousContributionPaymentRouter from "../modules/GenerousContributionPayment/routes/generousContributionPaymentRoutes";
 import BedPaymentAu from "../modules/BedPaymentAu/routes/ BedPaymentAu";
 

@@ -582,6 +582,53 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
           </>
         )}
 
+        <div className="col-span-1 lg:col-span-2">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* <div>
+              <Label htmlFor="supporter" className="text-sm font-medium">
+                Supporter ID (Optional)
+              </Label>
+              <Input
+                id="supporter"
+                {...register("supporter")}
+                placeholder="Enter supporter ID if applicable"
+                className="w-full"
+              />
+            </div> */}
+            <div>
+              <Label htmlFor="head" className=" required">Supporter</Label>
+              <AsyncSelect
+                cacheOptions
+                loadOptions={loadSupporter}
+                defaultOptions
+                value={head}
+                onChange={handleHeadChange}
+                classNamePrefix="select"
+                isClearable
+                required
+              />
+            </div>
+
+            <div className=" ">
+              <Label htmlFor="bed" className="text-sm font-medium">
+                Bed No
+              </Label>
+              <Input 
+                id="bed"
+                {...register("bed")}
+                placeholder="Enter bed ID if applicable"
+                className="w-full hidden"
+              />
+              <Input 
+                value={head?.bedNo}
+                placeholder="Enter bed ID if applicable"
+                className="w-full "
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Payer Information Section */}
         <div className="col-span-1 lg:col-span-2">
           <h3 className="text-lg font-semibold mb-4 border-b pb-2">
@@ -645,48 +692,7 @@ const PaymentForm = ({ paymentId }: { paymentId?: string }) => {
         </div>
 
         {/* Optional References Section */}
-        <div className="col-span-1 lg:col-span-2">
-          <h3 className="text-lg font-semibold mb-4 border-b pb-2">
-            Optional References
-          </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* <div>
-              <Label htmlFor="supporter" className="text-sm font-medium">
-                Supporter ID (Optional)
-              </Label>
-              <Input
-                id="supporter"
-                {...register("supporter")}
-                placeholder="Enter supporter ID if applicable"
-                className="w-full"
-              />
-            </div> */}
-            <div>
-              <Label htmlFor="head">Supporter</Label>
-              <AsyncSelect
-                cacheOptions
-                loadOptions={loadSupporter}
-                defaultOptions
-                value={head}
-                onChange={handleHeadChange}
-                classNamePrefix="select"
-                isClearable
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="bed" className="text-sm font-medium">
-                Bed ID (Optional)
-              </Label>
-              <Input
-                id="bed"
-                {...register("bed")}
-                placeholder="Enter bed ID if applicable"
-                className="w-full"
-              />
-            </div>
-          </div>
-        </div>
+        
 
         {/* Contribution Details Section */}
         <div className="col-span-1 lg:col-span-2">

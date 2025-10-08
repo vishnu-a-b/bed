@@ -6,7 +6,7 @@ import { Label } from "../ui/label";
 import { Alert, AlertDescription } from "../ui/alert";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
+import { refreshTable, setUpdateId, setUpdateUrl } from "@/lib/slice/updateSlice";
 import { formatDate1 } from "@/utils/formatDate";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useState } from "react";
@@ -28,7 +28,7 @@ const approvePayment = async (paymentId: string, approved: boolean, remarks?: st
   });
   return response.json();
 };
-
+const dispatch = useDispatch();
 // const toastService = {
 //   success: (message: string) => alert(`Success: ${message}`),
 //   error: (message: string) => alert(`Error: ${message}`)
@@ -148,13 +148,14 @@ export const paymentColumns: ColumnDef<Payment>[] = [
       // Show approval status for offline payments
       if (data.paymentMode === "offline") {
         if (data.isApproved === true) {
+          dispatch(refreshTable());
           return (
             <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 flex items-center gap-1">
               <CheckCircle className="w-3 h-3" />
               Approved
             </span>
           );
-        
+          
         } else {
           return (
             <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 flex items-center gap-1">

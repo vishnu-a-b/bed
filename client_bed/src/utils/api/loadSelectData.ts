@@ -56,9 +56,11 @@ export const loadUsers = async (inputValue: string) => {
 export const loadSupporter = async (inputValue: string) => {
   const response = await fetchSupporter(inputValue);
   const data: any[] = response.items;
+  console.log(data)
   return data.map((designation: any) => ({
     value: designation._id,
     label: designation.name,
-    bed: designation.bed._id
+    bed: designation.bed._id,
+    bedNo:designation.bed.bedNo
   }));
 };
