@@ -59,7 +59,7 @@ interface FormErrors {
 
 type SubmitStatus = "success" | "error" | null;
 
-const GenerousContributionsForm: React.FC = () => {
+const  GenerousContributionsForm: React.FC = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [formData, setFormData] = useState<FormData>({
     amount: "",
