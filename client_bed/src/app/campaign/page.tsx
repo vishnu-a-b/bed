@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import toastService from "@/utils/toastService";
-import BedSupporterForm from "@/components/payment/BedSupportForm";
+import BedSupporterForm from "@/components/payment/paymentAu/BedSupportForm";
 
 export default function BedDetailsPage() {
   const [bedData, setBedData] = useState<any>(null);

@@ -6,10 +6,10 @@ import {
   Flag,
   Bed,
   User,
-  HandCoins,
-
+  PhoneCall,
 } from "lucide-react";
 import { fetchData } from "@/utils/api/fetchData";
+import { AustraliaFlag, IndiaFlag } from "../icons/FlagIcons";
 
 const rol = "super-admin";
 const items = [
@@ -34,19 +34,29 @@ const items = [
     icon: User,
   },
   {
-    title: "BedPayments",
+    title: "Bed Payments AU",
     url: "payment",
-    icon: HandCoins,
+    icon: AustraliaFlag,
   },
-    {
-    title: "Genaral Contribution AUD",
+  {
+    title: "Bed Payments IND",
+    url: "payment_ind",
+    icon: IndiaFlag,
+  },
+  {
+    title: "General Contribution AU",
     url: "gc_au",
-    icon: HandCoins,
+    icon: AustraliaFlag,
+  },
+  {
+    title: "General Contribution IND",
+    url: "gc_ind",
+    icon: IndiaFlag,
   },
   {
     title: "Follow Up",
     url: "follow_up",
-    icon: HandCoins,
+    icon: PhoneCall,
   },
   {
     title: "Staff",

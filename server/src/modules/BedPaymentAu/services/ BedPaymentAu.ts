@@ -1013,7 +1013,7 @@ export default class BedPaymentAuService {
       {
         $match: {
           supporter: new mongoose.Types.ObjectId(supporterId),
-          status: "captured", // Only count successful payments
+          status: { $in: ["captured", "completed"] }, // Count both captured and completed payments
         },
       },
       {

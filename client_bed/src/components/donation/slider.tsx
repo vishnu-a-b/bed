@@ -17,7 +17,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import BedSupportForm from "../payment/BedSupportForm";
+import BedSupportForm from "../payment/paymentAu/BedSupportForm";
 import { Button } from "../ui/button";
 import toastService from "@/utils/toastService";
 import { Share2 } from "lucide-react";

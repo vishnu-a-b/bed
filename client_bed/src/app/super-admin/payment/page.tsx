@@ -1,4 +1,4 @@
-import PaymentHome from "@/components/bed/PaymentHome";
+import PaymentHome from "@/components/bed/bedPaymentAu/PaymentHome";
 
 
 

@@ -174,8 +174,24 @@ const StaffForm = ({ staffId }: { staffId?: string }) => {
   };
   const onSubmit = async (data: any, event: any) => {
     console.log(roles)
+    console.log("Organization:", organization1)
+    console.log("Country:", country)
     setIsSending(true);
     event?.preventDefault();
+
+    // Validate required fields before submission
+    if (!organization1?.id) {
+      toastService.error("Organization is required");
+      setIsSending(false);
+      return;
+    }
+
+    if (!country?.id) {
+      toastService.error("Country is required");
+      setIsSending(false);
+      return;
+    }
+
     try {// Extract files
 
       const password = "User@" + data.mobileNo;
@@ -189,7 +205,7 @@ const StaffForm = ({ staffId }: { staffId?: string }) => {
         isActive: data.isActive,
         ...(staffId ? {} : { password }), // Include password only if creating a new user
       };
-      
+
       const formData = new FormData();
       Object.entries(userData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
@@ -213,10 +229,10 @@ const StaffForm = ({ staffId }: { staffId?: string }) => {
           data.userId || ""
         );
         const staffData: any = {
-          ...(data.name && { name: data.name }),
-          ...(organization1.id && { organization: organization1.id }),
-          ...(country.id && { country: country.id }),
-          ...(data.userId && { user: data.userId }),
+          name: data.name,
+          organization: organization1.id,
+          country: country.id,
+          user: data.userId,
           isActive: data.isActive,
           role: "regular-staff",
         };
@@ -238,13 +254,13 @@ const StaffForm = ({ staffId }: { staffId?: string }) => {
 
         if (response1._id) {
             const staffData: any = {
-            ...(data.name && { name: data.name }),
-            ...(organization1.id && { organization: organization1.id }),
-            ...(country.id && { country: country.id }),
-            ...(data.staffRole && { role: data.staffRole }),
+            name: data.name,
+            organization: organization1.id,
+            country: country.id,
             user: response1._id,
             role: "regular-staff",
             };
+          console.log("Creating staff with data:", staffData);
           const response = await create("staff", staffData);
           if (response._id) {
             toastService.success("Staff created successfully");
@@ -420,7 +436,7 @@ const StaffForm = ({ staffId }: { staffId?: string }) => {
           onChange={handleOrganizationChange}
           classNamePrefix="select"
           required
-          isDisabled
+          isClearable
         />
 
         {errors.organization && (

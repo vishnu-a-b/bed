@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Share2, Heart, DollarSign, Users, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import toastService from "@/utils/toastService";
-import BedSupportForm from "@/components/payment/BedSupportForm";
+import BedSupportForm from "@/components/payment/paymentAu/BedSupportForm";
 
 
 export default function BedDetailsPage() {

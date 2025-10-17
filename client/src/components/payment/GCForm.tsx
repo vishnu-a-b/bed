@@ -16,6 +16,13 @@ import axios from "axios";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
+// Razorpay interface
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 // Zod validation schema
 const contributorSchema = z.object({
   name: z.string().min(1, "Name is required").trim(),
@@ -58,12 +65,37 @@ interface FormErrors {
 }
 
 type SubmitStatus = "success" | "error" | null;
+type PaymentRegion = "india" | "australia";
 
 const  GenerousContributionsForm: React.FC = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  // Detect payment region based on hostname
+  const [paymentRegion, setPaymentRegion] = useState<PaymentRegion>("australia");
+
+  // Determine initial currency and phone country based on region
+  const getInitialValues = () => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const isIndia = hostname.includes("shanthibhavan.in");
+      return {
+        region: isIndia ? "india" : "australia",
+        currency: isIndia ? "INR" : "AUD",
+        phoneCountry: isIndia ? "in" : "au"
+      };
+    }
+    return {
+      region: "australia" as PaymentRegion,
+      currency: "AUD",
+      phoneCountry: "au"
+    };
+  };
+
+  const initialValues = getInitialValues();
+
   const [formData, setFormData] = useState<FormData>({
     amount: "",
-    currency: "AUD",
+    currency: initialValues.currency,
     contributor: {
       name: "",
       phone: "",
@@ -155,14 +187,95 @@ const  GenerousContributionsForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (): Promise<void> => {
-    if (!validateForm()) {
-      return;
+  // Handle Razorpay payment (India)
+  const handleRazorpayPayment = async (): Promise<void> => {
+    try {
+      // Create payment order with backend
+      const response = await axios.post(`${API_URL}/generous-payments-ind/create`, {
+        ...formData,
+        amount: parseFloat(formData.amount),
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = response.data;
+
+      if (result.success) {
+        const { orderId, amount, currency } = result.data;
+
+        // Initialize Razorpay checkout
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: amount * 100, // Amount in paise
+          currency: currency,
+          name: "Shanthibhavan",
+          description: "Generous Contribution",
+          order_id: orderId,
+          handler: async function (response: any) {
+            try {
+              // Verify payment with backend
+              const verifyResponse = await axios.post(
+                `${API_URL}/generous-payments-ind/verify`,
+                {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              if (verifyResponse.data.success) {
+                setSubmitStatus("success");
+                // Reset form
+                setFormData({
+                  amount: "",
+                  currency: "INR",
+                  contributor: {
+                    name: "",
+                    phone: "",
+                    email: "",
+                    address: "",
+                  },
+                  source: "website",
+                });
+              } else {
+                throw new Error("Payment verification failed");
+              }
+            } catch (error) {
+              console.error("Payment verification error:", error);
+              setSubmitStatus("error");
+            }
+          },
+          prefill: {
+            name: formData.contributor.name,
+            email: formData.contributor.email,
+            contact: formData.contributor.phone,
+          },
+          theme: {
+            color: "#9333ea", // Purple-600 to match the form theme
+          },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } else {
+        throw new Error(result.message || "Payment creation failed");
+      }
+    } catch (error: any) {
+      console.error("Razorpay payment error:", error);
+      setSubmitStatus("error");
+      throw error;
     }
+  };
 
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-
+  // Handle PayPal payment (Australia)
+  const handlePayPalPayment = async (): Promise<void> => {
     try {
       // Create payment with backend using axios
       const response = await axios.post(`${API_URL}/generous-payments/create`, {
@@ -200,6 +313,27 @@ const  GenerousContributionsForm: React.FC = () => {
         }
       } else {
         throw new Error(result.message || "Payment creation failed");
+      }
+    } catch (error: any) {
+      console.error("PayPal payment error:", error);
+      setSubmitStatus("error");
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      if (paymentRegion === "india") {
+        await handleRazorpayPayment();
+      } else {
+        await handlePayPalPayment();
       }
     } catch (error: any) {
       console.error("Payment creation error:", error);
@@ -257,15 +391,33 @@ const  GenerousContributionsForm: React.FC = () => {
     }
   };
 
-  // Check for payment success on component mount (if returning from PayPal)
+  // Set payment region and load scripts on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      const payerID = urlParams.get("PayerID");
-      const paymentId = urlParams.get("paymentId");
+      const hostname = window.location.hostname;
+      const isIndia = hostname.includes("shanthibhavan.in");
+      const region = isIndia ? "india" : "australia";
 
-      if (payerID && paymentId) {
-        handlePaymentSuccess(payerID, paymentId);
+      setPaymentRegion(region as PaymentRegion);
+
+      // Load Razorpay script for India
+      if (isIndia && !document.getElementById("razorpay-script")) {
+        const script = document.createElement("script");
+        script.id = "razorpay-script";
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
+
+      // Check for PayPal payment success (only for Australia)
+      if (!isIndia) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const payerID = urlParams.get("PayerID");
+        const paymentId = urlParams.get("paymentId");
+
+        if (payerID && paymentId) {
+          handlePaymentSuccess(payerID, paymentId);
+        }
       }
     }
   }, []);
@@ -324,11 +476,11 @@ const  GenerousContributionsForm: React.FC = () => {
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (AUD)
+                  Amount ({paymentRegion === "india" ? "INR" : "AUD"})
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    $
+                    {paymentRegion === "india" ? "₹" : "$"}
                   </span>
                   <input
                     type="number"
@@ -383,7 +535,7 @@ const  GenerousContributionsForm: React.FC = () => {
                   Phone Number (prefer whatsapp)
                 </label>
                 <PhoneInput
-                  country={'au'}
+                  country={initialValues.phoneCountry}
                   value={formData.contributor.phone}
                   onChange={handlePhoneChange}
                   inputClass={` !w-full !h-12 !py-3 !pl-12 !pr-4 !border !rounded-lg !focus:ring-2 !focus:ring-purple-500 !focus:border-transparent ${
@@ -462,7 +614,7 @@ const  GenerousContributionsForm: React.FC = () => {
               ) : (
                 <>
                   <Heart className="w-5 h-5 mr-2" />
-                  Proceed to PayPal
+                  {paymentRegion === "india" ? "Proceed to Razorpay" : "Proceed to PayPal"}
                 </>
               )}
             </button>

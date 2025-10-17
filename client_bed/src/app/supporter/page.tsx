@@ -2,21 +2,12 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-import { Button } from "@/components/ui/button";
+import { Axios } from "@/utils/api/apiAuth";
 import { Heart, DollarSign, Users, BedDouble } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { Qr } from "@/components/payment/Qr";
-import BedAuPaymentButton from "@/components/payment/BedAuPaymentButton";
-import { PaymentForm } from "@/components/payment/PaymentForm";
+import BedAuPaymentButton from "@/components/payment/paymentAu/BedAuPaymentButton";
+import { BedIndPaymentButton } from "@/components/bed/bedPaymentInd/BedIndPaymentButton";
 
 export default function SupporterDetailsPage() {
   const supporterId =
@@ -33,10 +24,32 @@ export default function SupporterDetailsPage() {
     if (supporterId) {
       const fetchSupporterData = async () => {
         try {
-          const response = await axios(
-            `${API_URL}/bed-payments/get-supporter-data/${supporterId}`
+          // First fetch the supporter details using authenticated Axios
+          const supporterResponse = await Axios.get(
+            `/supporter/${supporterId}`
           );
-          console.log(response);
+          const supporter = supporterResponse?.data?.data;
+          console.log("Supporter details:", supporter);
+
+          // Determine which payment endpoint to use based on organization
+          const isAustralia =
+            supporter?.bed?.organization === "685a6b023c2c9217eb9d074e";
+          const paymentEndpoint = isAustralia
+            ? "bed-payments"
+            : "bed-payments-ind";
+
+          console.log(
+            `Fetching from ${paymentEndpoint} `
+          );
+
+          // Fetch payment data from the correct endpoint (no auth needed for this public endpoint)
+          const response = await axios(
+            `${API_URL}/${paymentEndpoint}/get-supporter-data/${supporterId}`
+          );
+          console.log(
+            `Payment data (${isAustralia ? "Australia" : "India"}):`,
+            response
+          );
           setSupporterData(response?.data);
         } catch (err) {
           setError(err instanceof Error ? err.message : "Unknown error");
@@ -44,6 +57,7 @@ export default function SupporterDetailsPage() {
           setLoading(false);
         }
       };
+
       fetchSupporterData();
     }
   }, [supporterId]);
@@ -214,26 +228,15 @@ export default function SupporterDetailsPage() {
           className="flex flex-col sm:flex-row justify-center gap-4 mb-8"
         >
           {supporterData.countryName === "Australia" ? (
-            <BedAuPaymentButton id={supporterId} />
+            <BedAuPaymentButton
+              id={supporterId}
+              supporterData={supporterData}
+            />
           ) : (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto py-6 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg transition-all hover:shadow-xl"
-                >
-                  Make Payment
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogDescription>
-                    <PaymentForm supporter={supporterData} />
-                    {/* <PaymentForm supporter={supporterData} /> */}
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+            <BedIndPaymentButton
+              supporterId={supporterId}
+              supporterData={supporterData}
+            />
           )}
         </motion.div>
 

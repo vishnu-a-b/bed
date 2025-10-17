@@ -239,7 +239,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
       </div>
 
       <div className="flex gap-2 flex-wrap pt-4">
-        {/* <Button
+        <Button
           className="text-sm"
           onClick={(e) => {
             e.preventDefault();
@@ -258,7 +258,7 @@ const ViewDetails = ({ data }: { data: Bed }) => {
           }}
         >
           Edit
-        </Button> */}
+        </Button>
 
         {/* <Button
           className="text-sm"

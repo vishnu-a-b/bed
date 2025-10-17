@@ -3,7 +3,7 @@ import Footer from "@/components/donation/footer";
 import Header from "@/components/donation/header";
 import Slider from "@/components/donation/slider";
 import YouTubePlayer from "@/components/donation/YoutubePlayer";
-import BedSupportForm from "@/components/payment/BedSupportForm";
+import BedSupportForm from "@/components/payment/paymentAu/BedSupportForm";
 import { Button } from "@/components/ui/button";
 import { initGA, logPageView } from "../utils/analytics";
 import {
