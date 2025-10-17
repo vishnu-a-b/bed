@@ -5,27 +5,26 @@ export const paymentUpdateDoc = async (
   res: Response,
   next: NextFunction
 ) => {
-  /*  
-          #swagger.tags = ['payment']
+  /*
+          #swagger.tags = ['GenerousContributionPayment']
+          #swagger.description = 'Update a generous contribution payment (Australia) record'
+          #swagger.parameters['id'] = { description: 'Payment ID', in: 'path', required: true, type: 'string' }
           #swagger.parameters['parameter_name'] = {
             in: 'body',
-            description: 'Endpoint to update a payment',
+            description: 'Payment update details',
             schema: {
-              schema: {
-              name: "string",
-              country: "65cd9d8d5cae5ffc348ed638",
-              organization: "65cd9d8d5cae5ffc348ed638",
-              role: "string",
-              joinDate: "string",
+              status: "completed",
+              isApproved: true,
+              remarks: "Payment verified",
+              transactionReference: "TXN123456"
             }
-            }
-          } 
-          
+          }
+
           #swagger.security = [
             {
               JWT: []
             }
-          ] 
+          ]
       */
   next();
 };

@@ -5,13 +5,22 @@ export const paymentDeleteDoc = async (
   res: Response,
   next: NextFunction
 ) => {
-  /* 
-     #swagger.tags = ['payment']
+  /*
+     #swagger.tags = ['BedPaymentIn']
+     #swagger.description = 'Delete a bed payment (India) record by ID - requires admin authorization'
+     #swagger.parameters['id'] = { description: 'Payment ID', in: 'path', required: true, type: 'string' }
+     #swagger.responses[200] = {
+      description: 'Payment deleted successfully',
+      schema: {
+        success: true,
+        message: 'Payment deleted successfully'
+      }
+    }
     #swagger.security = [
       {
         JWT: []
       }
-    ] 
+    ]
   */
   next();
 };

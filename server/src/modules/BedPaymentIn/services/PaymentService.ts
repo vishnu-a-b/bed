@@ -223,10 +223,12 @@ export default class PaymentService {
 
       const order = await razorpay.orders.create(options);
 
+      console.log("Created Razorpay order:", order.id);
+
       // Create payment record
       const payment = new Payment({
         razorpay_order_id: order.id,
-        amount: order.amount,
+        amount: Number(supporter.amount), // Store in rupees, not paise
         currency: order.currency,
         status: "pending",
         method: "online",
@@ -240,6 +242,7 @@ export default class PaymentService {
       });
 
       await payment.save();
+      console.log("Saved payment record with order ID:", payment.razorpay_order_id, "Payment ID:", payment._id);
 
       return {
         success: true,
@@ -260,11 +263,19 @@ export default class PaymentService {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
       params;
 
+    console.log("Verifying payment with order ID:", razorpay_order_id);
+
     // Find the payment record
     const payment = await Payment.findOne({ razorpay_order_id });
     if (!payment) {
+      console.error("Payment not found for order ID:", razorpay_order_id);
+      // List all payments to debug
+      const allPayments = await Payment.find({}).select('razorpay_order_id').limit(5);
+      console.log("Recent payments in DB:", allPayments);
       throw new Error("Payment record not found");
     }
+
+    console.log("Found payment record:", payment._id);
 
     // Verify the signature
     const generatedSignature = crypto

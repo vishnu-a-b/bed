@@ -5,27 +5,28 @@ export const supporterCreateDoc = async (
   res: Response,
   next: NextFunction
 ) => {
-  /*  
-          #swagger.tags = ['supporter']
+  /*
+          #swagger.tags = ['Supporter']
+          #swagger.description = 'Create a new supporter/sponsor for a bed'
           #swagger.parameters['parameter_name'] = {
             in: 'body',
-            description: 'Endpoint to create a supporter',
+            description: 'Supporter details',
             schema: {
-              name: "string",
               user: "65cd9d8d5cae5ffc348ed638",
-              country: "65cd9d8d5cae5ffc348ed638",
-              organization: "65cd9d8d5cae5ffc348ed638",
-              role: "string",
-              type: "string",
-              joinDate: "string",
+              name: "John Doe",
+              panNo: "ABCDE1234F",
+              nameVisible: true,
+              bed: "65cd9d8d5cae5ffc348ed638",
+              startDate: "2024-01-01T00:00:00.000Z",
+              endDate: "2024-12-31T23:59:59.999Z",
+              role: "head",
+              type: "individual",
+              isActive: true,
+              amount: 5000,
+              verificationStatus: "verified",
+              address: "123 Main St, City, State, ZIP"
             }
-          } 
-          
-          #swagger.security = [
-            {
-              JWT: []
-            }
-          ] 
+          }
       */
   next();
 };

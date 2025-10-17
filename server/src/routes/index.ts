@@ -12,7 +12,9 @@ import OrganizationRouter from "../modules/organization/routes/Organization";
 import SupporterRouter from "../modules/supporter/routes/SupporterRouter";
 import PaymentRouter from "../modules/BedPaymentIn/routes/PaymentRouter";
 import GenerousContributionPaymentRouter from "../modules/GenerousContributionPayment/routes/generousContributionPaymentRoutes";
+import GenerousContributionPaymentIndRouter from "../modules/GenerousContributionPaymentInd/routes/generousContributionPaymentIndRoutes";
 import BedPaymentAu from "../modules/BedPaymentAu/routes/ BedPaymentAu";
+import BedPaymentInd from "../modules/BedPaymentIn/routes/BedPaymentInd";
 
 const router = express.Router();
 
@@ -29,6 +31,8 @@ router.use("/v1/supporter/", SupporterRouter);
 router.use("/v1/bed/", BedRouter);
 router.use("/v1/payment/", PaymentRouter);
 router.use("/v1/generous-payments/",GenerousContributionPaymentRouter )
+router.use("/v1/generous-payments-ind/",GenerousContributionPaymentIndRouter )
 router.use("/v1/bed-payments/",BedPaymentAu)
+router.use("/v1/bed-payments-ind/",BedPaymentInd)
 
 export default router;

@@ -1,13 +1,13 @@
 // server/src/modules/GenerousContributionPaymentInd/models/GenerousContributionPaymentInd.ts
 import mongoose from "mongoose";
 
-// Counter schema for auto-incrementing receipt numbers
-const counterSchema = new mongoose.Schema({
+// CounterGIN schema for auto-incrementing receipt numbers
+const counterGINSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   seq: { type: Number, default: 0 }
 });
 
-const Counter = mongoose.model('Counter', counterSchema);
+const CounterGIN = mongoose.model('CounterGIN', counterGINSchema);
 
 const generousContributionPaymentIndSchema = new mongoose.Schema(
   {
@@ -136,7 +136,7 @@ const generousContributionPaymentIndSchema = new mongoose.Schema(
 generousContributionPaymentIndSchema.pre('save', async function(next) {
   if (this.isNew && !this.receiptNumber) {
     try {
-      const counter = await Counter.findByIdAndUpdate(
+      const counterGIN = await CounterGIN.findByIdAndUpdate(
         'generous_contribution_ind_receipt',
         { $inc: { seq: 1 } },
         { new: true, upsert: true }
@@ -144,7 +144,7 @@ generousContributionPaymentIndSchema.pre('save', async function(next) {
 
       // Format: GCI-YYYY-000001 (GCI = Generous Contribution India)
       const currentYear = new Date().getFullYear();
-      this.receiptNumber = `GCI-${currentYear}-${counter.seq.toString().padStart(6, '0')}`;
+      this.receiptNumber = `GCI-${currentYear}-${counterGIN.seq.toString().padStart(6, '0')}`;
     } catch (error:any) {
       return next(error);
     }

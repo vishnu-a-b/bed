@@ -127,7 +127,7 @@ export default class GenerousContributionPaymentIndService {
     try {
       // Create Razorpay order
       const options = {
-        amount: amount * 100, // Razorpay expects amount in paise
+        amount: Math.round(amount * 100), // Convert to paise for Razorpay
         currency: currency,
         receipt: `receipt_${Date.now()}`,
         notes: {
@@ -142,7 +142,7 @@ export default class GenerousContributionPaymentIndService {
       // Create payment record in database
       const payment = await GenerousContributionPaymentInd.create({
         razorpay_order_id: order.id,
-        amount,
+        amount, // Store in rupees
         currency,
         status: "pending",
         paymentMode: "online",
@@ -796,8 +796,8 @@ export default class GenerousContributionPaymentIndService {
     try {
       if (payment.razorpay_payment_id) {
         const refundAmount = refundData.amount
-          ? refundData.amount * 100
-          : payment.amount * 100;
+          ? Math.round(refundData.amount * 100) // Convert to paise for Razorpay
+          : Math.round(payment.amount * 100); // Convert to paise for Razorpay
 
         const refund = await razorpay.payments.refund(
           payment.razorpay_payment_id,

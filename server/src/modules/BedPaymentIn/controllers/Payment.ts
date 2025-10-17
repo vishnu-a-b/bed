@@ -173,6 +173,10 @@ export default class PaymentController extends BaseController {
 
   verifyPayment = async (req: Request, res: Response) => {
     try {
+      console.log("=== VERIFY PAYMENT CALLED ===");
+      console.log("Request body:", req.body);
+      console.log("Stack trace:", new Error().stack);
+
       const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
         req.body;
 
@@ -182,10 +186,14 @@ export default class PaymentController extends BaseController {
         razorpay_signature,
       });
 
-      res.json(payment);
+      res.json({
+        success: true,
+        data: payment,
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({
+        success: false,
         error:
           error instanceof Error ? error.message : "An unknown error occurred",
       });

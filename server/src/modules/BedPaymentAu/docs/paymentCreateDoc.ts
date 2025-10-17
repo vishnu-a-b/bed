@@ -5,27 +5,28 @@ export const paymentCreateDoc = async (
   res: Response,
   next: NextFunction
 ) => {
-  /*  
-          #swagger.tags = ['payment']
+  /*
+          #swagger.tags = ['BedPaymentAu']
+          #swagger.description = 'Create a bed payment (Bed Sponsorship) - Used by client_bed app - Supports PayPal online and offline payment modes'
           #swagger.parameters['parameter_name'] = {
             in: 'body',
-            description: 'Endpoint to create a payment',
+            description: 'Bed sponsorship payment details for Australia',
             schema: {
-              name: "string",
-              user: "65cd9d8d5cae5ffc348ed638",
-              country: "65cd9d8d5cae5ffc348ed638",
-              organization: "65cd9d8d5cae5ffc348ed638",
-              role: "string",
-              type: "string",
-              joinDate: "string",
+              supporter: "65cd9d8d5cae5ffc348ed638",
+              bed: "65cd9d8d5cae5ffc348ed638",
+              amount: 500,
+              currency: "AUD",
+              contribution: {
+                purpose: "bed_donation",
+                description: "Bed sponsorship donation"
+              },
+              paymentMode: "online",
+              manualMethod: "bank_transfer",
+              transactionReference: "TXN123456",
+              remarks: "Bed sponsorship payment",
+              source: "website"
             }
-          } 
-          
-          #swagger.security = [
-            {
-              JWT: []
-            }
-          ] 
+          }
       */
   next();
 };

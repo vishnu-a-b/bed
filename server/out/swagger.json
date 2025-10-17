@@ -2829,12 +2829,44 @@
     "/v1/supporter/get-all-data": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
+        "parameters": [
+          {
+            "name": "user",
+            "description": "Filter by user ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -2866,33 +2898,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -2924,20 +2980,50 @@
     "/v1/supporter/get-country-data/{id}": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "user",
+            "description": "Filter by user ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -2969,33 +3055,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3030,20 +3140,50 @@
     "/v1/supporter/get-bed-data/{id}": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "user",
+            "description": "Filter by user ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -3075,33 +3215,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3136,44 +3300,68 @@
     "/v1/supporter/": {
       "post": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Create a new supporter/sponsor for a bed",
         "parameters": [
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to create a supporter",
+            "description": "Supporter details",
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
-                  "type": "string",
-                  "example": "string"
-                },
                 "user": {
                   "type": "string",
                   "example": "65cd9d8d5cae5ffc348ed638"
                 },
-                "country": {
+                "name": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "panNo": {
+                  "type": "string",
+                  "example": "ABCDE1234F"
+                },
+                "nameVisible": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "bed": {
                   "type": "string",
                   "example": "65cd9d8d5cae5ffc348ed638"
                 },
-                "organization": {
+                "startDate": {
                   "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
+                  "example": "2024-01-01T00:00:00.000Z"
+                },
+                "endDate": {
+                  "type": "string",
+                  "example": "2024-12-31T23:59:59.999Z"
                 },
                 "role": {
                   "type": "string",
-                  "example": "string"
+                  "example": "head"
                 },
                 "type": {
                   "type": "string",
-                  "example": "string"
+                  "example": "individual"
                 },
-                "joinDate": {
+                "isActive": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "amount": {
+                  "type": "number",
+                  "example": 5000
+                },
+                "verificationStatus": {
                   "type": "string",
-                  "example": "string"
+                  "example": "verified"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "123 Main St, City, State, ZIP"
                 }
               }
             }
@@ -3183,21 +3371,46 @@
           "default": {
             "description": ""
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/v1/supporter/contact-info": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
         "parameters": [
+          {
+            "name": "user",
+            "description": "Filter by user ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          },
           {
             "name": "supporterId",
             "in": "query",
@@ -3211,7 +3424,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -3243,33 +3456,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3304,12 +3541,44 @@
     "/v1/supporter/supporter-head": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
+        "parameters": [
+          {
+            "name": "user",
+            "description": "Filter by user ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -3341,33 +3610,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3399,24 +3692,44 @@
     "/v1/supporter/get": {
       "post": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
         "parameters": [
           {
-            "name": "limit",
+            "name": "user",
+            "description": "Filter by user ID",
             "in": "query",
             "type": "string"
           },
           {
-            "name": "skip",
+            "name": "bed",
+            "description": "Filter by bed ID",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -3448,33 +3761,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -3506,24 +3843,44 @@
     "/v1/supporter/supporter": {
       "get": {
         "tags": [
-          "supporter"
+          "Supporter"
         ],
-        "description": "",
+        "description": "Get list of supporters/sponsors with filtering, sorting and pagination",
         "parameters": [
           {
-            "name": "limit",
+            "name": "user",
+            "description": "Filter by user ID",
             "in": "query",
             "type": "string"
           },
           {
-            "name": "skip",
+            "name": "bed",
+            "description": "Filter by bed ID",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "isActive",
+            "description": "Filter by active status",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get supporter list",
+            "description": "List of supporters retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -3555,33 +3912,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "string"
-                          },
                           "user": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "name": {
+                            "type": "string",
+                            "example": "John Doe"
+                          },
+                          "panNo": {
+                            "type": "string",
+                            "example": "ABCDE1234F"
+                          },
+                          "nameVisible": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
+                          "startDate": {
                             "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
+                            "example": "2024-01-01T00:00:00.000Z"
                           },
-                          "roles": {
+                          "endDate": {
                             "type": "string",
-                            "example": "string"
+                            "example": "2024-12-31T23:59:59.999Z"
                           },
-                          "joinDate": {
+                          "role": {
                             "type": "string",
-                            "example": "string"
+                            "example": "head"
                           },
-                          "createdBy": {
+                          "type": {
                             "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                            "example": "individual"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 5000
+                          },
+                          "verificationStatus": {
+                            "type": "string",
+                            "example": "verified"
+                          },
+                          "address": {
+                            "type": "string",
+                            "example": "123 Main St, City"
                           },
                           "createdAt": {
                             "type": "string",
@@ -4341,44 +4722,80 @@
     "/v1/payment/": {
       "post": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Create a bed payment (India - Bed Sponsorship) - Used by client_bed app for India - Supports Razorpay online and offline payment modes",
         "parameters": [
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to create a payment",
+            "description": "Bed sponsorship payment details for India",
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
-                  "type": "string",
-                  "example": "string"
-                },
-                "user": {
+                "supporter": {
                   "type": "string",
                   "example": "65cd9d8d5cae5ffc348ed638"
                 },
-                "country": {
+                "bed": {
                   "type": "string",
                   "example": "65cd9d8d5cae5ffc348ed638"
                 },
-                "organization": {
-                  "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
+                "amount": {
+                  "type": "number",
+                  "example": 10000
                 },
-                "role": {
+                "currency": {
                   "type": "string",
-                  "example": "string"
+                  "example": "INR"
                 },
-                "type": {
+                "status": {
                   "type": "string",
-                  "example": "string"
+                  "example": "pending"
                 },
-                "joinDate": {
+                "method": {
                   "type": "string",
-                  "example": "string"
+                  "example": "upi"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "supporter@example.com"
+                },
+                "contact": {
+                  "type": "string",
+                  "example": "+919876543210"
+                },
+                "paymentMode": {
+                  "type": "string",
+                  "example": "online"
+                },
+                "manualMethod": {
+                  "type": "string",
+                  "example": "cash"
+                },
+                "transactionReference": {
+                  "type": "string",
+                  "example": "TXN123456"
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "example": "2024-01-15T10:30:00.000Z"
+                },
+                "remarks": {
+                  "type": "string",
+                  "example": "Payment for bed sponsorship"
+                },
+                "razorpay_payment_id": {
+                  "type": "string",
+                  "example": "pay_xyz123"
+                },
+                "razorpay_order_id": {
+                  "type": "string",
+                  "example": "order_xyz123"
+                },
+                "razorpay_signature": {
+                  "type": "string",
+                  "example": "signature_xyz"
                 }
               }
             }
@@ -4388,33 +4805,63 @@
           "default": {
             "description": ""
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "get": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
         "parameters": [
           {
-            "name": "limit",
+            "name": "supporter",
+            "description": "Filter by supporter ID",
             "in": "query",
             "type": "string"
           },
           {
-            "name": "skip",
+            "name": "bed",
+            "description": "Filter by bed ID",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get payment list",
+            "description": "List of bed payments retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -4446,33 +4893,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
+                          "razorpay_payment_id": {
                             "type": "string",
-                            "example": "string"
+                            "example": "pay_xyz123"
                           },
-                          "user": {
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
-                          },
-                          "roles": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "joinDate": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "createdBy": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
                           },
                           "createdAt": {
                             "type": "string",
@@ -4517,20 +4988,65 @@
     "/v1/payment/get-supporter-data/{id}": {
       "get": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get payment list",
+            "description": "List of bed payments retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -4562,33 +5078,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
+                          "razorpay_payment_id": {
                             "type": "string",
-                            "example": "string"
+                            "example": "pay_xyz123"
                           },
-                          "user": {
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
-                          },
-                          "roles": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "joinDate": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "createdBy": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
                           },
                           "createdAt": {
                             "type": "string",
@@ -4623,12 +5163,59 @@
     "/v1/payment/create-order": {
       "post": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Endpoint to get payment list",
+            "description": "List of bed payments retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -4660,33 +5247,57 @@
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "name": {
+                          "razorpay_payment_id": {
                             "type": "string",
-                            "example": "string"
+                            "example": "pay_xyz123"
                           },
-                          "user": {
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "country": {
+                          "bed": {
                             "type": "string",
                             "example": "65cd9d8d5cae5ffc348ed638"
                           },
-                          "organization": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae5ffc348ed638"
-                          },
-                          "roles": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "joinDate": {
-                            "type": "string",
-                            "example": "string"
-                          },
-                          "createdBy": {
-                            "type": "string",
-                            "example": "65cd9d8d5cae4ffc348ed682"
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
                           },
                           "createdAt": {
                             "type": "string",
@@ -4731,12 +5342,63 @@
     "/v1/payment/count-documents": {
       "get": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Get total count of bed payments (India) with optional filters",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Endpoint to get total payments count"
+            "description": "Total payments count retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "number",
+                      "example": 150
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -4749,20 +5411,21 @@
     "/v1/payment/{id}": {
       "get": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Get detailed information about a specific bed payment (India) by ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Payment ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Endpoint to get payment details",
+            "description": "Payment details retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
@@ -4777,33 +5440,70 @@
                       "type": "string",
                       "example": "65cd9d8d5cae5ffc348ed638"
                     },
-                    "name": {
+                    "razorpay_payment_id": {
                       "type": "string",
-                      "example": "string"
+                      "example": "pay_xyz123"
                     },
-                    "user": {
+                    "razorpay_order_id": {
+                      "type": "string",
+                      "example": "order_xyz123"
+                    },
+                    "razorpay_signature": {
+                      "type": "string",
+                      "example": "signature_xyz"
+                    },
+                    "amount": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "INR"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "captured"
+                    },
+                    "method": {
+                      "type": "string",
+                      "example": "upi"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "supporter@example.com"
+                    },
+                    "contact": {
+                      "type": "string",
+                      "example": "+919876543210"
+                    },
+                    "created_at": {
+                      "type": "number",
+                      "example": 1612345678
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {}
+                    },
+                    "paymentMode": {
+                      "type": "string",
+                      "example": "online"
+                    },
+                    "manualMethod": {},
+                    "transactionReference": {},
+                    "paymentDate": {},
+                    "remarks": {},
+                    "recordedBy": {},
+                    "supporter": {
                       "type": "string",
                       "example": "65cd9d8d5cae5ffc348ed638"
                     },
-                    "country": {
+                    "bed": {
                       "type": "string",
                       "example": "65cd9d8d5cae5ffc348ed638"
                     },
-                    "organization": {
-                      "type": "string",
-                      "example": "65cd9d8d5cae5ffc348ed638"
-                    },
-                    "roles": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "joinDate": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "createdBy": {
-                      "type": "string",
-                      "example": "65cd9d8d5cae4ffc348ed682"
+                    "isVerified": {
+                      "type": "boolean",
+                      "example": true
                     },
                     "createdAt": {
                       "type": "string",
@@ -4830,47 +5530,43 @@
       },
       "put": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Update a bed payment (India) record - typically for manual/offline payments or status updates",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Payment ID"
           },
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to update a payment",
+            "description": "Payment update details",
             "schema": {
               "type": "object",
               "properties": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "country": {
-                      "type": "string",
-                      "example": "65cd9d8d5cae5ffc348ed638"
-                    },
-                    "organization": {
-                      "type": "string",
-                      "example": "65cd9d8d5cae5ffc348ed638"
-                    },
-                    "role": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "joinDate": {
-                      "type": "string",
-                      "example": "string"
-                    }
-                  }
+                "status": {
+                  "type": "string",
+                  "example": "captured"
+                },
+                "isVerified": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "remarks": {
+                  "type": "string",
+                  "example": "Payment verified"
+                },
+                "transactionReference": {
+                  "type": "string",
+                  "example": "TXN123456"
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "example": "2024-01-15T10:30:00.000Z"
                 }
               }
             }
@@ -4889,20 +5585,37 @@
       },
       "delete": {
         "tags": [
-          "payment"
+          "BedPaymentIn"
         ],
-        "description": "",
+        "description": "Delete a bed payment (India) record by ID - requires admin authorization",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Payment ID"
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Payment deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Payment deleted successfully"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         },
         "security": [
@@ -4915,44 +5628,73 @@
     "/v1/generous-payments/create": {
       "post": {
         "tags": [
-          "payment"
+          "GenerousContributionPayment"
         ],
-        "description": "",
+        "description": "Create a generous contribution payment (General Donations) - Used by client app - Supports PayPal online and offline payment modes",
         "parameters": [
           {
             "name": "parameter_name",
             "in": "body",
-            "description": "Endpoint to create a payment",
+            "description": "Generous contribution payment details for general donations",
             "schema": {
               "type": "object",
               "properties": {
                 "name": {
                   "type": "string",
-                  "example": "string"
+                  "example": "John Doe"
                 },
-                "user": {
+                "phNo": {
                   "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
+                  "example": "+61412345678"
                 },
-                "country": {
+                "email": {
                   "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
+                  "example": "donor@example.com"
                 },
-                "organization": {
+                "address": {
                   "type": "string",
-                  "example": "65cd9d8d5cae5ffc348ed638"
+                  "example": "123 Main St, Sydney NSW 2000, Australia"
                 },
-                "role": {
-                  "type": "string",
-                  "example": "string"
+                "amount": {
+                  "type": "number",
+                  "example": 500
                 },
-                "type": {
+                "currency": {
                   "type": "string",
-                  "example": "string"
+                  "example": "AUD"
                 },
-                "joinDate": {
+                "contribution": {
+                  "type": "object",
+                  "properties": {
+                    "purpose": {
+                      "type": "string",
+                      "example": "general_donation"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "General donation to support the cause"
+                    }
+                  }
+                },
+                "paymentMode": {
                   "type": "string",
-                  "example": "string"
+                  "example": "online"
+                },
+                "manualMethod": {
+                  "type": "string",
+                  "example": "bank_transfer"
+                },
+                "transactionReference": {
+                  "type": "string",
+                  "example": "TXN123456"
+                },
+                "remarks": {
+                  "type": "string",
+                  "example": "Generous contribution"
+                },
+                "source": {
+                  "type": "string",
+                  "example": "website"
                 }
               }
             }
@@ -4965,12 +5707,7 @@
           "400": {
             "description": "Bad Request"
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/v1/generous-payments/public/{id}": {
@@ -5162,6 +5899,1025 @@
       }
     },
     "/v1/generous-payments/{id}/refund": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/create": {
+      "post": {
+        "tags": [
+          "payment-ind"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "parameter_name",
+            "in": "body",
+            "description": "Endpoint to create a payment (India)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "user": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "country": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "organization": {
+                  "type": "string",
+                  "example": "65cd9d8d5cae5ffc348ed638"
+                },
+                "role": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "joinDate": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/generous-payments-ind/public/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/verify": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/payment-success": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "phoneNo",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/stats": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/manual": {
+      "post": {
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/generous-payments-ind/{id}/refund": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/create-order": {
+      "post": {
+        "tags": [
+          "BedPaymentIn"
+        ],
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bed payments retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "razorpay_payment_id": {
+                            "type": "string",
+                            "example": "pay_xyz123"
+                          },
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bed": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed-payments-ind/verify": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/get-supporter-data/{id}": {
+      "get": {
+        "tags": [
+          "BedPaymentIn"
+        ],
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bed payments retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "razorpay_payment_id": {
+                            "type": "string",
+                            "example": "pay_xyz123"
+                          },
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bed": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed-payments-ind/payment-followup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/public/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/payment-success": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "phoneNo",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status__eq",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "paymentMode__eq",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BedPaymentIn"
+        ],
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bed payments retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "razorpay_payment_id": {
+                            "type": "string",
+                            "example": "pay_xyz123"
+                          },
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bed": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed-payments-ind/stats": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/manual": {
+      "post": {
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/{id}/approve": {
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/bed-payments-ind/{id}/refund": {
       "post": {
         "description": "",
         "parameters": [

@@ -200,6 +200,55 @@ export default class BedPaymentAuService {
         throw new Error("Currency not found");
       }
 
+      // Check for existing pending payment for this supporter
+      // This check looks for payments created within the last 30 minutes that are still pending
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const existingPendingPayment: any = await BedPaymentAu.findOne({
+        supporter: contributorData._id,
+        status: "pending",
+        paymentMode: "online",
+        createdAt: { $gte: thirtyMinutesAgo },
+      }).sort({ createdAt: -1 });
+
+      // If there's an existing pending payment, reuse it
+      if (existingPendingPayment && existingPendingPayment.paypal_order_id) {
+        console.log("Reusing existing PayPal order:", existingPendingPayment.paypal_order_id);
+
+        // Verify the PayPal order is still valid
+        try {
+          const orderRequest: any = new paypal.orders.OrdersGetRequest(existingPendingPayment.paypal_order_id);
+          const orderDetails = await client.execute(orderRequest);
+
+          // If order is still valid and not expired, reuse it
+          if (orderDetails.result.status === "CREATED" || orderDetails.result.status === "APPROVED") {
+            const approvalUrl = orderDetails.result.links?.find(
+              (link: any) => link.rel === "approve"
+            )?.href;
+
+            return {
+              success: true,
+              data: {
+                orderId: existingPendingPayment.paypal_order_id,
+                amount: existingPendingPayment.amount,
+                currency: existingPendingPayment.currency,
+                approvalUrl: approvalUrl || "",
+                paymentId: existingPendingPayment._id,
+              },
+            };
+          }
+        } catch (orderError) {
+          console.log("Existing PayPal order is no longer valid, creating new one");
+          // If order is no longer valid, mark old payment as cancelled and create new one
+          existingPendingPayment.status = "cancelled";
+          existingPendingPayment.notes = {
+            ...existingPendingPayment.notes,
+            cancelled_reason: "Order expired or invalid",
+            cancelled_at: new Date(),
+          };
+          await existingPendingPayment.save();
+        }
+      }
+
       const searchFieldsData = {
         supporterName: contributorData.name,
         supporterEmail: contributorData.email,
@@ -991,7 +1040,7 @@ export default class BedPaymentAuService {
       supporterName: supporter.nameVisible ? supporter.name : "Anonymous",
       bedNo: supporter.bed.bedNo,
       qrPhoto: supporter.bed.qrPhoto,
-      fixedAmount: supporter.bed.fixedAmount,
+      fixedAmount: supporter.amount || supporter.bed.amount || supporter.bed.fixedAmount,
       bedId: supporter.bed._id,
       countryId: supporter.country._id,
       countryName: supporter.country.name,
