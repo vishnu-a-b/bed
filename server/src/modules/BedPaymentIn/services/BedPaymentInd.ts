@@ -5,7 +5,7 @@ import mongoose, { Types } from "mongoose";
 import crypto from "crypto";
 import { Supporter } from "../../supporter/models/Supporter";
 import ListFilterData from "../../../interfaces/ListFilterData";
-import DonationReceiptMailer from "../../../services/DonationReceiptMailer";
+import DonationReceiptMailerIndia from "../../../services/DonationReceiptMailerIndia";
 import whatsappHelper from "../../../services/whatsapp-simple-helper";
 import supporterMailer from "../../../services/mailService";
 
@@ -259,7 +259,7 @@ export default class BedPaymentIndService {
         const payerAddress = payment.address || "";
 
         if (payerEmail) {
-          await DonationReceiptMailer.sendDonationReceiptEmail({
+          await DonationReceiptMailerIndia.sendDonationReceiptEmail({
             email: payerEmail,
             name: payerName || "Supporter",
             phoneNo: payerPhone || "",
@@ -745,7 +745,7 @@ export default class BedPaymentIndService {
           const payerAddress = payment.address || "";
 
           if (payerEmail) {
-            await DonationReceiptMailer.sendDonationReceiptEmail({
+            await DonationReceiptMailerIndia.sendDonationReceiptEmail({
               email: payerEmail,
               name: payerName || "Supporter",
               phoneNo: payerPhone || "",

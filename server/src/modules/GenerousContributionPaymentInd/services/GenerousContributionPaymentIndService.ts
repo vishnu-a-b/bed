@@ -3,7 +3,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { GenerousContributionPaymentInd } from "../models/GenerousContributionPaymentInd";
 import { Types } from "mongoose";
-import DonationReceiptMailer from "../../../services/DonationReceiptMailer";
+import DonationReceiptMailerIndia from "../../../services/DonationReceiptMailerIndia";
 
 // Razorpay SDK Configuration
 const razorpay = new Razorpay({
@@ -233,7 +233,7 @@ export default class GenerousContributionPaymentIndService {
           const address = payment.address || "";
 
           if (payerEmail) {
-            await DonationReceiptMailer.sendDonationReceiptEmail({
+            await DonationReceiptMailerIndia.sendDonationReceiptEmail({
               email: payerEmail,
               name: payerName,
               phoneNo: payment.phNo,
