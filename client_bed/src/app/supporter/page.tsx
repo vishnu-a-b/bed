@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Axios } from "@/utils/api/apiAuth";
 import { Heart, DollarSign, Users, BedDouble } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -24,9 +23,9 @@ export default function SupporterDetailsPage() {
     if (supporterId) {
       const fetchSupporterData = async () => {
         try {
-          // First fetch the supporter details using authenticated Axios
-          const supporterResponse = await Axios.get(
-            `/supporter/${supporterId}`
+          // First fetch the supporter details (public endpoint, no auth needed)
+          const supporterResponse = await axios.get(
+            `${API_URL}/supporter/${supporterId}`
           );
           const supporter = supporterResponse?.data?.data;
           console.log("Supporter details:", supporter);

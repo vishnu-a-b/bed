@@ -78,6 +78,8 @@ export default function ViewSupporter() {
   });
   const [supporterHeadData, setSupporterHeadData] =
     useState<SupporterHeadData | null>(null);
+  const [isLoadingHeadData, setIsLoadingHeadData] = useState(false);
+  const [isLoadingSupporterData, setIsLoadingSupporterData] = useState(false);
 
   const refresh: boolean = useSelector(
     (state: RootState) => state.update.refresh
@@ -239,6 +241,13 @@ export default function ViewSupporter() {
 
   // Fetch supporter head data
   const fetchSupporterHeadData = useCallback(async () => {
+    // Prevent multiple concurrent requests
+    if (isLoadingHeadData) {
+      console.log("Already loading head data, skipping duplicate request");
+      return;
+    }
+
+    setIsLoadingHeadData(true);
     try {
       const response = await Axios.get("supporter/supporter-head");
       console.log("Supporter Head Data:", response.data);
@@ -273,10 +282,16 @@ export default function ViewSupporter() {
         activeSupporters,
         thisMonthSupporters,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching supporter head data:", error);
+      // Only log 401 errors once to avoid console spam
+      if (error?.response?.status === 401) {
+        console.warn("Authentication required for supporter-head endpoint");
+      }
+    } finally {
+      setIsLoadingHeadData(false);
     }
-  }, []);
+  }, [isLoadingHeadData]);
 
   // Debounce the search input
   const debounce = (func: Function, delay: number) => {
@@ -323,6 +338,13 @@ export default function ViewSupporter() {
   // Fetch data from API
   // Fetch data from API
   async function getData() {
+    // Prevent multiple concurrent requests
+    if (isLoadingSupporterData) {
+      console.log("Already loading supporter data, skipping duplicate request");
+      return [];
+    }
+
+    setIsLoadingSupporterData(true);
     try {
       let isActiveFilter = "";
       if (supporterId) {
@@ -386,9 +408,15 @@ export default function ViewSupporter() {
       }
       setTotalRows(items.total || items.length);
       return items.items || items;
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    } catch (error: any) {
+      console.error("Error fetching supporter data:", error);
+      // Log specific error types for debugging
+      if (error?.response?.status === 401) {
+        console.warn("Authentication error while fetching supporters");
+      }
       return [];
+    } finally {
+      setIsLoadingSupporterData(false);
     }
   }
 
@@ -397,14 +425,18 @@ export default function ViewSupporter() {
     return sum + (supporter.amount || 0);
   }, 0);
 
-  // Fetch data on mount and when dependencies change
+  // Fetch supporter head data only once on mount (no dependencies)
+  useEffect(() => {
+    fetchSupporterHeadData();
+  }, [fetchSupporterHeadData]);
+
+  // Fetch supporter data when filters change
   useEffect(() => {
     async function fetchData() {
       const result = await getData();
       setData(Array.isArray(result) ? result : []);
     }
     fetchData();
-    fetchSupporterHeadData();
   }, [
     pageIndex,
     pageSize,

@@ -26,6 +26,8 @@ router.post(
   controller.create
 );
 router.get('/contact-info', supporterListDoc, controller.getContactInfoController);
+// Public endpoint for supporter details (used by public supporter page)
+router.get("/:id", supporterDetailsDoc, controller.getOne);
 router.use(authenticateUser);
 
 const authorization = authorizeUser({ allowedRoles: [] });
@@ -52,7 +54,6 @@ router.get(
 );
 
 router.get("/user/:id", supporterDetailsDoc, controller.getWithUserId);
-router.get("/:id", supporterDetailsDoc, controller.getOne);
 
 router.put(
   "/:id",
