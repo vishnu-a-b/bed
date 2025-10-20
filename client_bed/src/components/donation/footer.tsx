@@ -1,4 +1,9 @@
 const Footer = ({ bed }: any) => {
+  // Check if URL includes palliativeinternational.com
+  const isPalliativeInternational = typeof window !== "undefined"
+    ? window.location.hostname.includes("palliativeinternational.com")
+    : false;
+
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
       {/* Main Footer Content */}
@@ -6,10 +11,10 @@ const Footer = ({ bed }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Logo Section */}
           <div className="flex flex-col items-center md:items-start">
-            {bed?.organization?.name === "Shanthibhavan Palliative Hospital" ? (
+            {!isPalliativeInternational ? (
             <a href="/" className="mb-4 bg-white rounded-full">
               <img
-                src="father.png"
+                src="/father.png"
                 alt="Shanthibhavan Logo"
                 className="h-16"
               />
@@ -17,8 +22,8 @@ const Footer = ({ bed }: any) => {
             (
             <a href="/" className="mb-4">
               <img
-                src="assets/images/logo-2.png"
-                alt="Shanthibhavan Logo"
+                src="/assets/images/logo-2.png"
+                alt="Palliative International Logo"
                 className="h-16"
               />
             </a>)}
@@ -44,7 +49,7 @@ const Footer = ({ bed }: any) => {
             <h3 className="text-xl font-bold mb-4 text-blue-600">
               Our Location
             </h3>
-            {bed?.organization?.name === "Shanthibhavan Palliative Hospital" ? (
+            {!isPalliativeInternational ? (
               <div className="space-y-3">
                 <div className="flex items-start justify-center md:justify-start">
                   <span className="text-blue-600 mt-1 mr-3">
@@ -63,10 +68,21 @@ const Footer = ({ bed }: any) => {
                     <i className="fas fa-phone-alt"></i>
                   </span>
                   <a
-                    href="tel:+61391112473"
+                    href="tel:04876611600"
                     className="hover:text-blue-600 transition"
                   >
                     04876611600
+                  </a>
+                </div>
+                <div className="flex items-center justify-center md:justify-start">
+                  <span className="text-blue-600 mr-3">
+                    <i className="fas fa-envelope"></i>
+                  </span>
+                  <a
+                    href="mailto:office@shanthibhavan.in"
+                    className="hover:text-blue-600 transition"
+                  >
+                    office@shanthibhavan.in
                   </a>
                 </div>
               </div>
@@ -95,6 +111,17 @@ const Footer = ({ bed }: any) => {
                     className="hover:text-blue-600 transition"
                   >
                     +61 391112473
+                  </a>
+                </div>
+                <div className="flex items-center justify-center md:justify-start">
+                  <span className="text-blue-600 mr-3">
+                    <i className="fas fa-envelope"></i>
+                  </span>
+                  <a
+                    href="mailto:operationssbau@palliativeinternational.com"
+                    className="hover:text-blue-600 transition"
+                  >
+                    operationssbau@palliativeinternational.com
                   </a>
                 </div>
               </div>

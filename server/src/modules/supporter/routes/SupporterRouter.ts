@@ -26,8 +26,6 @@ router.post(
   controller.create
 );
 router.get('/contact-info', supporterListDoc, controller.getContactInfoController);
-// Public endpoint for supporter details (used by public supporter page)
-router.get("/:id", supporterDetailsDoc, controller.getOne);
 router.use(authenticateUser);
 
 const authorization = authorizeUser({ allowedRoles: [] });
@@ -41,12 +39,17 @@ router.post(
   controller.get
 );
 
+// IMPORTANT: /supporter must come BEFORE /:id to avoid route conflict
 router.get(
   "/supporter",
   supporterListDoc,
   setFilterParams(supporterFilterFields),
   controller.getSupporter
 );
+
+// Public endpoint for supporter details (used by public supporter page)
+// MUST be last among GET routes to avoid catching specific paths
+router.get("/:id", supporterDetailsDoc, controller.getOne);
 router.get(
   "/count-documents",
   supporterCountDoc,

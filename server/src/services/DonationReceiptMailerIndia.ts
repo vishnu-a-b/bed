@@ -121,7 +121,7 @@ class DonationReceiptMailerIndia {
       c.toUpperCase()
     );
 
-    // Table data - India specific (simplified layout)
+    // Table data - India specific (proper table layout)
     const tableData = [
       ["Receipt No", user.receiptNumber],
       ["Payment date", user.date],
@@ -131,18 +131,40 @@ class DonationReceiptMailerIndia {
       ["Towards (Nonprofit/Program Name)", "ShanthiBhavan Palliative Hospital"],
     ];
 
-    // Draw simple table without borders
-    tableData.forEach((row) => {
-      doc.fontSize(10).font("Helvetica-Bold");
-      doc.text(row[0], 40, yPosition, { continued: false });
-      yPosition += 15;
+    // Draw table with borders
+    const tableTop = yPosition;
+    const tableLeft = 40;
+    const colWidths = [250, 300]; // Column widths for label and value
+    const rowHeight = 30;
 
+    // Draw table header (optional - can be removed if not needed)
+    // doc.fontSize(10).font("Helvetica-Bold");
+    // doc.rect(tableLeft, yPosition, colWidths[0] + colWidths[1], rowHeight).stroke();
+
+    // Draw table rows
+    tableData.forEach((row, index) => {
+      const currentY = tableTop + index * rowHeight;
+
+      // Draw cell borders
+      doc.rect(tableLeft, currentY, colWidths[0], rowHeight).stroke();
+      doc.rect(tableLeft + colWidths[0], currentY, colWidths[1], rowHeight).stroke();
+
+      // Draw label (left column) - Bold
+      doc.fontSize(10).font("Helvetica-Bold");
+      doc.text(row[0], tableLeft + 5, currentY + 10, {
+        width: colWidths[0] - 10,
+        align: 'left'
+      });
+
+      // Draw value (right column) - Regular
       doc.font("Helvetica");
-      doc.text(row[1], 40, yPosition, { width: 500 });
-      yPosition += 20;
+      doc.text(row[1], tableLeft + colWidths[0] + 5, currentY + 10, {
+        width: colWidths[1] - 10,
+        align: 'left'
+      });
     });
 
-    yPosition += 10;
+    yPosition = tableTop + tableData.length * rowHeight + 15;
 
     // 80G Declaration
     doc.fontSize(10).font("Helvetica");
@@ -172,7 +194,16 @@ class DonationReceiptMailerIndia {
     doc.fontSize(9).font("Helvetica-Bold");
     doc.text("Registered office address: ", 40, yPosition, { continued: true });
     doc.font("Helvetica").text(
-      "Shanthibhavan Palliative Hospital A Division of Franciscan Sisters of St. Clare Charitable Trust, Mountain of Mercy, Pallissery, Arattupuzha P.O, Thrissur - 680562, 9744342009",
+      "Shanthibhavan Palliative Hospital, Mountain of Mercy, Pallissery, Arattupuzha P.O, Thrissur - 680562",
+      { width: 500 }
+    );
+    yPosition += 25;
+
+    // Contact information
+    doc.fontSize(9).font("Helvetica-Bold");
+    doc.text("Contact: ", 40, yPosition, { continued: true });
+    doc.font("Helvetica").text(
+      "8921538116, 04876611600 | office@shanthibhavan.in",
       { width: 500 }
     );
     yPosition += 35;
@@ -375,15 +406,15 @@ class DonationReceiptMailerIndia {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🙏 धन्यवाद / Thank You for Your Donation!</h1>
+            <h1>🙏 Thank You for Your Donation!</h1>
         </div>
 
-        <p>प्रिय / Dear ${options.name},</p>
+        <p>Dear ${options.name},</p>
 
-        <p>We are deeply grateful for your generous contribution to Shanthibhavan Palliative International India. Your support makes a meaningful difference in the lives of those we serve across India.</p>
+        <p>We are deeply grateful for your generous contribution to Shanthibhavan Palliative Hospital. Your support makes a meaningful difference in the lives of those we serve.</p>
 
         <div class="receipt-details">
-            <h3 style="margin-top: 0; color: #ff9800;">🧾 Donation Details / दान विवरण</h3>
+            <h3 style="margin-top: 0; color: #ff9800;">🧾 Donation Details</h3>
             <div class="detail-row">
                 <span class="detail-label">Receipt Number : </span>
                 <span class="detail-value">${options.receiptNumber}</span>
@@ -404,16 +435,16 @@ class DonationReceiptMailerIndia {
         </div>
 
         <div class="tax-info">
-            <strong>💼 Tax Benefit / कर लाभ:</strong> This donation is eligible for tax deduction under Section 80G of the Income Tax Act, 1961. Please retain this receipt for your tax filing.
+            <strong>💼 Tax Benefit:</strong> This donation is eligible for tax deduction under Section 80G of the Income Tax Act, 1961. Please retain this receipt for your tax filing.
         </div>
 
         <div class="attachment-note">
-            <strong>📎 Receipt Attached:</strong> Please find your official donation receipt attached as a PDF file. यह रसीद आपकी कर फाइलिंग के लिए आवश्यक है।
+            <strong>📎 Receipt Attached:</strong> Please find your official donation receipt attached as a PDF file.
         </div>
 
         <div class="thank-you">
-            <h3 style="margin: 0 0 10px 0; color: #4caf50;">🙏 आपका योगदान मायने रखता है / Your Impact Matters</h3>
-            <p style="margin: 0;">Your generous donation helps us continue our mission of providing care, support, and hope to bedridden patients across India. Thank you for being part of our community.</p>
+            <h3 style="margin: 0 0 10px 0; color: #4caf50;">🙏 Your Impact Matters</h3>
+            <p style="margin: 0;">Your generous donation helps us continue our mission of providing compassionate palliative care and support to patients and their families. Thank you for being part of our community.</p>
         </div>
 
         <p>If you have any questions about your donation or need additional documentation, please don't hesitate to contact us.</p>
@@ -421,15 +452,18 @@ class DonationReceiptMailerIndia {
         <div class="footer">
             <p><strong>The Shanthibhavan Team</strong></p>
             <p style="font-size: 12px; color: #888;">
-                Shanthibhavan Palliative International India<br>
-                Alukkaparambil House, Karukulangara<br>
-                Irinjalakuda, Thrissur, Kerala-680121, India<br>
+                Shanthibhavan Palliative Hospital<br>
+                Mountain of Mercy, Pallissery<br>
+                Arattupuzha P.O, Thrissur - 680562, Kerala, India<br>
+                Phone: 8921538116, 04876611600<br>
+                Email: office@shanthibhavan.in<br>
                 PAN: AAKTS3146K | 80G Approved
             </p>
             <img
         crossorigin="anonymous"
-        src="https://palliativeinternational.com/assets/images/resources/logo-1.png"
-        alt="Logo"
+        src="https://donatebed.shanthibhavan.in/father.png"
+        alt="Shanthibhavan Logo"
+        style="max-width: 150px; height: auto;"
       />
         </div>
     </div>

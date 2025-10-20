@@ -3,6 +3,11 @@ import { useState } from "react";
 const Header = ({ bed }: any) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Check if URL includes palliativeinternational.com
+  const isPalliativeInternational = typeof window !== "undefined"
+    ? window.location.hostname.includes("palliativeinternational.com")
+    : false;
+
   return (
     <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-3">
@@ -11,17 +16,16 @@ const Header = ({ bed }: any) => {
           <div className="flex items-center justify-between w-full md:w-auto">
             <div className="flex-shrink-0">
               <a href="/">
-                {bed?.organization?.name ===
-                "Shanthibhavan Palliative Hospital" ? (
+                {!isPalliativeInternational ? (
                   <img
-                    src="father.png"
+                    src="/father.png"
                     alt="Shanthibhavan Logo"
                     className="h-20 w-auto"
                   />
                 ) : (
                   <img
-                    src="assets/images/logo-1.png"
-                    alt="Shanthibhavan Logo"
+                    src="/assets/images/logo-1.png"
+                    alt="Palliative International Logo"
                     className="h-12 w-auto"
                   />
                 )}
@@ -86,7 +90,10 @@ const Header = ({ bed }: any) => {
                 <div>
                   <p className="text-xs font-medium text-blue-600">Address</p>
                   <p className="text-xs text-gray-600 text-wrap">
-                    {bed?.country?.address}
+                    {isPalliativeInternational
+                      ? "Office 3261, Ground Floor, 470 St. Kilda Rd, MELBOURNE VIC 3004, Australia"
+                      : "Mountain of Mercy, Pallissery, Arattupuzha P.O, Thrissur - 680562, Kerala, India"
+                    }
                   </p>
                 </div>
               </div>
@@ -108,12 +115,11 @@ const Header = ({ bed }: any) => {
                     />
                   </svg>
                 </div>
-                {bed?.organization?.name ===
-                "Shanthibhavan Palliative Hospital" ? (
+                {!isPalliativeInternational ? (
                   <div>
                     <p className="text-xs font-medium text-blue-600">Contact</p>
                     <a
-                      href="tel:061391112473"
+                      href="tel:04876611600"
                       className="block text-xs text-gray-600 hover:text-blue-600"
                     >
                       04876611600
@@ -122,14 +128,14 @@ const Header = ({ bed }: any) => {
                       href="mailto:office@shanthibhavan.in"
                       className="block text-xs text-gray-600 hover:text-blue-600 truncate text-wrap"
                     >
-                      office@shanthibhavan.in 
+                      office@shanthibhavan.in
                     </a>
                   </div>
                 ) : (
                   <div>
                     <p className="text-xs font-medium text-blue-600">Contact</p>
                     <a
-                      href="tel:061391112473"
+                      href="tel:+61391112473"
                       className="block text-xs text-gray-600 hover:text-blue-600"
                     >
                       +61 391112473

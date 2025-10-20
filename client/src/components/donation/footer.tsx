@@ -1,4 +1,9 @@
 const Footer = () => {
+  // Check if URL includes palliativeinternational.com
+  const isPalliativeInternational = typeof window !== "undefined"
+    ? window.location.hostname.includes("palliativeinternational.com")
+    : false;
+
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
       {/* Main Footer Content */}
@@ -7,9 +12,9 @@ const Footer = () => {
           {/* Logo Section */}
           <div className="flex flex-col items-center md:items-start">
             <a href="/" className="mb-4">
-              <img 
-                src="assets/images/logo-2.png" 
-                alt="Shanthibhavan Logo" 
+              <img
+                src={isPalliativeInternational ? "/assets/images/logo-2.png" : "/father.png"}
+                alt={isPalliativeInternational ? "Palliative International Logo" : "Shanthibhavan Logo"}
                 className="h-16"
               />
             </a>
@@ -34,25 +39,67 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="text-xl font-bold mb-4 text-purple-600">Our Location</h3>
             <div className="space-y-3">
-              <div className="flex items-start justify-center md:justify-start">
-                <span className="text-purple-600 mt-1 mr-3">
-                  <i className="fas fa-map-marker-alt"></i>
-                </span>
-                <p>
-                  SHANTHIBHAVAN PALLIATIVE INTERNATIONAL LTD,<br />
-                  Office 3261, Ground Floor, 470 St Kilda Rd,<br />
-                  MELBOURNE VIC 3004,<br />
-                  Australia
-                </p>
-              </div>
-              <div className="flex items-center justify-center md:justify-start">
-                <span className="text-purple-600 mr-3">
-                  <i className="fas fa-phone-alt"></i>
-                </span>
-                <a href="tel:+61391112473" className="hover:text-purple-600 transition">
-                  +61 391112473
-                </a>
-              </div>
+              {isPalliativeInternational ? (
+                <>
+                  <div className="flex items-start justify-center md:justify-start">
+                    <span className="text-purple-600 mt-1 mr-3">
+                      <i className="fas fa-map-marker-alt"></i>
+                    </span>
+                    <p>
+                      SHANTHIBHAVAN PALLIATIVE INTERNATIONAL LTD,<br />
+                      Office 3261, Ground Floor, 470 St Kilda Rd,<br />
+                      MELBOURNE VIC 3004,<br />
+                      Australia
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-start">
+                    <span className="text-purple-600 mr-3">
+                      <i className="fas fa-phone-alt"></i>
+                    </span>
+                    <a href="tel:+61391112473" className="hover:text-purple-600 transition">
+                      +61 391112473
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-start">
+                    <span className="text-purple-600 mr-3">
+                      <i className="fas fa-envelope"></i>
+                    </span>
+                    <a href="mailto:operationssbau@palliativeinternational.com" className="hover:text-purple-600 transition">
+                      operationssbau@palliativeinternational.com
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start justify-center md:justify-start">
+                    <span className="text-purple-600 mt-1 mr-3">
+                      <i className="fas fa-map-marker-alt"></i>
+                    </span>
+                    <p>
+                      Shanthibhavan Palliative Hospital,<br />
+                      Mountain of Mercy, Pallissery,<br />
+                      Arattupuzha.P.O, Thrissur - 680562<br />
+                      Kerala, India
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-start">
+                    <span className="text-purple-600 mr-3">
+                      <i className="fas fa-phone-alt"></i>
+                    </span>
+                    <a href="tel:04876611600" className="hover:text-purple-600 transition">
+                      0487 - 66 11 600
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-center md:justify-start">
+                    <span className="text-purple-600 mr-3">
+                      <i className="fas fa-envelope"></i>
+                    </span>
+                    <a href="mailto:office@shanthibhavan.in" className="hover:text-purple-600 transition">
+                      office@shanthibhavan.in
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

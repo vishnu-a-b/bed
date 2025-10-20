@@ -1,23 +1,30 @@
+"use client";
+
 import React from "react";
 
 export default function Footer() {
+  // Check if URL includes palliativeinternational.com
+  const isPalliativeInternational = typeof window !== "undefined"
+    ? window.location.hostname.includes("palliativeinternational.com")
+    : false;
+
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-4 mb-6">
-              
               <img
-                src="/logo.png"
-                alt="Shanthibhavan Logo"
-                className="h-12 w-auto"
+                src={isPalliativeInternational ? "/logo.png" : "/father.png"}
+                alt={isPalliativeInternational ? "Palliative International Logo" : "Shanthibhavan Logo"}
+                className={isPalliativeInternational ? "h-12 w-auto" : "h-20 w-auto"}
               />
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              India's first free palliative hospital, providing compassionate
-              care for bedridden patients and those suffering from terminal
-              illnesses since 2016.
+              {isPalliativeInternational
+                ? "Supporting palliative care initiatives internationally, providing resources and guidance for compassionate end-of-life care."
+                : "India's first free palliative hospital, providing compassionate care for bedridden patients and those suffering from terminal illnesses since 2016."
+              }
             </p>
           </div>
 
@@ -67,17 +74,32 @@ export default function Footer() {
               <div className="flex items-start space-x-3">
                 <span className="text-emerald-400 mt-1">📍</span>
                 <div>
-                  <p className="text-gray-300 text-sm">Pallissery, Thrissur</p>
-                  <p className="text-gray-300 text-sm">Kerala, India</p>
+                  {isPalliativeInternational ? (
+                    <>
+                      <p className="text-gray-300 text-sm">Office 3261, Ground Floor</p>
+                      <p className="text-gray-300 text-sm">470 St. Kilda Rd</p>
+                      <p className="text-gray-300 text-sm">MELBOURNE VIC 3004, Australia</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-300 text-sm">Mountain of Mercy, Pallissery</p>
+                      <p className="text-gray-300 text-sm">Arattupuzha P.O, Thrissur</p>
+                      <p className="text-gray-300 text-sm">Kerala, India - 680562</p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-emerald-400">📞</span>
-                <p className="text-gray-300 text-sm">0487 - 66 11 600</p>
+                <p className="text-gray-300 text-sm">
+                  {isPalliativeInternational ? "+61 391112473" : "0487 - 66 11 600"}
+                </p>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-emerald-400">📧</span>
-                <p className="text-gray-300 text-sm">office@shanthibhavan.in</p>
+                <p className="text-gray-300 text-sm">
+                  {isPalliativeInternational ? "operationssbau@palliativeinternational.com" : "office@shanthibhavan.in"}
+                </p>
               </div>
             </div>
           </div>
@@ -116,8 +138,8 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2024 Shanthibhavan Palliative Hospital. Every bed can be sponsored
-            - Let's provide compassionate care together.
+            © 2024 {isPalliativeInternational ? "Shanthibhavan Palliative International" : "Shanthibhavan Palliative Hospital"}.
+            {" "}Every bed can be sponsored - Let's provide compassionate care together.
           </p>
         </div>
       </div>
