@@ -204,6 +204,110 @@ export default class BedPaymentIndService {
     }
   };
 
+  // Create Razorpay order for Hosted Checkout (CollectNow requirement)
+  createOrderHosted = async (params: CreateOrderParams & { callback_url: string; cancel_url: string }) => {
+    const { supporterId, callback_url, cancel_url } = params;
+
+    if (!supporterId) {
+      throw new Error("Supporter ID is required");
+    }
+
+    try {
+      const supporter: any = await Supporter.findById(supporterId)
+        .populate("user")
+        .populate({
+          path: "bed",
+          populate: {
+            path: "country",
+            select: "currency",
+          },
+        })
+        .exec();
+
+      if (!supporter) {
+        throw new Error("Supporter not found");
+      }
+
+      if (!supporter.isActive) {
+        throw new Error("Supporter is not active");
+      }
+
+      const userEmail = supporter.user?.email;
+      const userName = supporter.name || supporter.user?.name;
+      const userPhone = supporter.user?.mobileNo;
+      const bed = supporter.bed;
+      const currency = bed?.country?.currency || "INR";
+      const amount = supporter.amount || bed?.amount || bed?.fixedAmount;
+
+      if (!userEmail) {
+        throw new Error("Supporter email not found");
+      }
+
+      if (!amount) {
+        throw new Error("Payment amount not found");
+      }
+
+      // Create Razorpay order with hosted checkout configuration
+      const options = {
+        amount: Math.round(Number(amount) * 100), // Convert to paise for Razorpay
+        currency: currency,
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+          supporterId: supporter._id.toString(),
+          bedId: supporter.bed._id.toString(),
+          bedNo: supporter.bed?.bedNo?.toString() || "",
+        },
+      };
+
+      const order = await razorpay.orders.create(options);
+
+      // Create payment record
+      const searchFieldsData = {
+        supporterName: supporter.name,
+        supporterEmail: supporter.email,
+        supporterMobile: supporter.user?.mobileNo,
+        bedNumber: supporter.bed?.bedNo?.toString() || "",
+      };
+
+      const payment = await BedPaymentInd.create({
+        razorpay_order_id: order.id,
+        supporter: supporter._id,
+        bed: supporter.bed._id,
+        amount: Number(amount), // Store in rupees
+        currency: order.currency,
+        status: "pending",
+        razorpay_status: order.status,
+        paymentMode: "online",
+        paymentDate: new Date(),
+        source: "website",
+        email: userEmail,
+        phNo: userPhone,
+        name: userName,
+        razorpay_created_at: Math.floor(Date.now() / 1000),
+        notes: options.notes,
+        searchFields: searchFieldsData,
+      });
+
+      // Construct Razorpay Hosted Checkout URL
+      const hostedCheckoutUrl = `https://api.razorpay.com/v1/checkout/embedded?key_id=${process.env.RAZORPAY_KEY_ID}&order_id=${order.id}&name=Generous Contributions&description=Bed Payment Contribution&prefill[name]=${encodeURIComponent(userName || "")}&prefill[email]=${encodeURIComponent(userEmail || "")}&prefill[contact]=${encodeURIComponent(userPhone || "")}&callback_url=${encodeURIComponent(callback_url)}&cancel_url=${encodeURIComponent(cancel_url)}`;
+
+      return {
+        success: true,
+        data: {
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          key: process.env.RAZORPAY_KEY_ID,
+          paymentId: payment._id,
+          hostedCheckoutUrl: hostedCheckoutUrl,
+        },
+      };
+    } catch (error: any) {
+      console.error("Error creating hosted checkout order:", error);
+      throw new Error(`Failed to create hosted checkout order: ${error.message}`);
+    }
+  };
+
   // Verify Razorpay payment
   verifyPayment = async (params: VerifyPaymentParams) => {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = params;

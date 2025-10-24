@@ -26,9 +26,7 @@ router.post(
   controller.create
 );
 router.get('/contact-info', supporterListDoc, controller.getContactInfoController);
-router.use(authenticateUser);
 
-const authorization = authorizeUser({ allowedRoles: [] });
 
 router.get("/supporter-head", supporterListDoc, controller.getSupporterHead);
 
@@ -56,8 +54,11 @@ router.get(
   controller.countTotalDocuments
 );
 
-router.get("/user/:id", supporterDetailsDoc, controller.getWithUserId);
 
+router.get("/user/:id", supporterDetailsDoc, controller.getWithUserId);
+router.use(authenticateUser);
+
+const authorization = authorizeUser({ allowedRoles: [] });
 router.put(
   "/:id",
   supporterUpdateDoc,

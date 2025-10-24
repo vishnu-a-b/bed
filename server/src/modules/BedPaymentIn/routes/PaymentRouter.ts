@@ -53,6 +53,19 @@ router.post(
   }
 );
 
+// Create order for Hosted Checkout (CollectNow requirement)
+router.post(
+  "/create-order-hosted",
+  paymentListDoc,
+  async (req, res, next) => {
+    try {
+      await controller.createOrderHosted(req, res);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // Verify payment
 router.post("/verify", controller.verifyPayment);
 

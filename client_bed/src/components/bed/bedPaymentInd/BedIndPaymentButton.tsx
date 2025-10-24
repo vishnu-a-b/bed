@@ -44,14 +44,17 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
 
     try {
       console.log("=== CREATE ORDER REQUEST ===");
-      console.log("API URL:", `${API_URL}/bed-payments-ind/create-order`);
+      console.log("API URL:", `${API_URL}/bed-payments-ind/create-order-hosted`);
       console.log("Supporter ID:", supporterId);
 
-      // Create Razorpay order
+      // Create Razorpay order for hosted checkout
       const response = await axios.post(
-        `${API_URL}/bed-payments-ind/create-order`,
+        `${API_URL}/bed-payments-ind/create-order-hosted`,
         {
           supporterId: supporterId,
+          // Provide callback URLs for hosted checkout
+          callback_url: `${window.location.origin}/payment/callback`,
+          cancel_url: `${window.location.origin}/payment/cancel`,
         }
       );
 
@@ -60,102 +63,15 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
       // Handle response
       const paymentData = response.data?.data || response.data;
 
-      if (!paymentData.orderId || !paymentData.amount) {
+      if (!paymentData.hostedCheckoutUrl) {
         throw new Error(
           `Invalid API response. Received: ${JSON.stringify(paymentData)}`
         );
       }
 
-      // Load Razorpay script
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
+      // Redirect to Razorpay hosted checkout page
+      window.location.href = paymentData.hostedCheckoutUrl;
 
-      script.onload = () => {
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: paymentData.amount,
-          currency: paymentData.currency || "INR",
-          order_id: paymentData.orderId,
-          name: "Generous Contributions",
-          description: "Bed Payment Contribution",
-          image: "/logo.png", // Add your logo here
-          prefill: {
-            name: "",
-            email: "",
-            contact: "",
-          },
-          method: {
-            upi: true,
-            card: true,
-            netbanking: true,
-            wallet: true,
-          },
-          theme: {
-            color: "#3B82F6",
-          },
-          handler: async function (response: any) {
-            // Payment successful - verify payment
-            try {
-              setPaymentStatus("processing");
-              const verifyResponse = await axios.post(
-                `${API_URL}/bed-payments-ind/verify`,
-                {
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_signature: response.razorpay_signature,
-                }
-              );
-
-              console.log("Verification response:", verifyResponse);
-
-              if (verifyResponse.data?.success) {
-                setPaymentStatus("success");
-                // Reload the page after a short delay to show updated data
-                setTimeout(() => {
-                  window.location.reload();
-                }, 2000);
-              } else {
-                throw new Error("Payment verification failed");
-              }
-            } catch (verifyError) {
-              console.error("Verification error:", verifyError);
-              setPaymentStatus("error");
-              setErrorMessage(
-                "Payment completed but verification failed. Please contact support."
-              );
-            }
-          },
-          modal: {
-            ondismiss: function () {
-              setIsLoading(false);
-              setPaymentStatus("idle");
-              setErrorMessage("Payment cancelled");
-            },
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on("payment.failed", function (response: any) {
-          console.error("Payment failed:", response.error);
-          setPaymentStatus("error");
-          setErrorMessage(
-            response.error.description ||
-              response.error.reason ||
-              "Payment failed. Please try again."
-          );
-          setIsLoading(false);
-        });
-        rzp.open();
-      };
-
-      script.onerror = () => {
-        setPaymentStatus("error");
-        setErrorMessage("Failed to load payment gateway. Please try again.");
-        setIsLoading(false);
-      };
-
-      document.body.appendChild(script);
     } catch (error) {
       console.error("=== PAYMENT ERROR ===");
       console.error("Full error:", error);
@@ -170,7 +86,6 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
 
       console.error("Showing error message:", errorMsg);
       setErrorMessage(errorMsg);
-    } finally {
       setIsLoading(false);
     }
   };

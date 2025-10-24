@@ -33,8 +33,11 @@ export function PaymentForm({ supporter }: { supporter: any }) {
     setErrorMessage("");
 
     try {
-      const response = await create("payment/create-order", {
+      // Create Razorpay order for hosted checkout (CollectNow requirement)
+      const response = await create("payment/create-order-hosted", {
         supporterId: supporter.supporterId,
+        callback_url: `${window.location.origin}/payment/callback`,
+        cancel_url: `${window.location.origin}/payment/cancel`,
       });
 
       console.log("Full API response:", response);
@@ -42,47 +45,15 @@ export function PaymentForm({ supporter }: { supporter: any }) {
       // Handle direct response (without .data)
       const paymentData = response.data ? response.data : response;
 
-      if (!paymentData.orderId || !paymentData.amount) {
+      if (!paymentData.hostedCheckoutUrl) {
         throw new Error(
           `Invalid API response. Received: ${JSON.stringify(paymentData)}`
         );
       }
 
-      // Load Razorpay script
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      
-      script.onload = () => {
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: response.amount,
-          currency: "INR", // Must be INR for UPI
-          order_id: response.orderId,
-          name: "Your Business",
-          description: "Payment for services",
-          
-          prefill: {
-            name: "Customer Name",
-            email: "customer@example.com",
-            contact: "9999999999",
-          },
-          method: {
-            upi: true,
-            card: false,
-          },
-          upi: {
-            flow: "collect", // Customer enters VPA
-          },
-          theme: {
-            color: "#F37254",
-          },
-        };
+      // Redirect to Razorpay hosted checkout page
+      window.location.href = paymentData.hostedCheckoutUrl;
 
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      };
-      document.body.appendChild(script);
     } catch (error) {
       console.error("Payment error:", error);
       setPaymentStatus("error");
@@ -90,7 +61,6 @@ export function PaymentForm({ supporter }: { supporter: any }) {
         (error as any)?.response?.data?.message ||
           (error instanceof Error ? error.message : "Payment failed")
       );
-    } finally {
       setIsLoading(false);
     }
   };

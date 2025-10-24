@@ -228,6 +228,7 @@ const PaymentApproval = ({ payment, onApprovalUpdate }: {
   const [isProcessing, setIsProcessing] = useState(false);
   const [remarks, setRemarks] = useState("");
   const [showRemarks, setShowRemarks] = useState(false);
+  const dispatch = useDispatch();
 
   const handleApproval = async (approved: boolean) => {
     if (approved === false && !remarks.trim()) {
@@ -247,6 +248,7 @@ const PaymentApproval = ({ payment, onApprovalUpdate }: {
           }`
         );
         setShowRemarks(false);
+        dispatch(refreshTable());
         setRemarks("");
       } else {
         toastService.error('Error processing approval');

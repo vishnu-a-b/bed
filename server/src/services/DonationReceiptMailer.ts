@@ -139,7 +139,7 @@ class DonationReceiptMailer {
     // Receipt description
     doc.fontSize(11).font("Helvetica");
     doc.text(
-      "We confirm the receipt of payment from Mr/Ms/Mrs Well wisher as per details below:-",
+      `We confirm the receipt of payment from Mr/Ms/Mrs ${user.name} as per details below:-`,
       40,
       yPosition,
       { width: 500 }

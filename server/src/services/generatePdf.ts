@@ -106,7 +106,7 @@ export const generateReceiptPDF = async (
 
   // Receipt description
   doc.fontSize(11).font('Helvetica');
-  doc.text('We confirm the receipt of payment from Mr/Ms/Mrs Well wisher as per details below:-', 40, yPosition, { width: 500 });
+  doc.text(`We confirm the receipt of payment from Mr/Ms/Mrs ${user.name} as per details below:-`, 40, yPosition, { width: 500 });
   yPosition += 30;
 
   // Table data

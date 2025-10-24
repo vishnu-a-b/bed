@@ -131,7 +131,7 @@ export default class PaymentController extends BaseController {
   createOrder = async (req: Request, res: Response) => {
     try {
         const { supporterId } = req.body;
-        
+
         const result = await this.service.createOrder({ supporterId });
 
         // Wrap the response in a data object
@@ -147,6 +147,62 @@ export default class PaymentController extends BaseController {
 
     } catch (error: unknown) {
       console.error("Error in createOrder controller:", error);
+
+      // Handle different error types
+      let statusCode = 500;
+      let errorMessage = "An unknown error occurred";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes("not found")) {
+          statusCode = 404;
+        } else if (
+          error.message.includes("required") ||
+          error.message.includes("Invalid")
+        ) {
+          statusCode = 400;
+        }
+      }
+
+      return res.status(statusCode).json({
+        success: false,
+        error: errorMessage,
+      });
+    }
+  };
+
+  // Create order for Hosted Checkout (CollectNow requirement)
+  createOrderHosted = async (req: Request, res: Response) => {
+    try {
+        const { supporterId, callback_url, cancel_url } = req.body;
+
+        if (!callback_url || !cancel_url) {
+          return res.status(400).json({
+            success: false,
+            error: "Callback URL and Cancel URL are required for hosted checkout",
+          });
+        }
+
+        const result = await this.service.createOrderHosted({
+          supporterId,
+          callback_url,
+          cancel_url
+        });
+
+        // Wrap the response in a data object
+        return res.json({
+            success: true,
+            data: {
+                orderId: result.data.orderId,
+                amount: result.data.amount,
+                currency: result.data.currency,
+                key: result.data.key,
+                hostedCheckoutUrl: result.data.hostedCheckoutUrl
+            }
+        });
+
+    } catch (error: unknown) {
+      console.error("Error in createOrderHosted controller:", error);
 
       // Handle different error types
       let statusCode = 500;

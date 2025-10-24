@@ -17,13 +17,24 @@ const controller: any = new BedPaymentIndController();
 
 /**
  * @route   POST /api/bed-payments-ind/create-order
- * @desc    Create Razorpay order for payment
+ * @desc    Create Razorpay order for payment (Standard Checkout - Deprecated)
  * @access  Public
  */
 router.post(
   "/create-order",
   paymentListDoc,
   controller.createOrder
+);
+
+/**
+ * @route   POST /api/bed-payments-ind/create-order-hosted
+ * @desc    Create Razorpay order for Hosted/Embedded Checkout (CollectNow Required)
+ * @access  Public
+ */
+router.post(
+  "/create-order-hosted",
+  paymentListDoc,
+  controller.createOrderHosted
 );
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 import { DataTable } from "@/components/dataTable/DataTable";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Axios } from "@/utils/api/apiAuth";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -80,6 +80,7 @@ export default function ViewSupporter() {
     useState<SupporterHeadData | null>(null);
   const [isLoadingHeadData, setIsLoadingHeadData] = useState(false);
   const [isLoadingSupporterData, setIsLoadingSupporterData] = useState(false);
+  const hasLoadedHeadData = useRef(false);
 
   const refresh: boolean = useSelector(
     (state: RootState) => state.update.refresh
@@ -241,12 +242,13 @@ export default function ViewSupporter() {
 
   // Fetch supporter head data
   const fetchSupporterHeadData = useCallback(async () => {
-    // Prevent multiple concurrent requests
-    if (isLoadingHeadData) {
+    // Prevent multiple concurrent requests or duplicate loads
+    if (isLoadingHeadData || hasLoadedHeadData.current) {
       console.log("Already loading head data, skipping duplicate request");
       return;
     }
 
+    hasLoadedHeadData.current = true;
     setIsLoadingHeadData(true);
     try {
       const response = await Axios.get("supporter/supporter-head");
@@ -271,7 +273,7 @@ export default function ViewSupporter() {
         thisMonthAmount += org.thisMonthAmount;
         thisWeekAmount += org.thisWeekAmount;
 
-        org.data.forEach((countryData) => {
+        org.data.forEach(() => {
           // These are already included in the organization totals
         });
       });
@@ -288,6 +290,8 @@ export default function ViewSupporter() {
       if (error?.response?.status === 401) {
         console.warn("Authentication required for supporter-head endpoint");
       }
+      // Reset the ref on error so it can be retried
+      hasLoadedHeadData.current = false;
     } finally {
       setIsLoadingHeadData(false);
     }
@@ -428,7 +432,8 @@ export default function ViewSupporter() {
   // Fetch supporter head data only once on mount (no dependencies)
   useEffect(() => {
     fetchSupporterHeadData();
-  }, [fetchSupporterHeadData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch supporter data when filters change
   useEffect(() => {
