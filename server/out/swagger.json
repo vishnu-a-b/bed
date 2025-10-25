@@ -5326,6 +5326,175 @@
         ]
       }
     },
+    "/v1/payment/create-order-hosted": {
+      "post": {
+        "tags": [
+          "BedPaymentIn"
+        ],
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bed payments retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "razorpay_payment_id": {
+                            "type": "string",
+                            "example": "pay_xyz123"
+                          },
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bed": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/v1/payment/verify": {
       "post": {
         "description": "",
@@ -6190,6 +6359,175 @@
       }
     },
     "/v1/bed-payments-ind/create-order": {
+      "post": {
+        "tags": [
+          "BedPaymentIn"
+        ],
+        "description": "Get list of bed payments (India) with filtering, sorting and pagination support",
+        "parameters": [
+          {
+            "name": "supporter",
+            "description": "Filter by supporter ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "bed",
+            "description": "Filter by bed ID",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "Filter by payment status",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "captured",
+              "failed",
+              "pending"
+            ]
+          },
+          {
+            "name": "paymentMode",
+            "description": "Filter by payment mode",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          {
+            "name": "limit",
+            "description": "Number of items per page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "skip",
+            "description": "Number of items to skip",
+            "in": "query",
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of bed payments retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    },
+                    "skip": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "razorpay_payment_id": {
+                            "type": "string",
+                            "example": "pay_xyz123"
+                          },
+                          "razorpay_order_id": {
+                            "type": "string",
+                            "example": "order_xyz123"
+                          },
+                          "razorpay_signature": {
+                            "type": "string",
+                            "example": "signature_xyz"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "captured"
+                          },
+                          "method": {
+                            "type": "string",
+                            "example": "upi"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "supporter@example.com"
+                          },
+                          "contact": {
+                            "type": "string",
+                            "example": "+919876543210"
+                          },
+                          "paymentMode": {
+                            "type": "string",
+                            "example": "online"
+                          },
+                          "supporter": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "bed": {
+                            "type": "string",
+                            "example": "65cd9d8d5cae5ffc348ed638"
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "example": "2024-02-17T07:50:12.025Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/v1/bed-payments-ind/create-order-hosted": {
       "post": {
         "tags": [
           "BedPaymentIn"

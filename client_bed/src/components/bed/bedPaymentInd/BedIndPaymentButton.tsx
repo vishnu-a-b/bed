@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Heart, Loader2, CheckCircle2, X } from "lucide-react";
 import axios from "axios";
 
@@ -13,22 +13,12 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [isLoading, setIsLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState(false);
+  const [paymentOrderData, setPaymentOrderData] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
-
-  // Clean up Razorpay script when component unmounts
-  useEffect(() => {
-    return () => {
-      const razorpayScript = document.querySelector(
-        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-      );
-      if (razorpayScript) {
-        document.body.removeChild(razorpayScript);
-      }
-    };
-  }, []);
 
   const handlePayment = async () => {
     if (!supporterId) {
@@ -43,34 +33,58 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
     setErrorMessage("");
 
     try {
-      console.log("=== CREATE ORDER REQUEST ===");
+      console.log("=== CREATE RAZORPAY EMBEDDED CHECKOUT ORDER ===");
       console.log("API URL:", `${API_URL}/bed-payments-ind/create-order-hosted`);
       console.log("Supporter ID:", supporterId);
 
-      // Create Razorpay order for hosted checkout
+      // Create Razorpay order for embedded checkout
       const response = await axios.post(
         `${API_URL}/bed-payments-ind/create-order-hosted`,
         {
           supporterId: supporterId,
-          // Provide callback URLs for hosted checkout
-          callback_url: `${window.location.origin}/payment/callback`,
+          callback_url: `${window.location.origin}/payment/success`,
           cancel_url: `${window.location.origin}/payment/cancel`,
         }
       );
 
-      console.log("Full API response:", response);
+      console.log("Embedded checkout response:", response);
 
       // Handle response
       const paymentData = response.data?.data || response.data;
 
-      if (!paymentData.hostedCheckoutUrl) {
+      if (!paymentData.orderId || !paymentData.key) {
         throw new Error(
           `Invalid API response. Received: ${JSON.stringify(paymentData)}`
         );
       }
 
-      // Redirect to Razorpay hosted checkout page
-      window.location.href = paymentData.hostedCheckoutUrl;
+      // Store order data for embedded checkout form
+      setPaymentOrderData({
+        key_id: paymentData.key,
+        order_id: paymentData.orderId,
+        amount: paymentData.amount,
+        currency: paymentData.currency || "INR",
+        name: paymentData.name || "Generous Contributions",
+        description: paymentData.description || "Bed Payment Contribution",
+        image: `${window.location.origin}/father.png`,
+        prefill_name: paymentData.customerName || "",
+        prefill_email: paymentData.customerEmail || "",
+        prefill_contact: paymentData.customerContact || "",
+        callback_url: paymentData.callbackUrl || `${window.location.origin}/payment/callback`,
+        cancel_url: paymentData.cancelUrl || `${window.location.origin}/payment/cancel`,
+      });
+
+      // Show embedded checkout
+      setShowEmbeddedCheckout(true);
+      setIsLoading(false);
+
+      // Auto-submit the form after a short delay to allow state to update
+      setTimeout(() => {
+        const form = document.getElementById('razorpay-bed-embedded-form') as HTMLFormElement;
+        if (form) {
+          form.submit();
+        }
+      }, 100);
 
     } catch (error) {
       console.error("=== PAYMENT ERROR ===");
@@ -221,6 +235,29 @@ export function BedIndPaymentButton({ supporterId, supporterData }: BedIndPaymen
             </div>
           </div>
         </div>
+      )}
+
+      {/* Razorpay Embedded Checkout Form */}
+      {showEmbeddedCheckout && paymentOrderData && (
+        <form
+          id="razorpay-bed-embedded-form"
+          method="POST"
+          action="https://api.razorpay.com/v1/checkout/embedded"
+          style={{ display: 'none' }}
+        >
+          <input type="hidden" name="key_id" value={paymentOrderData.key_id} />
+          <input type="hidden" name="amount" value={paymentOrderData.amount} />
+          <input type="hidden" name="currency" value={paymentOrderData.currency} />
+          <input type="hidden" name="order_id" value={paymentOrderData.order_id} />
+          <input type="hidden" name="name" value={paymentOrderData.name} />
+          <input type="hidden" name="description" value={paymentOrderData.description} />
+          <input type="hidden" name="image" value={paymentOrderData.image} />
+          <input type="hidden" name="prefill[name]" value={paymentOrderData.prefill_name} />
+          <input type="hidden" name="prefill[email]" value={paymentOrderData.prefill_email} />
+          <input type="hidden" name="prefill[contact]" value={paymentOrderData.prefill_contact} />
+          <input type="hidden" name="callback_url" value={paymentOrderData.callback_url} />
+          <input type="hidden" name="cancel_url" value={paymentOrderData.cancel_url} />
+        </form>
       )}
     </>
   );

@@ -204,7 +204,8 @@ export default class BedPaymentIndService {
     }
   };
 
-  // Create Razorpay order for Hosted Checkout (CollectNow requirement)
+  // Create Razorpay order for Hosted Checkout (Embedded Checkout)
+  // This creates an order and returns data for submitting to Razorpay's hosted payment page
   createOrderHosted = async (params: CreateOrderParams & { callback_url: string; cancel_url: string }) => {
     const { supporterId, callback_url, cancel_url } = params;
 
@@ -288,9 +289,8 @@ export default class BedPaymentIndService {
         searchFields: searchFieldsData,
       });
 
-      // Construct Razorpay Hosted Checkout URL
-      const hostedCheckoutUrl = `https://api.razorpay.com/v1/checkout/embedded?key_id=${process.env.RAZORPAY_KEY_ID}&order_id=${order.id}&name=Generous Contributions&description=Bed Payment Contribution&prefill[name]=${encodeURIComponent(userName || "")}&prefill[email]=${encodeURIComponent(userEmail || "")}&prefill[contact]=${encodeURIComponent(userPhone || "")}&callback_url=${encodeURIComponent(callback_url)}&cancel_url=${encodeURIComponent(cancel_url)}`;
-
+      // Return data for Hosted Checkout (redirect to Razorpay's hosted payment page)
+      // Frontend will POST this data to https://api.razorpay.com/v1/checkout/embedded
       return {
         success: true,
         data: {
@@ -299,7 +299,18 @@ export default class BedPaymentIndService {
           currency: order.currency,
           key: process.env.RAZORPAY_KEY_ID,
           paymentId: payment._id,
-          hostedCheckoutUrl: hostedCheckoutUrl,
+          // Customer details for prefill
+          customerName: userName,
+          customerEmail: userEmail,
+          customerContact: userPhone,
+          // Callback URLs for hosted checkout
+          callbackUrl: callback_url,
+          cancelUrl: cancel_url,
+          // Hosted checkout specific data
+          hostedCheckoutUrl: "https://api.razorpay.com/v1/checkout/embedded",
+          description: "Bed Payment Contribution",
+          image: process.env.RAZORPAY_LOGO_URL || "",
+          name: "Generous Contributions",
         },
       };
     } catch (error: any) {

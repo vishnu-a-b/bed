@@ -77,7 +77,9 @@ const  GenerousContributionsForm: React.FC = () => {
   const getInitialValues = () => {
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      const isIndia = hostname.includes("shanthibhavan.in");
+      // const isIndia = hostname.includes("shanthibhavan.in");
+      const isIndia = true;
+      console.log(isIndia)
       return {
         region: isIndia ? "india" : "australia",
         currency: isIndia ? "INR" : "AUD",
@@ -92,7 +94,7 @@ const  GenerousContributionsForm: React.FC = () => {
   };
 
   const initialValues = getInitialValues();
-
+  console.log(initialValues)
   const [formData, setFormData] = useState<FormData>({
     amount: "",
     currency: initialValues.currency,
@@ -187,7 +189,10 @@ const  GenerousContributionsForm: React.FC = () => {
     }
   };
 
-  // Handle Razorpay payment (India)
+  const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState<boolean>(false);
+  const [paymentOrderData, setPaymentOrderData] = useState<any>(null);
+
+  // Handle Razorpay payment (India) - Embedded Checkout
   const handleRazorpayPayment = async (): Promise<void> => {
     try {
       // Create payment order with backend
@@ -203,67 +208,34 @@ const  GenerousContributionsForm: React.FC = () => {
       const result = response.data;
 
       if (result.success) {
-        const { orderId, amount, currency } = result.data;
+        const { orderId, amount, currency, key } = result.data;
 
-        // Initialize Razorpay checkout
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: amount * 100, // Amount in paise
+        // Store order data for embedded checkout form
+        setPaymentOrderData({
+          key_id: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          order_id: orderId,
+          amount: amount,
           currency: currency,
           name: "Shanthibhavan",
           description: "Generous Contribution",
-          order_id: orderId,
-          handler: async function (response: any) {
-            try {
-              // Verify payment with backend
-              const verifyResponse = await axios.post(
-                `${API_URL}/generous-payments-ind/verify`,
-                {
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                },
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              );
+          image: `${window.location.origin}/father.png`,
+          prefill_name: formData.contributor.name,
+          prefill_email: formData.contributor.email,
+          prefill_contact: formData.contributor.phone,
+          callback_url: `${window.location.origin}/payment/callback`,
+          cancel_url: `${window.location.origin}/payment/cancel`,
+        });
 
-              if (verifyResponse.data.success) {
-                setSubmitStatus("success");
-                // Reset form
-                setFormData({
-                  amount: "",
-                  currency: "INR",
-                  contributor: {
-                    name: "",
-                    phone: "",
-                    email: "",
-                    address: "",
-                  },
-                  source: "website",
-                });
-              } else {
-                throw new Error("Payment verification failed");
-              }
-            } catch (error) {
-              console.error("Payment verification error:", error);
-              setSubmitStatus("error");
-            }
-          },
-          prefill: {
-            name: formData.contributor.name,
-            email: formData.contributor.email,
-            contact: formData.contributor.phone,
-          },
-          theme: {
-            color: "#9333ea", // Purple-600 to match the form theme
-          },
-        };
+        // Show embedded checkout
+        setShowEmbeddedCheckout(true);
 
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
+        // Auto-submit the form after a short delay to allow state to update
+        setTimeout(() => {
+          const form = document.getElementById('razorpay-embedded-form') as HTMLFormElement;
+          if (form) {
+            form.submit();
+          }
+        }, 100);
       } else {
         throw new Error(result.message || "Payment creation failed");
       }
@@ -395,7 +367,7 @@ const  GenerousContributionsForm: React.FC = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      const isIndia = hostname.includes("shanthibhavan.in");
+      const isIndia = hostname.includes("localhost");
       const region = isIndia ? "india" : "australia";
 
       setPaymentRegion(region as PaymentRegion);
@@ -629,6 +601,29 @@ const  GenerousContributionsForm: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Razorpay Embedded Checkout Form */}
+      {showEmbeddedCheckout && paymentOrderData && (
+        <form
+          id="razorpay-embedded-form"
+          method="POST"
+          action="https://api.razorpay.com/v1/checkout/embedded"
+          style={{ display: 'none' }}
+        >
+          <input type="hidden" name="key_id" value={paymentOrderData.key_id} />
+          <input type="hidden" name="amount" value={paymentOrderData.amount} />
+          <input type="hidden" name="currency" value={paymentOrderData.currency} />
+          <input type="hidden" name="order_id" value={paymentOrderData.order_id} />
+          <input type="hidden" name="name" value={paymentOrderData.name} />
+          <input type="hidden" name="description" value={paymentOrderData.description} />
+          <input type="hidden" name="image" value={paymentOrderData.image} />
+          <input type="hidden" name="prefill[name]" value={paymentOrderData.prefill_name} />
+          <input type="hidden" name="prefill[email]" value={paymentOrderData.prefill_email} />
+          <input type="hidden" name="prefill[contact]" value={paymentOrderData.prefill_contact} />
+          <input type="hidden" name="callback_url" value={paymentOrderData.callback_url} />
+          <input type="hidden" name="cancel_url" value={paymentOrderData.cancel_url} />
+        </form>
+      )}
     </div>
   );
 };

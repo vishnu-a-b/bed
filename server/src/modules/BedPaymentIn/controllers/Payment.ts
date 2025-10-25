@@ -171,7 +171,7 @@ export default class PaymentController extends BaseController {
     }
   };
 
-  // Create order for Hosted Checkout (CollectNow requirement)
+  // Create order for Hosted Checkout (Embedded Checkout)
   createOrderHosted = async (req: Request, res: Response) => {
     try {
         const { supporterId, callback_url, cancel_url } = req.body;
@@ -189,7 +189,7 @@ export default class PaymentController extends BaseController {
           cancel_url
         });
 
-        // Wrap the response in a data object
+        // Wrap the response in a data object with hosted checkout specific fields
         return res.json({
             success: true,
             data: {
@@ -197,7 +197,15 @@ export default class PaymentController extends BaseController {
                 amount: result.data.amount,
                 currency: result.data.currency,
                 key: result.data.key,
-                hostedCheckoutUrl: result.data.hostedCheckoutUrl
+                customerName: result.data.customerName,
+                customerEmail: result.data.customerEmail,
+                customerContact: result.data.customerContact,
+                callbackUrl: result.data.callbackUrl,
+                cancelUrl: result.data.cancelUrl,
+                hostedCheckoutUrl: result.data.hostedCheckoutUrl,
+                description: result.data.description,
+                image: result.data.image,
+                name: result.data.name,
             }
         });
 

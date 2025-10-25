@@ -54,7 +54,7 @@ export default class BedPaymentIndController extends BaseController {
     }
   };
 
-  // Create Razorpay order for Hosted Checkout (CollectNow requirement)
+  // Create Razorpay order for Hosted Checkout (Embedded Checkout)
   createOrderHosted = async (req: Request, res: Response) => {
     try {
       const { supporterId, callback_url, cancel_url } = req.body;
@@ -86,7 +86,15 @@ export default class BedPaymentIndController extends BaseController {
           amount: result.data.amount,
           currency: result.data.currency,
           key: result.data.key,
+          customerName: result.data.customerName,
+          customerEmail: result.data.customerEmail,
+          customerContact: result.data.customerContact,
+          callbackUrl: result.data.callbackUrl,
+          cancelUrl: result.data.cancelUrl,
           hostedCheckoutUrl: result.data.hostedCheckoutUrl,
+          description: result.data.description,
+          image: result.data.image,
+          name: result.data.name,
         },
       });
     } catch (error: unknown) {
