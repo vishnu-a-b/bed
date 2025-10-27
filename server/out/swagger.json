@@ -5495,6 +5495,16 @@
         ]
       }
     },
+    "/v1/payment/callback": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/v1/payment/verify": {
       "post": {
         "description": "",
@@ -6170,6 +6180,16 @@
         }
       }
     },
+    "/v1/generous-payments-ind/callback": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/v1/generous-payments-ind/verify": {
       "post": {
         "description": "",
@@ -6694,6 +6714,16 @@
             "JWT": []
           }
         ]
+      }
+    },
+    "/v1/bed-payments-ind/callback": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
       }
     },
     "/v1/bed-payments-ind/verify": {

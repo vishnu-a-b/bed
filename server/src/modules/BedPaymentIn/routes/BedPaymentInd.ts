@@ -38,6 +38,13 @@ router.post(
 );
 
 /**
+ * @route   POST /api/bed-payments-ind/callback
+ * @desc    Handle Razorpay payment callback (receives POST from Razorpay embedded checkout)
+ * @access  Public
+ */
+router.post("/callback", controller.handleCallback);
+
+/**
  * @route   POST /api/bed-payments-ind/verify
  * @desc    Verify Razorpay payment signature
  * @access  Public

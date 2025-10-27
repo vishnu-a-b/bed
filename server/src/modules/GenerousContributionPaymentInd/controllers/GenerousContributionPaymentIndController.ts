@@ -60,6 +60,37 @@ export default class GenerousContributionPaymentIndController extends BaseContro
     }
   };
 
+  // Handle Razorpay payment callback (redirect from Razorpay embedded checkout)
+  handleCallback = async (req: Request, res: Response) => {
+    try {
+      // Extract Razorpay payment data from form POST
+      const razorpay_payment_id = req.body.razorpay_payment_id;
+      const razorpay_order_id = req.body.razorpay_order_id;
+      const razorpay_signature = req.body.razorpay_signature;
+
+      console.log('Razorpay callback received:', {
+        razorpay_payment_id,
+        razorpay_order_id,
+        razorpay_signature
+      });
+
+      if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        const frontendUrl = process.env.FRONTEND_URL || 'https://donate.shanthibhavan.in';
+        return res.redirect(`${frontendUrl}/payment/cancel`);
+      }
+
+      // Redirect to frontend verify page with payment parameters
+      const frontendUrl = process.env.FRONTEND_URL || 'https://donate.shanthibhavan.in';
+      const verifyUrl = `${frontendUrl}/payment/verify?razorpay_payment_id=${razorpay_payment_id}&razorpay_order_id=${razorpay_order_id}&razorpay_signature=${razorpay_signature}`;
+
+      return res.redirect(verifyUrl);
+    } catch (error) {
+      console.error("Error in handleCallback controller:", error);
+      const frontendUrl = process.env.FRONTEND_URL || 'https://donate.shanthibhavan.in';
+      return res.redirect(`${frontendUrl}/payment/cancel`);
+    }
+  };
+
   // Verify Razorpay payment
   verifyPayment = async (req: Request, res: Response) => {
     try {

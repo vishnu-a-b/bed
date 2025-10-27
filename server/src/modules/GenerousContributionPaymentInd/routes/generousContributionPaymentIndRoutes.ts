@@ -19,6 +19,9 @@ router.post(
 
 router.get("/public/:id", controller.getPaymentById);
 
+// Razorpay callback endpoint (receives POST from Razorpay embedded checkout)
+router.post("/callback", controller.handleCallback);
+
 router.post("/verify", controller.verifyPayment);
 
 router.get("/payment-success", async (req, res) => {

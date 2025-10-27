@@ -224,7 +224,7 @@ const  GenerousContributionsForm: React.FC = () => {
           prefill_email: formData.contributor.email,
           prefill_contact: formData.contributor.phone,
           prefill_address: formData.contributor.address || "",
-          callback_url: `${window.location.origin}/api/payment/callback`,
+          callback_url: `${API_URL}/generous-payments-ind/callback`,
           cancel_url: `${window.location.origin}/payment/cancel`,
         });
 

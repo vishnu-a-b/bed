@@ -66,6 +66,9 @@ router.post(
   }
 );
 
+// Razorpay callback endpoint (receives POST from Razorpay embedded checkout)
+router.post("/callback", controller.handleCallback);
+
 // Verify payment
 router.post("/verify", controller.verifyPayment);
 

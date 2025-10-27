@@ -17,16 +17,20 @@ export function PaymentForm({ supporter }: { supporter: any }) {
   const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState<boolean>(false);
   const [paymentOrderData, setPaymentOrderData] = useState<any>(null);
 
+  // Get API URL for callbacks
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.donatebed.shanthibhavan.in/v1';
+
   const handlePayment = async () => {
     setIsLoading(true);
     setPaymentStatus("processing");
     setErrorMessage("");
 
     try {
+
       // Create Razorpay order for embedded checkout
       const response = await create("payment/create-order-hosted", {
         supporterId: supporter.supporterId,
-        callback_url: `${window.location.origin}/payment/callback`,
+        callback_url: `${API_URL}/payment/callback`,
         cancel_url: `${window.location.origin}/payment/cancel`,
       });
 
@@ -53,7 +57,7 @@ export function PaymentForm({ supporter }: { supporter: any }) {
         prefill_name: paymentData.customerName || "",
         prefill_email: paymentData.customerEmail || "",
         prefill_contact: paymentData.customerContact || "",
-        callback_url: paymentData.callbackUrl || `${window.location.origin}/payment/callback`,
+        callback_url: paymentData.callbackUrl || `${API_URL}/payment/callback`,
         cancel_url: paymentData.cancelUrl || `${window.location.origin}/payment/cancel`,
       });
 
