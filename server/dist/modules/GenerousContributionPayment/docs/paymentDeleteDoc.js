@@ -12,7 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentDeleteDoc = void 0;
 const paymentDeleteDoc = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     /*
-       #swagger.tags = ['payment']
+       #swagger.tags = ['GenerousContributionPayment']
+       #swagger.description = 'Delete a generous contribution payment (Australia) record by ID - requires admin authorization'
+       #swagger.parameters['id'] = { description: 'Payment ID', in: 'path', required: true, type: 'string' }
+       #swagger.responses[200] = {
+        description: 'Payment deleted successfully',
+        schema: {
+          success: true,
+          message: 'Payment deleted successfully'
+        }
+      }
       #swagger.security = [
         {
           JWT: []

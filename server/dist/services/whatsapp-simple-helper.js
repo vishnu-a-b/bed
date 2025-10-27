@@ -204,5 +204,52 @@ exports.whatsappHelper = {
             throw new Error("Unexpected error occurred");
         }
     }),
+    sendPaymentReminderMessage: (phoneNumber, name, amount, bedNo, supportLink) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c;
+        try {
+            const response = yield axios_1.default.post(OMNI_API_URL, {
+                to: phoneNumber,
+                type: "template",
+                source: "external",
+                template: {
+                    name: "first_followup_au",
+                    language: {
+                        code: "en",
+                    },
+                    components: [
+                        {
+                            type: "body",
+                            parameters: [
+                                { type: "text", text: name },
+                                { type: "text", text: amount },
+                                { type: "text", text: bedNo },
+                                { type: "text", text: supportLink },
+                            ],
+                        },
+                    ],
+                },
+                metaData: {
+                    custom_callback_data: "first_followup_au",
+                },
+            }, {
+                headers: {
+                    accept: "application/json",
+                    Authorization: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaG9uZU51bWJlciI6Iis5MTQ4NzY2MTE2MDAiLCJwaG9uZU51bWJlcklkIjoiNTkyODgyNzUzOTE2NjExIiwiaWF0IjoxNzQ1NTg1OTAwfQ.qmjk1dJX9qkcWvshZYdrkN13Bowe74k9qch8w8gWMRA`,
+                    "Content-Type": "application/json",
+                },
+            });
+            console.log("Payment reminder message sent successfully!");
+            return response.data.messageId;
+        }
+        catch (error) {
+            console.error("Error sending payment reminder message:", error);
+            if (axios_1.default.isAxiosError(error)) {
+                console.error("Axios error details:", ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
+                throw new Error(((_c = (_b = error.response) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.message) ||
+                    "Failed to send payment reminder message");
+            }
+            throw new Error("Unexpected error occurred");
+        }
+    }),
 };
 exports.default = exports.whatsappHelper;

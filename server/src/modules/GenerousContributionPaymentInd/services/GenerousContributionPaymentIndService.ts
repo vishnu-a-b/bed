@@ -98,6 +98,7 @@ interface PaymentDetails {
   amount: number;
   currency: string;
   paymentId: Types.ObjectId;
+  key?: string;
 }
 
 interface PaymentVerificationResult {
@@ -164,6 +165,7 @@ export default class GenerousContributionPaymentIndService {
           amount,
           currency,
           paymentId: payment._id,
+          key: process.env.RAZORPAY_KEY_ID,
         },
       };
     } catch (error) {

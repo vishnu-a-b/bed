@@ -15,14 +15,38 @@ const PaymentSuccessPage: React.FC = () => {
         const paymentId = urlParams.get('paymentId');
         const PayerID = urlParams.get('PayerID');
         const token = urlParams.get('token'); // This is the order ID from PayPal
+        const verified = urlParams.get('verified'); // For Razorpay
 
+        // Check if this is a Razorpay payment that was already verified
+        const paymentMethod = sessionStorage.getItem('paymentMethod');
+        const razorpayVerified = sessionStorage.getItem('razorpayPaymentVerified');
+
+        // If verified=true is in URL, this is from Razorpay verification page
+        if (verified === 'true') {
+          // Check if sessionStorage confirms this (best case)
+          if (paymentMethod === 'razorpay' && razorpayVerified === 'true') {
+            setStatus('success');
+            setMessage('Payment completed successfully!');
+            // Clear the verification flag
+            sessionStorage.removeItem('razorpayPaymentVerified');
+            sessionStorage.removeItem('paymentMethod');
+            return;
+          }
+          // If verified=true in URL but sessionStorage not set, still treat as success
+          // (sessionStorage might be cleared or not available)
+          setStatus('success');
+          setMessage('Payment completed successfully!');
+          return;
+        }
+
+        // PayPal verification flow
         if (!paymentId && !token) {
           setStatus('error');
           setMessage('Missing payment information');
           return;
         }
 
-        // Get stored payment info
+        // Get stored payment info for PayPal
         const paymentInfoStr = sessionStorage.getItem('paymentInfo');
         if (!paymentInfoStr) {
           setStatus('error');

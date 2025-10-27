@@ -85,7 +85,7 @@ const generateReceiptPDF = (res, user) => __awaiter(void 0, void 0, void 0, func
     doc.font('Helvetica').text(',');
     yPosition += 20;
     // Thank you message
-    doc.text(`Thank you for your generous donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
+    doc.text(`Thank you for your donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
     yPosition += 30;
     // Receipt header
     doc.fontSize(12).font('Helvetica-Bold');
@@ -93,7 +93,7 @@ const generateReceiptPDF = (res, user) => __awaiter(void 0, void 0, void 0, func
     yPosition += 20;
     // Receipt description
     doc.fontSize(11).font('Helvetica');
-    doc.text('We confirm the receipt of payment from Mr/Ms/Mrs Well wisher as per details below:-', 40, yPosition, { width: 500 });
+    doc.text(`We confirm the receipt of payment from Mr/Ms/Mrs ${user.name} as per details below:-`, 40, yPosition, { width: 500 });
     yPosition += 30;
     // Table data
     const tableData = [

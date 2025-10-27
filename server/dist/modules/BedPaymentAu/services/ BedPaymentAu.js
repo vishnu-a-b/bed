@@ -29,7 +29,7 @@ const _BedPaymentAu_1 = require("../models/ BedPaymentAu");
 const mongoose_1 = __importDefault(require("mongoose"));
 const DonationReceiptMailer_1 = __importDefault(require("../../../services/DonationReceiptMailer"));
 const Supporter_1 = require("../../supporter/models/Supporter");
-// PayPal SDK Configuration
+const mailService_1 = __importDefault(require("../../../services/mailService"));
 const environment = process.env.NODE_ENV === "production"
     ? new checkout_server_sdk_1.default.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
     : new checkout_server_sdk_1.default.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET);
@@ -37,7 +37,7 @@ const client = new checkout_server_sdk_1.default.core.PayPalHttpClient(environme
 class BedPaymentAuService {
     constructor() {
         this.createPayment = (params) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
             const { supporter, source = "website" } = params;
             if (!supporter) {
                 throw new Error("Supporter ID is required");
@@ -49,8 +49,8 @@ class BedPaymentAuService {
             try {
                 // Find supporter and populate user data and bed data to get email, phone, and currency
                 const contributorData = yield Supporter_1.Supporter.findById(supporter)
-                    .populate("user", "email phone address") // Populate user field with email, phone, and address
-                    .populate("bed", "bedNo") // Populate bed info including amount and organization
+                    .populate("user") // Populate user field with email, phone, and address
+                    .populate("bed") // Populate bed info including amount and organization
                     .populate({
                     path: "bed",
                     populate: {
@@ -67,11 +67,9 @@ class BedPaymentAuService {
                 }
                 // Extract user data
                 const userEmail = (_a = contributorData.user) === null || _a === void 0 ? void 0 : _a.email;
-                const userPhone = (_b = contributorData.user) === null || _b === void 0 ? void 0 : _b.phone;
-                const userAddress = (_c = contributorData.user) === null || _c === void 0 ? void 0 : _c.address;
                 // Extract bed and payment data
                 const bed = contributorData.bed;
-                const currency = ((_d = bed === null || bed === void 0 ? void 0 : bed.country) === null || _d === void 0 ? void 0 : _d.currency) || "USD"; // Default to USD if currency not found
+                const currency = ((_b = bed === null || bed === void 0 ? void 0 : bed.country) === null || _b === void 0 ? void 0 : _b.currency) || "USD"; // Default to USD if currency not found
                 const amount = contributorData.amount || (bed === null || bed === void 0 ? void 0 : bed.amount) || (bed === null || bed === void 0 ? void 0 : bed.fixedAmount); // Use supporter amount, or fallback to bed amount/fixedAmount
                 if (!userEmail) {
                     throw new Error("Supporter email not found");
@@ -82,6 +80,51 @@ class BedPaymentAuService {
                 if (!currency) {
                     throw new Error("Currency not found");
                 }
+                // Check for existing pending payment for this supporter
+                // This check looks for payments created within the last 30 minutes that are still pending
+                const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+                const existingPendingPayment = yield _BedPaymentAu_1.BedPaymentAu.findOne({
+                    supporter: contributorData._id,
+                    status: "pending",
+                    paymentMode: "online",
+                    createdAt: { $gte: thirtyMinutesAgo },
+                }).sort({ createdAt: -1 });
+                // If there's an existing pending payment, reuse it
+                if (existingPendingPayment && existingPendingPayment.paypal_order_id) {
+                    console.log("Reusing existing PayPal order:", existingPendingPayment.paypal_order_id);
+                    // Verify the PayPal order is still valid
+                    try {
+                        const orderRequest = new checkout_server_sdk_1.default.orders.OrdersGetRequest(existingPendingPayment.paypal_order_id);
+                        const orderDetails = yield client.execute(orderRequest);
+                        // If order is still valid and not expired, reuse it
+                        if (orderDetails.result.status === "CREATED" || orderDetails.result.status === "APPROVED") {
+                            const approvalUrl = (_d = (_c = orderDetails.result.links) === null || _c === void 0 ? void 0 : _c.find((link) => link.rel === "approve")) === null || _d === void 0 ? void 0 : _d.href;
+                            return {
+                                success: true,
+                                data: {
+                                    orderId: existingPendingPayment.paypal_order_id,
+                                    amount: existingPendingPayment.amount,
+                                    currency: existingPendingPayment.currency,
+                                    approvalUrl: approvalUrl || "",
+                                    paymentId: existingPendingPayment._id,
+                                },
+                            };
+                        }
+                    }
+                    catch (orderError) {
+                        console.log("Existing PayPal order is no longer valid, creating new one");
+                        // If order is no longer valid, mark old payment as cancelled and create new one
+                        existingPendingPayment.status = "cancelled";
+                        existingPendingPayment.notes = Object.assign(Object.assign({}, existingPendingPayment.notes), { cancelled_reason: "Order expired or invalid", cancelled_at: new Date() });
+                        yield existingPendingPayment.save();
+                    }
+                }
+                const searchFieldsData = {
+                    supporterName: contributorData.name,
+                    supporterEmail: contributorData.email,
+                    supporterMobile: contributorData.mobileNo,
+                    bedNumber: ((_f = (_e = contributorData.bed) === null || _e === void 0 ? void 0 : _e.bedNo) === null || _f === void 0 ? void 0 : _f.toString()) || "",
+                };
                 const request = new checkout_server_sdk_1.default.orders.OrdersCreateRequest();
                 request.prefer("return=representation");
                 request.requestBody({
@@ -143,12 +186,13 @@ class BedPaymentAuService {
                     isApproved: true,
                     notes: {
                         paypal_order: order.result,
-                        bed: (_e = contributorData.bed) === null || _e === void 0 ? void 0 : _e._id,
-                        bedNo: (_f = contributorData.bed) === null || _f === void 0 ? void 0 : _f.bedNo,
+                        bed: (_g = contributorData.bed) === null || _g === void 0 ? void 0 : _g._id,
+                        bedNo: (_h = contributorData.bed) === null || _h === void 0 ? void 0 : _h.bedNo,
                         currency: currency,
                     },
+                    searchFields: searchFieldsData,
                 });
-                const approvalUrl = (_h = (_g = order.result.links) === null || _g === void 0 ? void 0 : _g.find((link) => link.rel === "approve")) === null || _h === void 0 ? void 0 : _h.href;
+                const approvalUrl = (_k = (_j = order.result.links) === null || _j === void 0 ? void 0 : _j.find((link) => link.rel === "approve")) === null || _k === void 0 ? void 0 : _k.href;
                 return {
                     success: true,
                     data: {
@@ -336,6 +380,184 @@ class BedPaymentAuService {
                 message: "Payment deleted successfully",
             };
         });
+        this.getPaymentStatistics = () => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const now = new Date();
+                // Calculate date ranges
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+                weekStart.setHours(0, 0, 0, 0);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                weekEnd.setHours(23, 59, 59, 999);
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                console.log("Date ranges:", {
+                    today: { start: todayStart, end: todayEnd },
+                    week: { start: weekStart, end: weekEnd },
+                    month: { start: monthStart, end: monthEnd },
+                });
+                // Aggregate queries
+                const [totalStats, todayStats, weekStats, monthStats] = yield Promise.all([
+                    // Total completed payments
+                    _BedPaymentAu_1.BedPaymentAu.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 },
+                                avgAmount: { $avg: "$amount" },
+                            },
+                        },
+                    ]),
+                    // Today's completed payments
+                    _BedPaymentAu_1.BedPaymentAu.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: todayStart,
+                                    $lte: todayEnd,
+                                },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 },
+                            },
+                        },
+                    ]),
+                    // This week's completed payments
+                    _BedPaymentAu_1.BedPaymentAu.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: weekStart,
+                                    $lte: weekEnd,
+                                },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 },
+                            },
+                        },
+                    ]),
+                    // This month's completed payments
+                    _BedPaymentAu_1.BedPaymentAu.aggregate([
+                        {
+                            $match: {
+                                status: "completed",
+                                paymentDate: {
+                                    $gte: monthStart,
+                                    $lte: monthEnd,
+                                },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalAmount: { $sum: "$amount" },
+                                totalCount: { $sum: 1 },
+                            },
+                        },
+                    ]),
+                ]);
+                // Format results
+                const formatStats = (stats) => {
+                    var _a, _b, _c;
+                    return ({
+                        amount: ((_a = stats[0]) === null || _a === void 0 ? void 0 : _a.totalAmount) || 0,
+                        count: ((_b = stats[0]) === null || _b === void 0 ? void 0 : _b.totalCount) || 0,
+                        avgAmount: ((_c = stats[0]) === null || _c === void 0 ? void 0 : _c.avgAmount) || 0,
+                    });
+                };
+                const result = {
+                    total: formatStats(totalStats),
+                    today: formatStats(todayStats),
+                    week: formatStats(weekStats),
+                    month: formatStats(monthStats),
+                    dateRanges: {
+                        today: { start: todayStart, end: todayEnd },
+                        week: { start: weekStart, end: weekEnd },
+                        month: { start: monthStart, end: monthEnd },
+                    },
+                };
+                console.log("Payment statistics result:", result);
+                return result;
+            }
+            catch (error) {
+                console.error("Error getting payment statistics:", error);
+                throw error;
+            }
+        });
+        // Route Definition (add this to your routes file)
+        // router.get('/generous-payments/stats', controller.getPaymentStats);
+        this.find = (_a, startDate_1, endDate_1) => __awaiter(this, [_a, startDate_1, endDate_1], void 0, function* ({ limit, skip, filterQuery, sort }, startDate, endDate) {
+            console.log("Service received dates:", startDate, endDate);
+            try {
+                limit = limit ? limit : 10;
+                skip = skip ? skip : 0;
+                let dateFilter = {};
+                if (startDate || endDate) {
+                    dateFilter = {
+                        paymentDate: Object.assign(Object.assign({}, (startDate && {
+                            $gte: (() => {
+                                const d = new Date(startDate);
+                                d.setHours(0, 0, 0, 0);
+                                return d;
+                            })(),
+                        })), (endDate && {
+                            $lte: (() => {
+                                const d = new Date(endDate);
+                                d.setHours(23, 59, 59, 999);
+                                return d;
+                            })(),
+                        })),
+                    };
+                }
+                const finalFilter = Object.assign(Object.assign({}, filterQuery), dateFilter);
+                console.log("Final filter query:", finalFilter);
+                // Updated to match the actual model structure
+                const payment = yield _BedPaymentAu_1.BedPaymentAu.find(finalFilter)
+                    .populate([
+                    {
+                        path: "recordedBy",
+                        select: "name email", // Assuming User model has name and email fields
+                    },
+                    {
+                        path: "approvedBy",
+                        select: "name email",
+                    },
+                ])
+                    .sort(sort)
+                    .limit(limit)
+                    .skip(skip);
+                const total = yield _BedPaymentAu_1.BedPaymentAu.countDocuments(finalFilter);
+                return {
+                    total,
+                    limit,
+                    skip,
+                    items: payment,
+                };
+            }
+            catch (error) {
+                console.error("Error finding generous contribution payments:", error);
+                throw error;
+            }
+        });
         // createManualPayment = async (
         //   params: ManualPaymentParams
         // ): Promise<{
@@ -498,7 +720,7 @@ class BedPaymentAuService {
                 {
                     $match: {
                         supporter: new mongoose_1.default.Types.ObjectId(supporterId),
-                        status: "captured", // Only count successful payments
+                        status: { $in: ["captured", "completed"] }, // Count both captured and completed payments
                     },
                 },
                 {
@@ -524,7 +746,7 @@ class BedPaymentAuService {
                 supporterName: supporter.nameVisible ? supporter.name : "Anonymous",
                 bedNo: supporter.bed.bedNo,
                 qrPhoto: supporter.bed.qrPhoto,
-                fixedAmount: supporter.bed.fixedAmount,
+                fixedAmount: supporter.amount || supporter.bed.amount || supporter.bed.fixedAmount,
                 bedId: supporter.bed._id,
                 countryId: supporter.country._id,
                 countryName: supporter.country.name,
@@ -548,6 +770,356 @@ class BedPaymentAuService {
                 })),
             };
         });
+        this.sendPaymentReminder = (options) => __awaiter(this, void 0, void 0, function* () {
+            const { phoneNumber, email, name, amount, bedNo, supportLink, vcLink } = options;
+            if (!phoneNumber && !email) {
+                throw new Error("Either phoneNumber or email is required.");
+            }
+            if (!name || !supportLink) {
+                throw new Error("name and supportLink are required.");
+            }
+            // Default to current month/year
+            // if (phoneNumber) {
+            //    await whatsappHelper.sendPaymentReminderMessage(
+            //     phoneNumber,
+            //     name,
+            //     amount,
+            //     bedNo,
+            //     supportLink,
+            //   );
+            // }
+            if (email) {
+                yield mailService_1.default.sendPaymentReminderEmail({
+                    to: email,
+                    name,
+                    amount,
+                    bedNo,
+                    supportLink,
+                    vcLink,
+                });
+            }
+            return { phoneNumber, email, name, amount, bedNo, supportLink };
+        });
+        this.findPayments = (_a, startDate_1, endDate_1) => __awaiter(this, [_a, startDate_1, endDate_1], void 0, function* ({ limit, skip, filterQuery, sort, search }, startDate, endDate) {
+            console.log("Service received dates:", startDate, endDate);
+            console.log("Service received search:", search);
+            console.log("Service received filterQuery:", filterQuery);
+            try {
+                limit = limit || 10;
+                skip = skip || 0;
+                // Date filter - only apply if dates are provided and not empty
+                let dateFilter = {};
+                if ((startDate && startDate.trim()) || (endDate && endDate.trim())) {
+                    dateFilter = {
+                        paymentDate: Object.assign(Object.assign({}, (startDate &&
+                            startDate.trim() && {
+                            $gte: (() => {
+                                const d = new Date(startDate);
+                                d.setHours(0, 0, 0, 0);
+                                return d;
+                            })(),
+                        })), (endDate &&
+                            endDate.trim() && {
+                            $lte: (() => {
+                                const d = new Date(endDate);
+                                d.setHours(23, 59, 59, 999);
+                                return d;
+                            })(),
+                        })),
+                    };
+                }
+                // Enhanced search filter
+                let searchFilter = {};
+                if (search && search.trim()) {
+                    const searchTerm = search.trim();
+                    searchFilter = {
+                        $or: [
+                            // Search in denormalized fields
+                            {
+                                "searchFields.supporterName": {
+                                    $regex: searchTerm,
+                                    $options: "i",
+                                },
+                            },
+                            {
+                                "searchFields.supporterMobile": {
+                                    $regex: searchTerm,
+                                    $options: "i",
+                                },
+                            },
+                            { "searchFields.bedNumber": { $regex: searchTerm, $options: "i" } },
+                            {
+                                "searchFields.supporterEmail": {
+                                    $regex: searchTerm,
+                                    $options: "i",
+                                },
+                            },
+                            // Payment fields
+                            { receiptNumber: { $regex: searchTerm, $options: "i" } },
+                            { paypal_payment_id: { $regex: searchTerm, $options: "i" } },
+                            { paypal_order_id: { $regex: searchTerm, $options: "i" } },
+                            { "payer.email_address": { $regex: searchTerm, $options: "i" } },
+                            { "payer.name.given_name": { $regex: searchTerm, $options: "i" } },
+                            { "payer.name.surname": { $regex: searchTerm, $options: "i" } },
+                        ],
+                    };
+                }
+                const finalFilter = Object.assign(Object.assign(Object.assign({}, filterQuery), dateFilter), searchFilter);
+                console.log("Final filter query:", JSON.stringify(finalFilter, null, 2));
+                const payments = yield _BedPaymentAu_1.BedPaymentAu.find(finalFilter)
+                    .populate([
+                    {
+                        path: "recordedBy",
+                        select: "name email",
+                    },
+                    {
+                        path: "approvedBy",
+                        select: "name email",
+                    },
+                    {
+                        path: "supporter",
+                        populate: [{ path: "bed" }, { path: "user" }],
+                    },
+                ])
+                    .sort(sort)
+                    .limit(limit)
+                    .skip(skip)
+                    .lean();
+                const total = yield _BedPaymentAu_1.BedPaymentAu.countDocuments(finalFilter);
+                console.log(`Found ${payments.length} payments out of ${total} total`);
+                return {
+                    total,
+                    limit,
+                    skip,
+                    items: payments,
+                };
+            }
+            catch (error) {
+                console.error("Error finding bed payments:", error);
+                throw error;
+            }
+        });
+        // Add these methods to your BedPaymentAuService class
+        this.createManualPayment = (params) => __awaiter(this, void 0, void 0, function* () {
+            const { amount, currency = "AUD", name, email, phNo, address, manualMethod, transactionReference, paymentDate = new Date(), remarks, contribution = {
+                purpose: "general_donation",
+                description: "Manual donation"
+            }, source = "website", recordedBy, supporter, bed } = params;
+            console.log(params);
+            if (!amount || amount <= 0) {
+                throw new Error("Amount must be greater than 0");
+            }
+            if (!manualMethod) {
+                throw new Error("Manual payment method is required");
+            }
+            try {
+                // Build search fields for manual payments
+                const searchFieldsData = {
+                    supporterName: name || "",
+                    supporterEmail: email || "",
+                    supporterMobile: phNo || "",
+                    bedNumber: "", // Will be populated if bed is provided
+                };
+                // If bed is provided, get bed details
+                if (bed) {
+                    // You might need to import Bed model to get bedNo
+                    // const bedData = await Bed.findById(bed);
+                    // searchFieldsData.bedNumber = bedData?.bedNo?.toString() || "";
+                }
+                const payment = yield _BedPaymentAu_1.BedPaymentAu.create(Object.assign(Object.assign(Object.assign({ amount,
+                    currency, status: "pending", paymentMode: "offline", manualMethod,
+                    transactionReference,
+                    remarks,
+                    paymentDate,
+                    contribution,
+                    source,
+                    recordedBy, isApproved: false, 
+                    // Store basic payer info for manual payments
+                    payer: email || name ? {
+                        email_address: email,
+                        name: name ? {
+                            given_name: name.split(" ")[0] || "",
+                            surname: name.split(" ").slice(1).join(" ") || ""
+                        } : undefined
+                    } : undefined }, (supporter && { supporter })), (bed && { bed })), { searchFields: searchFieldsData, notes: {
+                        manual_payment: true,
+                        created_by: recordedBy,
+                        payer_info: {
+                            name,
+                            email,
+                            phNo,
+                            address
+                        }
+                    } }));
+                console.log(payment);
+                return {
+                    success: true,
+                    data: { payment },
+                };
+            }
+            catch (error) {
+                console.error("Error creating manual payment:", error);
+                throw new Error(`Failed to create manual payment: ${error.message}`);
+            }
+        });
+        this.approveManualPayment = (params) => __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+            console.log(params);
+            const { id, approved, approvedBy, remarks } = params;
+            const payment = yield _BedPaymentAu_1.BedPaymentAu.findById(id)
+                .populate({
+                path: "supporter",
+                populate: {
+                    path: "user"
+                }
+            });
+            if (!payment) {
+                throw new Error("Payment not found");
+            }
+            if (payment.paymentMode !== "offline") {
+                throw new Error("Only offline payments can be manually approved");
+            }
+            if (payment.isApproved && approved) {
+                throw new Error("Payment is already approved");
+            }
+            try {
+                // Update payment status
+                payment.isApproved = approved;
+                payment.approvedBy = approvedBy;
+                payment.approvedAt = new Date();
+                payment.status = approved ? "completed" : "cancelled";
+                if (remarks) {
+                    payment.remarks = payment.remarks
+                        ? `${payment.remarks}\n\nApproval: ${remarks}`
+                        : `Approval: ${remarks}`;
+                }
+                yield payment.save();
+                // If approved, send receipt email
+                if (approved) {
+                    try {
+                        // Determine email and name from various sources
+                        const payerEmail = ((_a = payment.payer) === null || _a === void 0 ? void 0 : _a.email_address) ||
+                            ((_c = (_b = payment.supporter) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.email) ||
+                            ((_e = (_d = payment.notes) === null || _d === void 0 ? void 0 : _d.payer_info) === null || _e === void 0 ? void 0 : _e.email);
+                        const payerName = ((_g = (_f = payment.payer) === null || _f === void 0 ? void 0 : _f.name) === null || _g === void 0 ? void 0 : _g.given_name)
+                            ? `${payment.payer.name.given_name} ${payment.payer.name.surname || ''}`.trim()
+                            : ((_j = (_h = payment.supporter) === null || _h === void 0 ? void 0 : _h.user) === null || _j === void 0 ? void 0 : _j.name) ||
+                                ((_l = (_k = payment.notes) === null || _k === void 0 ? void 0 : _k.payer_info) === null || _l === void 0 ? void 0 : _l.name) ||
+                                "Donor";
+                        const payerPhone = ((_o = (_m = payment.supporter) === null || _m === void 0 ? void 0 : _m.user) === null || _o === void 0 ? void 0 : _o.mobileNo) ||
+                            ((_q = (_p = payment.notes) === null || _p === void 0 ? void 0 : _p.payer_info) === null || _q === void 0 ? void 0 : _q.phNo) ||
+                            "";
+                        const payerAddress = ((_s = (_r = payment.supporter) === null || _r === void 0 ? void 0 : _r.user) === null || _s === void 0 ? void 0 : _s.address) ||
+                            ((_u = (_t = payment.notes) === null || _t === void 0 ? void 0 : _t.payer_info) === null || _u === void 0 ? void 0 : _u.address) ||
+                            "";
+                        if (payerEmail) {
+                            yield DonationReceiptMailer_1.default.sendDonationReceiptEmail({
+                                email: payerEmail,
+                                name: payerName,
+                                phoneNo: payerPhone,
+                                amount: payment.amount,
+                                address: payerAddress,
+                                transactionNumber: payment.transactionReference || payment.receiptNumber,
+                                receiptNumber: payment.receiptNumber,
+                                date: new Date(payment.paymentDate).toLocaleDateString("en-AU", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                }),
+                                programName: ((_v = payment.contribution) === null || _v === void 0 ? void 0 : _v.description) || "Manual Contribution",
+                            });
+                            console.log(`Manual payment receipt email sent to ${payerEmail}`);
+                            // Update notes to indicate email was sent
+                            payment.notes = Object.assign(Object.assign({}, payment.notes), { receipt_email_sent: true, receipt_email_sent_at: new Date() });
+                            yield payment.save();
+                        }
+                        else {
+                            console.warn(`No email address found for manual payment ${payment.receiptNumber}`);
+                            // Update notes to indicate email could not be sent
+                            payment.notes = Object.assign(Object.assign({}, payment.notes), { receipt_email_failed: true, receipt_email_error: "No email address available" });
+                            yield payment.save();
+                        }
+                    }
+                    catch (emailError) {
+                        console.error("Failed to send manual payment receipt email:", emailError);
+                        // Update notes with email error but don't fail the approval
+                        payment.notes = Object.assign(Object.assign({}, payment.notes), { receipt_email_failed: true, receipt_email_error: emailError.message, receipt_email_retry_needed: true });
+                        yield payment.save();
+                    }
+                }
+                return {
+                    success: true,
+                    data: { payment },
+                };
+            }
+            catch (error) {
+                console.error("Error approving manual payment:", error);
+                throw new Error(`Failed to approve manual payment: ${error.message}`);
+            }
+        });
+        // findPayments = async (
+        //   { limit, skip, filterQuery, sort }: any,
+        //   startDate?: string,
+        //   endDate?: string
+        // ) => {
+        //   console.log("Service received dates:", startDate, endDate);
+        //   console.log("Service received filterQuery:", filterQuery);
+        //   try {
+        //     limit = limit || 10;
+        //     skip = skip || 0;
+        //     let dateFilter = {};
+        //     if (startDate || endDate) {
+        //       dateFilter = {
+        //         paymentDate: {
+        //           ...(startDate && {
+        //             $gte: new Date(startDate),
+        //           }),
+        //           ...(endDate && {
+        //             $lte: new Date(endDate),
+        //           }),
+        //         },
+        //       };
+        //     }
+        //     const finalFilter = {
+        //       ...filterQuery,
+        //       ...dateFilter,
+        //     };
+        //     console.log("Final filter query:", JSON.stringify(finalFilter, null, 2));
+        //     // Updated to match the actual model structure
+        //     const payments = await BedPaymentAu.find(finalFilter)
+        //       .populate([
+        //         {
+        //           path: "recordedBy",
+        //           select: "name email", // Assuming User model has name and email fields
+        //         },
+        //         {
+        //           path: "approvedBy",
+        //           select: "name email",
+        //         },
+        // {
+        //   path: "supporter",
+        //   populate: {
+        //     path: "bed",
+        //   },
+        // },
+        //       ])
+        //       .sort(sort)
+        //       .limit(limit)
+        //       .skip(skip)
+        //       .lean(); // Use lean() for better performance
+        //     const total = await BedPaymentAu.countDocuments(finalFilter);
+        //     console.log(`Found ${payments.length} payments out of ${total} total`);
+        //     return {
+        //       total,
+        //       limit,
+        //       skip,
+        //       items: payments,
+        //     };
+        //   } catch (error) {
+        //     console.error("Error finding generous contribution payments:", error);
+        //     throw error;
+        //   }
+        // };
     }
 }
 exports.default = BedPaymentAuService;

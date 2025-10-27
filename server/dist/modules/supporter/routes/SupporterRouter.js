@@ -25,14 +25,17 @@ router.get("/get-country-data/:id", supporterListDoc_1.supporterListDoc, control
 router.get("/get-bed-data/:id", supporterListDoc_1.supporterListDoc, controller.getBedDetails);
 router.post("/", supporterCreateDoc_1.supporterCreateDoc, supporerCreateValidator_1.supporterCreateValidator, controller.create);
 router.get('/contact-info', supporterListDoc_1.supporterListDoc, controller.getContactInfoController);
-router.use(authenticateUser_1.authenticateUser);
-const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
 router.get("/supporter-head", supporterListDoc_1.supporterListDoc, controller.getSupporterHead);
 router.post("/get", supporterListDoc_1.supporterListDoc, (0, setFilterParams_1.default)(Supporter_1.supporterFilterFields), controller.get);
+// IMPORTANT: /supporter must come BEFORE /:id to avoid route conflict
 router.get("/supporter", supporterListDoc_1.supporterListDoc, (0, setFilterParams_1.default)(Supporter_1.supporterFilterFields), controller.getSupporter);
+// Public endpoint for supporter details (used by public supporter page)
+// MUST be last among GET routes to avoid catching specific paths
+router.get("/:id", supporterDetailsDoc_1.supporterDetailsDoc, controller.getOne);
 router.get("/count-documents", supporterCountDoc_1.supporterCountDoc, controller.countTotalDocuments);
 router.get("/user/:id", supporterDetailsDoc_1.supporterDetailsDoc, controller.getWithUserId);
-router.get("/:id", supporterDetailsDoc_1.supporterDetailsDoc, controller.getOne);
+router.use(authenticateUser_1.authenticateUser);
+const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
 router.put("/:id", supporterUpdateDoc_1.supporterUpdateDoc, (0, authorizeUser_1.default)({ allowedRoles: [roles_1.default.staff] }), supporterUpdateValidator_1.supporterUpdateValidator, controller.update);
 router.delete("/:id", supporterDeleteDoc_1.supporterDeleteDoc, authorization, controller.delete);
 exports.default = router;

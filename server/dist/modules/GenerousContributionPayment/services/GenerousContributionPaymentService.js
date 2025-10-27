@@ -295,7 +295,7 @@ class GenerousContributionPaymentService {
                 console.log("Date ranges:", {
                     today: { start: todayStart, end: todayEnd },
                     week: { start: weekStart, end: weekEnd },
-                    month: { start: monthStart, end: monthEnd }
+                    month: { start: monthStart, end: monthEnd },
                 });
                 // Aggregate queries
                 const [totalStats, todayStats, weekStats, monthStats] = yield Promise.all([
@@ -303,17 +303,17 @@ class GenerousContributionPaymentService {
                     GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
                         {
                             $match: {
-                                status: "completed"
-                            }
+                                status: "completed",
+                            },
                         },
                         {
                             $group: {
                                 _id: null,
                                 totalAmount: { $sum: "$amount" },
                                 totalCount: { $sum: 1 },
-                                avgAmount: { $avg: "$amount" }
-                            }
-                        }
+                                avgAmount: { $avg: "$amount" },
+                            },
+                        },
                     ]),
                     // Today's completed payments
                     GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
@@ -322,17 +322,17 @@ class GenerousContributionPaymentService {
                                 status: "completed",
                                 paymentDate: {
                                     $gte: todayStart,
-                                    $lte: todayEnd
-                                }
-                            }
+                                    $lte: todayEnd,
+                                },
+                            },
                         },
                         {
                             $group: {
                                 _id: null,
                                 totalAmount: { $sum: "$amount" },
-                                totalCount: { $sum: 1 }
-                            }
-                        }
+                                totalCount: { $sum: 1 },
+                            },
+                        },
                     ]),
                     // This week's completed payments
                     GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
@@ -341,17 +341,17 @@ class GenerousContributionPaymentService {
                                 status: "completed",
                                 paymentDate: {
                                     $gte: weekStart,
-                                    $lte: weekEnd
-                                }
-                            }
+                                    $lte: weekEnd,
+                                },
+                            },
                         },
                         {
                             $group: {
                                 _id: null,
                                 totalAmount: { $sum: "$amount" },
-                                totalCount: { $sum: 1 }
-                            }
-                        }
+                                totalCount: { $sum: 1 },
+                            },
+                        },
                     ]),
                     // This month's completed payments
                     GenerousContributionPayment_1.GenerousContributionPayment.aggregate([
@@ -360,18 +360,18 @@ class GenerousContributionPaymentService {
                                 status: "completed",
                                 paymentDate: {
                                     $gte: monthStart,
-                                    $lte: monthEnd
-                                }
-                            }
+                                    $lte: monthEnd,
+                                },
+                            },
                         },
                         {
                             $group: {
                                 _id: null,
                                 totalAmount: { $sum: "$amount" },
-                                totalCount: { $sum: 1 }
-                            }
-                        }
-                    ])
+                                totalCount: { $sum: 1 },
+                            },
+                        },
+                    ]),
                 ]);
                 // Format results
                 const formatStats = (stats) => {
@@ -379,7 +379,7 @@ class GenerousContributionPaymentService {
                     return ({
                         amount: ((_a = stats[0]) === null || _a === void 0 ? void 0 : _a.totalAmount) || 0,
                         count: ((_b = stats[0]) === null || _b === void 0 ? void 0 : _b.totalCount) || 0,
-                        avgAmount: ((_c = stats[0]) === null || _c === void 0 ? void 0 : _c.avgAmount) || 0
+                        avgAmount: ((_c = stats[0]) === null || _c === void 0 ? void 0 : _c.avgAmount) || 0,
                     });
                 };
                 const result = {
@@ -390,8 +390,8 @@ class GenerousContributionPaymentService {
                     dateRanges: {
                         today: { start: todayStart, end: todayEnd },
                         week: { start: weekStart, end: weekEnd },
-                        month: { start: monthStart, end: monthEnd }
-                    }
+                        month: { start: monthStart, end: monthEnd },
+                    },
                 };
                 console.log("Payment statistics result:", result);
                 return result;
@@ -521,12 +521,6 @@ class GenerousContributionPaymentService {
             if (!amount || amount <= 0) {
                 throw new Error("Amount must be greater than 0");
             }
-            // if (!contributor.name || !contributor.email) {
-            //   throw new Error("Contributor name and email are required");
-            // }
-            // if (!contribution.purpose) {
-            //   throw new Error("Contribution purpose is required");
-            // }
             const payment = yield GenerousContributionPayment_1.GenerousContributionPayment.create({
                 amount,
                 currency,

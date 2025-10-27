@@ -70,30 +70,31 @@ type PaymentRegion = "india" | "australia";
 const  GenerousContributionsForm: React.FC = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  // Detect payment region based on hostname
-  const [paymentRegion, setPaymentRegion] = useState<PaymentRegion>("australia");
-
   // Determine initial currency and phone country based on region
   const getInitialValues = () => {
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      // const isIndia = hostname.includes("shanthibhavan.in");
-      const isIndia = true;
-      console.log(isIndia)
+      const isIndia = hostname.includes("shanthibhavan.in");
+      // const isIndia = hostname === "localhost" || hostname.startsWith("localhost");
+      console.log("Hostname:", hostname, "Is India:", isIndia)
       return {
         region: isIndia ? "india" : "australia",
         currency: isIndia ? "INR" : "AUD",
         phoneCountry: isIndia ? "in" : "au"
       };
     }
+    // Default to India for SSR (will be updated on client mount)
     return {
-      region: "australia" as PaymentRegion,
-      currency: "AUD",
-      phoneCountry: "au"
+      region: "india" as PaymentRegion,
+      currency: "INR",
+      phoneCountry: "in"
     };
   };
 
   const initialValues = getInitialValues();
+
+  // Detect payment region based on hostname
+  const [paymentRegion, setPaymentRegion] = useState<PaymentRegion>(initialValues.region as PaymentRegion);
   console.log(initialValues)
   const [formData, setFormData] = useState<FormData>({
     amount: "",
@@ -192,7 +193,7 @@ const  GenerousContributionsForm: React.FC = () => {
   const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState<boolean>(false);
   const [paymentOrderData, setPaymentOrderData] = useState<any>(null);
 
-  // Handle Razorpay payment (India) - Embedded Checkout
+  // Handle Razorpay payment (India) - Embedded Checkout (Official Method)
   const handleRazorpayPayment = async (): Promise<void> => {
     try {
       // Create payment order with backend
@@ -210,29 +211,31 @@ const  GenerousContributionsForm: React.FC = () => {
       if (result.success) {
         const { orderId, amount, currency, key } = result.data;
 
-        // Store order data for embedded checkout form
+        // Prepare payment data for embedded checkout form
         setPaymentOrderData({
           key_id: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          order_id: orderId,
-          amount: amount,
+          amount: Math.round(amount * 100), // Amount in paise
           currency: currency,
+          order_id: orderId,
           name: "Shanthibhavan",
           description: "Generous Contribution",
           image: `${window.location.origin}/father.png`,
           prefill_name: formData.contributor.name,
           prefill_email: formData.contributor.email,
           prefill_contact: formData.contributor.phone,
-          callback_url: `${window.location.origin}/payment/callback`,
+          prefill_address: formData.contributor.address || "",
+          callback_url: `${window.location.origin}/api/payment/callback`,
           cancel_url: `${window.location.origin}/payment/cancel`,
         });
 
-        // Show embedded checkout
+        // Show form and auto-submit
         setShowEmbeddedCheckout(true);
 
-        // Auto-submit the form after a short delay to allow state to update
+        // Submit form after state update
         setTimeout(() => {
           const form = document.getElementById('razorpay-embedded-form') as HTMLFormElement;
           if (form) {
+            console.log("Submitting Razorpay embedded form");
             form.submit();
           }
         }, 100);
@@ -367,9 +370,11 @@ const  GenerousContributionsForm: React.FC = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      const isIndia = hostname.includes("localhost");
+      const isIndia = hostname.includes("shanthibhavan.in");
+      //const isIndia = hostname === "localhost" || hostname.startsWith("localhost");
       const region = isIndia ? "india" : "australia";
 
+      console.log("useEffect - Hostname:", hostname, "Is India:", isIndia, "Region:", region);
       setPaymentRegion(region as PaymentRegion);
 
       // Load Razorpay script for India
@@ -602,13 +607,12 @@ const  GenerousContributionsForm: React.FC = () => {
         </div>
       </div>
 
-      {/* Razorpay Embedded Checkout Form */}
+      {/* Razorpay Embedded Checkout Form - Official Implementation */}
       {showEmbeddedCheckout && paymentOrderData && (
         <form
           id="razorpay-embedded-form"
           method="POST"
           action="https://api.razorpay.com/v1/checkout/embedded"
-          style={{ display: 'none' }}
         >
           <input type="hidden" name="key_id" value={paymentOrderData.key_id} />
           <input type="hidden" name="amount" value={paymentOrderData.amount} />
@@ -620,6 +624,9 @@ const  GenerousContributionsForm: React.FC = () => {
           <input type="hidden" name="prefill[name]" value={paymentOrderData.prefill_name} />
           <input type="hidden" name="prefill[email]" value={paymentOrderData.prefill_email} />
           <input type="hidden" name="prefill[contact]" value={paymentOrderData.prefill_contact} />
+          {paymentOrderData.prefill_address && (
+            <input type="hidden" name="notes[address]" value={paymentOrderData.prefill_address} />
+          )}
           <input type="hidden" name="callback_url" value={paymentOrderData.callback_url} />
           <input type="hidden" name="cancel_url" value={paymentOrderData.cancel_url} />
         </form>

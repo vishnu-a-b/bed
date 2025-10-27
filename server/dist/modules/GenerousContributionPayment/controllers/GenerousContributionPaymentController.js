@@ -221,12 +221,12 @@ class GenerousContributionPaymentController extends BaseController_1.default {
                 });
             }
         });
-        this.getPaymentStats = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.getPaymentStats1 = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const stats = yield this.service.getPaymentStatistics();
                 this.sendSuccessResponse(res, 200, {
                     message: "Payment statistics retrieved successfully",
-                    data: stats
+                    data: stats,
                 });
             }
             catch (e) {
@@ -274,7 +274,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
         this.createManualPayment = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const { amount, currency, contributor, contribution, manualMethod, transactionReference, remarks, } = req.body;
+                const { amount, currency, contributor, manualMethod, transactionReference, remarks, } = req.body;
                 // Get recorded by user (from auth middleware)
                 const recordedBy = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const result = yield this.service.createManualPayment({
@@ -325,7 +325,7 @@ class GenerousContributionPaymentController extends BaseController_1.default {
             }
         });
         // Get payment statistics
-        this.getPaymentStats1 = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.getPaymentStats = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { startDate, endDate, groupBy = "day" } = req.query;
                 // Build date filter

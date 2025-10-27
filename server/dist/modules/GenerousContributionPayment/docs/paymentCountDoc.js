@@ -12,9 +12,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentCountDoc = void 0;
 const paymentCountDoc = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     /*
-      #swagger.tags = ['payment']
+      #swagger.tags = ['GenerousContributionPayment']
+      #swagger.description = 'Get total count of generous contribution payments (Australia) with optional filters'
+      #swagger.parameters['status'] = { description: 'Filter by payment status', in: 'query', type: 'string' }
+      #swagger.parameters['paymentMode'] = { description: 'Filter by payment mode', in: 'query', type: 'string', enum: ['online', 'offline'] }
       #swagger.responses[200] = {
-        description: 'Endpoint to get total payments count',
+        description: 'Total generous contribution payments count retrieved successfully',
+        schema: {
+          success: true,
+          data: {
+            count: 250
+          }
+        }
       }
       #swagger.security = [
         {

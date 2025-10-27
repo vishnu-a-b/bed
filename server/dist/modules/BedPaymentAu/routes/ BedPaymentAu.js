@@ -24,9 +24,11 @@ const paymentListDoc_1 = require("../docs/paymentListDoc");
 const router = express_1.default.Router();
 const controller = new _BedPaymentAu_1.default();
 router.post("/create", paymentCreateDoc_1.paymentCreateDoc, paymentCreateValidator_1.paymentCreateValidator, controller.createPayment);
+router.post("/payment-followup", controller.sendPaymentReminderController);
 router.get("/public/:id", controller.getPaymentById);
 router.get("/get-supporter-data/:id", paymentListDoc_1.paymentListDoc, controller.getSupporterDetails);
 router.post("/verify", controller.verifyPayment);
+router.post("/", controller.getPayments);
 router.get("/payment-success", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Example input (replace with actual values from payment)
     const { phoneNo = "918848196653" } = req.query;
@@ -45,7 +47,9 @@ router.get("/payment-success", (req, res) => __awaiter(void 0, void 0, void 0, f
 router.use(authenticateUser_1.authenticateUser);
 // Common authorization
 const authorization = (0, authorizeUser_1.default)({ allowedRoles: [] });
-router.get("/", authorization, controller.getAllPayments);
+// router.get("/", authorization, controller.getAllPayments);
+router.get("/", controller.get);
+router.get("/stats", controller.getPaymentStats1);
 /**
  * @route   GET /api/generous-payments/stats
  * @desc    Get payment statistics
@@ -75,7 +79,8 @@ router.delete("/:id", authorization, controller.deletePayment);
  * @desc    Create manual/offline payment record
  * @access  Private (Admin/Staff)
  */
-//router.post("/manual", authorization, controller.createManualPayment);
+router.post("/manual", authorization, controller.createManualPayment);
+router.patch("/:id/approve", authorization, controller.approveManualPayment);
 /**
  * @route   POST /api/generous-payments/:id/refund
  * @desc    Process payment refund

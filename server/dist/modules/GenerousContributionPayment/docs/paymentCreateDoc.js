@@ -12,26 +12,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentCreateDoc = void 0;
 const paymentCreateDoc = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     /*
-            #swagger.tags = ['payment']
+            #swagger.tags = ['GenerousContributionPayment']
+            #swagger.description = 'Create a generous contribution payment (General Donations) - Used by client app - Supports PayPal online and offline payment modes'
             #swagger.parameters['parameter_name'] = {
               in: 'body',
-              description: 'Endpoint to create a payment',
+              description: 'Generous contribution payment details for general donations',
               schema: {
-                name: "string",
-                user: "65cd9d8d5cae5ffc348ed638",
-                country: "65cd9d8d5cae5ffc348ed638",
-                organization: "65cd9d8d5cae5ffc348ed638",
-                role: "string",
-                type: "string",
-                joinDate: "string",
+                name: "John Doe",
+                phNo: "+61412345678",
+                email: "donor@example.com",
+                address: "123 Main St, Sydney NSW 2000, Australia",
+                amount: 500,
+                currency: "AUD",
+                contribution: {
+                  purpose: "general_donation",
+                  description: "General donation to support the cause"
+                },
+                paymentMode: "online",
+                manualMethod: "bank_transfer",
+                transactionReference: "TXN123456",
+                remarks: "Generous contribution",
+                source: "website"
               }
             }
-            
-            #swagger.security = [
-              {
-                JWT: []
-              }
-            ]
         */
     next();
 });

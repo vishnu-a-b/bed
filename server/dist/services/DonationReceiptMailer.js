@@ -99,7 +99,7 @@ class DonationReceiptMailer {
             doc.font("Helvetica").text(",");
             yPosition += 20;
             // Thank you message
-            doc.text(`Thank you for your generous donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
+            doc.text(`Thank you for your donation of AUD ${user.amount}. Below are the details of your contribution.`, 40, yPosition, { width: 500 });
             yPosition += 30;
             // Receipt header
             doc.fontSize(12).font("Helvetica-Bold");
@@ -107,7 +107,7 @@ class DonationReceiptMailer {
             yPosition += 20;
             // Receipt description
             doc.fontSize(11).font("Helvetica");
-            doc.text("We confirm the receipt of payment from Mr/Ms/Mrs Well wisher as per details below:-", 40, yPosition, { width: 500 });
+            doc.text(`We confirm the receipt of payment from Mr/Ms/Mrs ${user.name} as per details below:-`, 40, yPosition, { width: 500 });
             yPosition += 30;
             // Table data
             const tableData = [
@@ -366,10 +366,7 @@ class DonationReceiptMailer {
                 <span class="detail-label">Date : </span>
                 <span class="detail-value">${options.date}</span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">Program : </span>
-                <span class="detail-value"> ${options.programName || "Generous Contribution Program"}</span>
-            </div>
+            
             <div class="detail-row" style="border-top: 2px solid #1565c0; margin-top: 15px; padding-top: 15px;">
                 <span class="detail-label">Donation Amount : </span>
                 <span class="detail-value amount-highlight">AUD${formattedAmount}</span>

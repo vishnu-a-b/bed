@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Axios } from "@/utils/api/apiAuth";
+import axios from "axios";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 function PaymentVerifyContent() {
@@ -10,6 +10,7 @@ function PaymentVerifyContent() {
   const router = useRouter();
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [message, setMessage] = useState("Verifying your payment...");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -18,17 +19,29 @@ function PaymentVerifyContent() {
         const razorpay_order_id = searchParams.get("razorpay_order_id");
         const razorpay_signature = searchParams.get("razorpay_signature");
 
+        console.log("Payment params:", { razorpay_payment_id, razorpay_order_id, razorpay_signature });
+
         if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
-          throw new Error("Missing payment parameters");
+          setStatus("error");
+          setMessage("Missing payment parameters. Redirecting to home...");
+          setTimeout(() => {
+            router.push("/payment");
+          }, 2000);
+          return;
         }
 
-        // Verify payment
-        const response = await Axios.post(
-          "/payment/verify",
+        // Verify payment with Razorpay India endpoint
+        const response = await axios.post(
+          `${API_URL}/generous-payments-ind/verify`,
           {
             razorpay_payment_id,
             razorpay_order_id,
             razorpay_signature,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
 
@@ -36,26 +49,40 @@ function PaymentVerifyContent() {
           setStatus("success");
           setMessage("Payment successful! Thank you for your contribution.");
 
+          // Store success info in sessionStorage for the success page
+          if (typeof window !== "undefined" && window.sessionStorage) {
+            sessionStorage.setItem('razorpayPaymentVerified', 'true');
+            sessionStorage.setItem('paymentMethod', 'razorpay');
+          }
+
           // Redirect to success page after 2 seconds
           setTimeout(() => {
-            router.push("/payment/success");
+            router.push("/payment/success?verified=true");
           }, 2000);
         } else {
           throw new Error("Payment verification failed");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Payment verification error:", error);
+        console.error("Error response:", error.response?.data);
         setStatus("error");
-        setMessage(
-          error instanceof Error
-            ? error.message
-            : "Payment verification failed. Please contact support."
-        );
+
+        // Get detailed error message
+        let errorMessage = "Payment verification failed. Please contact support.";
+        if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        setMessage(errorMessage);
       }
     };
 
     verifyPayment();
-  }, [searchParams, router]);
+  }, [searchParams, router, API_URL]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
