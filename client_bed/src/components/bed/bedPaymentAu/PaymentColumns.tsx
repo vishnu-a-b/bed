@@ -672,6 +672,41 @@ const ViewDetails = ({ data }: { data: Payment }) => {
         >
           Edit Payment
         </Button>
+        <Button
+          variant="outline"
+          className="text-sm"
+          onClick={async () => {
+            try {
+              const token = getAccessToken();
+              const response = await fetch(
+                `https://api.donatebed.shanthibhavan.in//temp/${paymentData.receiptNumber}.pdf`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (!response.ok) throw new Error('Failed to download receipt');
+
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `receipt_${paymentData.receiptNumber || paymentData._id}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+              toastService.success('Receipt downloaded successfully');
+            } catch (error) {
+              console.error('Error downloading receipt:', error);
+              toastService.error('Failed to download receipt');
+            }
+          }}
+        >
+          Download Receipt
+        </Button>
       </div>
     </div>
   );

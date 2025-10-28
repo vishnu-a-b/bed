@@ -21,7 +21,10 @@ interface SlideData {
 const Slider: React.FC = () => {
   const progressCircle = useRef<SVGSVGElement>(null);
   const progressContent = useRef<HTMLSpanElement>(null);
-
+  const isPalliativeInternational =
+    typeof window !== "undefined"
+      ? window.location.hostname.includes("palliativeinternational.com")
+      : false;
   const onAutoplayTimeLeft = (
     s: SwiperType,
     time: number,
@@ -44,12 +47,12 @@ const Slider: React.FC = () => {
       title: (
         <>
           Welcome to <br />
-          Palliative <br /> International
+          Shanthibhavan <br />
         </>
       ),
-      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+      text:isPalliativeInternational ? `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
           Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
-          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+          Assessment Act 1997. Donations of $2 or more are tax deductible`:``,
       link: "/payment",
     },
     {
@@ -61,9 +64,9 @@ const Slider: React.FC = () => {
           Hospital Care
         </>
       ),
-      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+      text:isPalliativeInternational ? `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
           Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
-          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+          Assessment Act 1997. Donations of $2 or more are tax deductible`:``,
       link: "/payment",
     },
     {
@@ -75,9 +78,9 @@ const Slider: React.FC = () => {
           Here
         </>
       ),
-      text: `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
+      text:isPalliativeInternational ? `Shanthibhavan Palliative International Ltd is endorsed as a Deductible
           Gift Recipient (DGR) under Subdivision 30-BA of the Income Tax
-          Assessment Act 1997. Donations of $2 or more are tax deductible`,
+          Assessment Act 1997. Donations of $2 or more are tax deductible`:``,
       link: "/payment",
     },
   ];
@@ -86,21 +89,26 @@ const Slider: React.FC = () => {
     <>
       <section className="main-slider main-slider-one style3">
         <div className="main-slider-one__inner ">
-          <div className="absolute top-[50vh] md:top-[68vh] right-24 md:right-48 z-10 bg-white rounded-full">
-            <img
-              src="/assets/images/dgr1.webp"
-              alt="Logo 1"
-              className="w-16 h-16 md:w-40 md:h-40 object-contain"
-            />
-          </div>
+          {
+            isPalliativeInternational&&
+            <>
+              <div className="absolute top-[50vh] md:top-[68vh] right-24 md:right-48 z-10 bg-white rounded-full">
+                <img
+                  src="/assets/images/dgr1.webp"
+                  alt="Logo 1"
+                  className="w-16 h-16 md:w-40 md:h-40 object-contain"
+                />
+              </div>
 
-          <div className="absolute top-[50vh] md:top-[68vh] right-2 z-10 bg-white rounded-full">
-            <img
-              src="/assets/images/dgr2.webp"
-              alt="Logo 1"
-              className="w-16 h-16 md:w-40 md:h-40 object-contain"
-            />
-          </div>
+              <div className="absolute top-[50vh] md:top-[68vh] right-2 z-10 bg-white rounded-full">
+                <img
+                  src="/assets/images/dgr2.webp"
+                  alt="Logo 1"
+                  className="w-16 h-16 md:w-40 md:h-40 object-contain"
+                />
+              </div>
+            </>
+          }
           <Swiper
             spaceBetween={0}
             centeredSlides={true}
@@ -143,8 +151,10 @@ const Slider: React.FC = () => {
                       <div className="title">
                         <h2>{slide.title}</h2>
                       </div>
-                      
-                      <p className=" font-semibold text-xm md:text-sm ">{slide.text}</p>
+
+                      <p className=" font-semibold text-xm md:text-sm ">
+                        {slide.text}
+                      </p>
                       <div className=" pt-4 ">
                         <a className="thm-btn" href={slide.link}>
                           <span className="txt text-xl">Donate Now</span>

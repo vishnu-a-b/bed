@@ -231,19 +231,6 @@ class DonationReceiptMailerIndia {
     // Wait for PDF generation to complete
     const pdfBuffer = await pdfPromise;
 
-    try {
-      // Send PDF via WhatsApp
-      const response = await whatsappHelper.sendDonationReceipt(
-        user.phoneNo,
-        pdfBuffer,
-        `${user.receiptNumber}.pdf`
-      );
-      console.log(response);
-    } catch (whatsappError) {
-      console.error("Failed to send WhatsApp message:", whatsappError);
-      // Continue with PDF download even if WhatsApp fails
-    }
-
     return pdfBuffer;
   }
 

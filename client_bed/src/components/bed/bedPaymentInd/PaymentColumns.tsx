@@ -453,12 +453,12 @@ const ViewDetails = ({ data }: { data: Payment }) => {
               <p>{paymentData.name || (paymentData.payer?.name ? `${paymentData.payer.name.given_name || ""} ${paymentData.payer.name.surname || ""}`.trim() : "N/A")}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p>{paymentData.email || paymentData.payer?.email_address || "N/A"}</p>
-            </div>
-            <div>
               <p className="text-sm text-gray-500">Phone</p>
               <p>{paymentData.phNo || paymentData.payer?.phone?.phone_number?.national_number || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p>{paymentData.email || paymentData.payer?.email_address || "N/A"}</p>
             </div>
             {paymentData.payer?.address && (
               <div className="md:col-span-2">
@@ -673,6 +673,41 @@ const ViewDetails = ({ data }: { data: Payment }) => {
           }}
         >
           Edit Payment
+        </Button>
+        <Button
+          variant="outline"
+          className="text-sm"
+          onClick={async () => {
+            try {
+              const token = getAccessToken();
+              const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/bed-payments-ind/${paymentData._id}/receipt-pdf`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (!response.ok) throw new Error('Failed to download receipt');
+
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `receipt_${paymentData.receiptNumber || paymentData._id}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+              toastService.success('Receipt downloaded successfully');
+            } catch (error) {
+              console.error('Error downloading receipt:', error);
+              toastService.error('Failed to download receipt');
+            }
+          }}
+        >
+          Download Receipt
         </Button>
       </div>
     </div>

@@ -11,14 +11,17 @@ export const formatCurrency = (
   convertFromPaise: boolean = true
 ): string => {
   if (amount === undefined || amount === null) return 'N/A';
-  
+
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(numericAmount)) return 'Invalid Amount';
 
   const displayAmount = convertFromPaise ? numericAmount  : numericAmount;
 
+  // Use appropriate locale based on currency
+  const locale = currency === 'AUD' ? 'en-AU' : currency === 'USD' ? 'en-US' : 'en-IN';
+
   try {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: 2,
